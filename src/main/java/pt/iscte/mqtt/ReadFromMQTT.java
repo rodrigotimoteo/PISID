@@ -41,7 +41,7 @@ public class ReadFromMQTT implements MqttCallback {
         createWindow();
         try {
             Properties p = new Properties();
-            p.load(new FileInputStream("ReceiveCloud.ini"));
+            p.load(new FileInputStream("src/main/java/pt/iscte/mqtt/ReceiveCloud.ini"));
             cloud_server = p.getProperty("cloud_server");
             cloud_topic = p.getProperty("cloud_topic");
         } catch (Exception e) {
@@ -68,7 +68,7 @@ public class ReadFromMQTT implements MqttCallback {
     @Override
     public void messageArrived(String topic, MqttMessage c) throws Exception {
         try {
-            documentLabel.append(c.toString()+"\n");
+            documentLabel.append(c + "\n");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -76,6 +76,7 @@ public class ReadFromMQTT implements MqttCallback {
 
     @Override
     public void connectionLost(Throwable cause) {
+
     }
 
     @Override

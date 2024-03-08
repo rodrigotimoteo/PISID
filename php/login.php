@@ -59,8 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <div class="mt-10">
         <h2 class="text-2xl font-bold mb-4">Lab Rats</h2>
-        <p class="mb-4">neeko neeko neeeeee</p>
-        <p class="mb-4">neeko neeko nee</p>
+        <p class="mb-4">Landing Page</p>
     </div>
 </div>
 

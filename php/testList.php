@@ -18,7 +18,8 @@
                 <nav>
                     <ul class="flex">
                         <li class="mr-6"><a href="#" class="text-white uppercase">Home</a></li>
-                        <li class="mr-6"><a href="#" id="loginBtn" class="text-orange-500 font-bold uppercase">Login</a></li>
+                        <li class="mr-6"><a href="testList.php" class="text-white uppercase">List Tests</a></li>
+                        <li class="mr-6"><a href="#" id="logoutBtn" class="text-orange-500 font-bold uppercase">Logout</a></li>
                     </ul>
                 </nav>
             </div>

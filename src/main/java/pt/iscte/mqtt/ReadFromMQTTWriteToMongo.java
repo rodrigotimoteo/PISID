@@ -7,7 +7,6 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import com.mongodb.*;
-import org.bson.*;
 import com.mongodb.util.JSON;
 
 import java.util.*;
@@ -26,7 +25,6 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
     static DBCollection temp_sensor_1;
     static DBCollection temp_sensor_2;
     static DBCollection door_sensor;
-    static DBCollection mongoCol;
 
     static String mongo_user = "";
     static String mongo_password = "";
@@ -65,22 +63,22 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
     public static void main(String[] args) {
         createWindow();
         try {
-            Properties p = new Properties();
-            p.load(new FileInputStream("src/main/java/pt/iscte/mqtt/CloudtoMongo.ini"));
-            mongo_address   = p.getProperty("mongo_address");
-            mongo_user      = p.getProperty("mongo_user");
-            mongo_password  = p.getProperty("mongo_password");
-            mongo_replica   = p.getProperty("mongo_replica");
-            cloud_server    = p.getProperty("cloud_server");
-            cloud_topic_temp= p.getProperty("cloud_topic_temp");
-            cloud_topic_maze= p.getProperty("cloud_topic_maze");
-            mongo_host      = p.getProperty("mongo_host");
-            mongo_database  = p.getProperty("mongo_database");
-            mongo_auth      = p.getProperty("mongo_authentication");
-            mongo_collection= p.getProperty("mongo_general_collection");
-            mongo_temp1_collection = p.getProperty("mongo_temp1_collection");
-            mongo_temp2_collection = p.getProperty("mongo_temp2_collection");
-            mongo_door_collection  = p.getProperty("mongo_door_collection");
+            Properties mongoProp = new Properties();
+            mongoProp.load(new FileInputStream("src/main/java/pt/iscte/mqtt/CloudtoMongo.ini"));
+            mongo_address   = mongoProp.getProperty("mongo_address");
+            mongo_user      = mongoProp.getProperty("mongo_user");
+            mongo_password  = mongoProp.getProperty("mongo_password");
+            mongo_replica   = mongoProp.getProperty("mongo_replica");
+            cloud_server    = mongoProp.getProperty("cloud_server");
+            cloud_topic_temp= mongoProp.getProperty("cloud_topic_temp");
+            cloud_topic_maze= mongoProp.getProperty("cloud_topic_maze");
+            mongo_host      = mongoProp.getProperty("mongo_host");
+            mongo_database  = mongoProp.getProperty("mongo_database");
+            mongo_auth      = mongoProp.getProperty("mongo_authentication");
+            mongo_collection= mongoProp.getProperty("mongo_general_collection");
+            mongo_temp1_collection = mongoProp.getProperty("mongo_temp1_collection");
+            mongo_temp2_collection = mongoProp.getProperty("mongo_temp2_collection");
+            mongo_door_collection  = mongoProp.getProperty("mongo_door_collection");
         } catch (Exception e) {
             System.out.println("Error reading CloudToMongo.ini file " + e);
             JOptionPane.showMessageDialog(null, "The CloudToMongo.ini file wasn't found.",
@@ -124,12 +122,9 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
         mongoClient = new MongoClient(new MongoClientURI(mongoURI));
         db = mongoClient.getDB(mongo_database);
 
-
         temp_sensor_1 = db.getCollection(mongo_temp1_collection);
         temp_sensor_2 = db.getCollection(mongo_temp2_collection);
         door_sensor   = db.getCollection(mongo_door_collection);
-        System.out.println(mongo_temp1_collection);
-        mongoCol = db.getCollection(mongo_collection);
     }
 
     @Override

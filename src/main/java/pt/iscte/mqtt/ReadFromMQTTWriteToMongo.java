@@ -151,7 +151,7 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
     private void treatTempSensorMessage(DBObject message, int sensor) {
         if(sensor == 1) {
             temp_sensor_1.insert(message);
-        } else if(sensor == 2) {
+        } else { //Currently the sensor 2 takes wrong inputs (invalid inputs from mqtt)
             temp_sensor_2.insert(message);
         }
     }

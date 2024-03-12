@@ -13,6 +13,9 @@ import java.io.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class SendToMQTT implements MqttCallback {
     static MqttClient mqttClientTemp;
@@ -44,6 +47,8 @@ public class SendToMQTT implements MqttCallback {
 
     public void publishSensor(String sensorData) {
         try {
+            System.out.println("Hi");
+
             MqttMessage mqttMessage = new MqttMessage();
             mqttMessage.setPayload(sensorData.getBytes());
 
@@ -65,10 +70,13 @@ public class SendToMQTT implements MqttCallback {
     private static void createWindow() {
         JFrame frame = new JFrame("Send to Cloud");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        JLabel textLabel = new JLabel("Data to send do broker: ",SwingConstants.CENTER);
-        JButton b1 = new JButton("Send Data");
+        JLabel textLabel = new JLabel("Data sent to broker: ", SwingConstants.CENTER);
+        textLabel.setPreferredSize(new Dimension(600, 30));
+        JScrollPane scroll = new JScrollPane (documentLabel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scroll.setPreferredSize(new Dimension(600, 200));
+        JButton b1 = new JButton("Stop the program");
         frame.getContentPane().add(textLabel, BorderLayout.PAGE_START);
-        frame.getContentPane().add(documentLabel, BorderLayout.CENTER);
+        frame.getContentPane().add(scroll, BorderLayout.CENTER);
         frame.getContentPane().add(b1, BorderLayout.PAGE_END);
         frame.setLocationRelativeTo(null);
         frame.pack();
@@ -82,18 +90,12 @@ public class SendToMQTT implements MqttCallback {
 
         try {
             Properties mongoProp = new Properties();
-            mongoProp.load(new FileInputStream("src/main/java/pt/iscte/mqtt/SendCloud.ini"));
-
-            Properties mqttProp = new Properties();
-            mqttProp.load(new FileInputStream("src/main/java/pt/iscte/mqtt/SendCloud.ini"));
+            mongoProp.load(new FileInputStream("src/main/java/pt/iscte/mqtt/CloudToMongo.ini"));
 
             mongo_address   = mongoProp.getProperty("mongo_address");
             mongo_user      = mongoProp.getProperty("mongo_user");
             mongo_password  = mongoProp.getProperty("mongo_password");
             mongo_replica   = mongoProp.getProperty("mongo_replica");
-            cloud_server    = mqttProp.getProperty("cloud_server");
-            cloud_topic_temp= mqttProp.getProperty("cloud_topic_temp");
-            cloud_topic_maze= mqttProp.getProperty("cloud_topic_maze");
             mongo_host      = mongoProp.getProperty("mongo_host");
             mongo_database  = mongoProp.getProperty("mongo_database");
             mongo_auth      = mongoProp.getProperty("mongo_authentication");
@@ -102,8 +104,19 @@ public class SendToMQTT implements MqttCallback {
             mongo_temp2_collection = mongoProp.getProperty("mongo_temp2_collection");
             mongo_door_collection  = mongoProp.getProperty("mongo_door_collection");
         } catch (Exception e) {
-            System.out.println("Error reading SendCloud.ini file " + e);
-            JOptionPane.showMessageDialog(null, "The SendCloud.ini file wasn't found.", "Send Cloud", JOptionPane.ERROR_MESSAGE);
+            System.err.println("Error reading SendCloud.ini file " + e);
+        }
+
+        try {
+            Properties mqttProp = new Properties();
+            mqttProp.load(new FileInputStream("src/main/java/pt/iscte/mqtt/SendCloud.ini"));
+
+            cloud_server    = mqttProp.getProperty("cloud_server");
+            cloud_topic_temp= mqttProp.getProperty("cloud_topic_temp");
+            cloud_topic_maze= mqttProp.getProperty("cloud_topic_maze");
+
+        } catch (Exception e) {
+            System.err.println("Error reading SendCloud.ini file " + e);
         }
 
         new SendToMQTT().connectCloud();
@@ -112,16 +125,18 @@ public class SendToMQTT implements MqttCallback {
 
     public void connectCloud() {
         try {
-            mqttClientTemp = new MqttClient(cloud_server, "SimulateSensor" + cloud_topic_temp);
+            int i = new Random().nextInt(100000);
+            mqttClientTemp = new MqttClient(cloud_server, "MongoToMQTT Temp" + i + "_" + cloud_topic_temp);
             mqttClientTemp.connect();
             mqttClientTemp.setCallback(this);
             mqttClientTemp.subscribe(cloud_topic_temp);
 
-            mqttClientMaze = new MqttClient(cloud_server, "SimulateSensor" + cloud_topic_maze);
-            mqttClientMaze.connect();
-            mqttClientMaze.setCallback(this);
-            mqttClientMaze.subscribe(cloud_topic_maze);
+            mqttClientTemp = new MqttClient(cloud_server, "MongoToMQTT Maze" + i + "_" + cloud_topic_maze);
+            mqttClientTemp.connect();
+            mqttClientTemp.setCallback(this);
+            mqttClientTemp.subscribe(cloud_topic_maze);
         } catch (MqttException e) {
+            System.err.println("Error connecting to MQTT Server");
             e.printStackTrace();
         }
     }
@@ -145,13 +160,20 @@ public class SendToMQTT implements MqttCallback {
         temp_sensor_1 = db.getCollection(mongo_temp1_collection);
         temp_sensor_2 = db.getCollection(mongo_temp2_collection);
         door_sensor   = db.getCollection(mongo_door_collection);
+
+        ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
+        executorService.scheduleAtFixedRate(() -> {
+//            System.out.println("Hi");
+        }, 5000, 200, TimeUnit.MILLISECONDS);
     }
 
     @Override
     public void connectionLost(Throwable cause) {    }
 
     @Override
-    public void deliveryComplete(IMqttDeliveryToken token) { }
+    public void deliveryComplete(IMqttDeliveryToken token) {
+        System.out.println("MQTT Sent");
+    }
 
     @Override
     public void messageArrived(String topic, MqttMessage message){ }

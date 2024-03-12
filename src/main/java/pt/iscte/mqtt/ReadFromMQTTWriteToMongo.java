@@ -46,7 +46,7 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
     private static void createWindow() {
         JFrame frame = new JFrame("Cloud to Mongo");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        JLabel textLabel = new JLabel("Data from broker: ",SwingConstants.CENTER);
+        JLabel textLabel = new JLabel("Data from broker: ", SwingConstants.CENTER);
         textLabel.setPreferredSize(new Dimension(600, 30));
         JScrollPane scroll = new JScrollPane (documentLabel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         scroll.setPreferredSize(new Dimension(600, 200));
@@ -64,7 +64,7 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
         createWindow();
         try {
             Properties mongoProp = new Properties();
-            mongoProp.load(new FileInputStream("src/main/java/pt/iscte/mqtt/CloudtoMongo.ini"));
+            mongoProp.load(new FileInputStream("src/main/java/pt/iscte/mqtt/CloudToMongo.ini"));
             mongo_address   = mongoProp.getProperty("mongo_address");
             mongo_user      = mongoProp.getProperty("mongo_user");
             mongo_password  = mongoProp.getProperty("mongo_password");

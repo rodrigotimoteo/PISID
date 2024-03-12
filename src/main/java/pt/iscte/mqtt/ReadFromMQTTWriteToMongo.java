@@ -97,6 +97,7 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
             mqttClientTemp.setCallback(this);
             mqttClientTemp.subscribe(cloud_topic_temp);
 
+            i = new Random().nextInt(100000);
             mqttClientMaze = new MqttClient(cloud_server, "CloudToMongo Maze" + i + "_" + cloud_topic_maze);
             mqttClientMaze.connect();
             mqttClientMaze.setCallback(this);
@@ -132,7 +133,7 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
         try {
             DBObject document_json;
             document_json = (DBObject) JSON.parse(c.toString());
-            if(document_json.containsField("OriginRoom"))
+            if(document_json.containsField("SalaOrigem"))
                 treatDoorSensorMessage(document_json);
             else
                 treatTempSensorMessage(document_json, (Integer) document_json.get("Sensor"));

@@ -1,18 +1,15 @@
 package pt.iscte.mqtt;
 
 import com.mongodb.*;
-import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.MqttCallback;
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
+import com.mongodb.util.JSON;
+import org.eclipse.paho.client.mqttv3.*;
 
-import java.util.*;
-
-import java.io.*;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.io.FileInputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -45,16 +42,21 @@ public class SendToMQTT implements MqttCallback {
     static String mongo_auth = "";
     static JTextArea documentLabel = new JTextArea("\n");
 
+    private long lastRetrievalTimestamp = 0;
+    private final Set<String> processedIds = new HashSet<>();
+
     public void publishSensor(String sensorData) {
         try {
-            System.out.println("Hi");
-
             MqttMessage mqttMessage = new MqttMessage();
             mqttMessage.setPayload(sensorData.getBytes());
 
             //Check if message is sensor data or not if()
-            treatTempSensorMessage(mqttMessage);
-            treatDoorSensorMessage(mqttMessage);
+            if(((DBObject) JSON.parse(sensorData)).containsField("SalaOrigem"))
+                treatDoorSensorMessage(mqttMessage);
+            else
+                treatTempSensorMessage(mqttMessage);
+
+            documentLabel.append(mqttMessage + "\n");
         } catch (MqttException e) {
             e.printStackTrace();}
     }
@@ -131,10 +133,10 @@ public class SendToMQTT implements MqttCallback {
             mqttClientTemp.setCallback(this);
             mqttClientTemp.subscribe(cloud_topic_temp);
 
-            mqttClientTemp = new MqttClient(cloud_server, "MongoToMQTT Maze" + i + "_" + cloud_topic_maze);
-            mqttClientTemp.connect();
-            mqttClientTemp.setCallback(this);
-            mqttClientTemp.subscribe(cloud_topic_maze);
+            mqttClientMaze = new MqttClient(cloud_server, "MongoToMQTT Maze" + i + "_" + cloud_topic_maze);
+            mqttClientMaze.connect();
+            mqttClientMaze.setCallback(this);
+            mqttClientMaze.subscribe(cloud_topic_maze);
         } catch (MqttException e) {
             System.err.println("Error connecting to MQTT Server");
             e.printStackTrace();
@@ -163,17 +165,71 @@ public class SendToMQTT implements MqttCallback {
 
         ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
         executorService.scheduleAtFixedRate(() -> {
+            try {
+                fetchMongo();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 //            System.out.println("Hi");
-        }, 5000, 200, TimeUnit.MILLISECONDS);
+        }, 5000, 500, TimeUnit.MILLISECONDS);
+    }
+
+    private void fetchMongo() {
+        BasicDBObject match = new BasicDBObject("$match", new BasicDBObject("Hora", new BasicDBObject("$gt", formatDate(lastRetrievalTimestamp))));
+        BasicDBObject sort = new BasicDBObject("$sort", new BasicDBObject("Hora", 1));
+
+        // Construct the aggregation pipeline
+        DBObject[] pipeline = {match, sort};
+
+        // Execute the aggregation pipeline and process the result
+        AggregationOutput output = door_sensor.aggregate(Arrays.asList(pipeline));
+        for (DBObject dbObject : output.results()) {
+            String documentId = dbObject.get("_id").toString();
+            if (!processedIds.contains(documentId)) {
+                System.out.println(dbObject);
+                publishSensor(dbObject.toString());
+
+                // Update the last retrieval timestamp
+                lastRetrievalTimestamp = parseDate(dbObject.get("Hora").toString()).getTime();
+                processedIds.add(documentId);
+            }
+        }
+    }
+
+    /**
+     * Formats the Data in the used format
+     *
+     * @param timestamp
+     * @return
+     */
+    private String formatDate(long timestamp) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS");
+        return sdf.format(new Date(timestamp));
+    }
+
+    /**
+     *
+     *
+     * @param dateString
+     * @return
+     */
+    private Date parseDate(String dateString) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            return sdf.parse(dateString);
+        } catch (ParseException e) {
+            // Handle parsing exception
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
-    public void connectionLost(Throwable cause) {    }
+    public void connectionLost(Throwable cause) { }
 
     @Override
-    public void deliveryComplete(IMqttDeliveryToken token) {
-        System.out.println("MQTT Sent");
-    }
+    public void deliveryComplete(IMqttDeliveryToken token) { }
 
     @Override
     public void messageArrived(String topic, MqttMessage message){ }

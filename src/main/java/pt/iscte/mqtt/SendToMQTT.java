@@ -42,7 +42,7 @@ public class SendToMQTT implements MqttCallback {
     static String mongo_auth = "";
     static JTextArea documentLabel = new JTextArea("\n");
 
-    private long lastRetrievalTimestamp = 0;
+    private long lastRetrievalTimestamp = System.currentTimeMillis();
     private final Set<String> processedIds = new HashSet<>();
 
     public void publishSensor(String sensorData) {
@@ -182,8 +182,14 @@ public class SendToMQTT implements MqttCallback {
         // Construct the aggregation pipeline
         DBObject[] pipeline = {match, sort};
 
+        extractSensorData(pipeline, temp_sensor_1);
+        extractSensorData(pipeline, temp_sensor_2);
+        extractSensorData(pipeline, door_sensor);
+    }
+
+    private void extractSensorData(DBObject[] pipeline, DBCollection collection) {
         // Execute the aggregation pipeline and process the result
-        AggregationOutput output = door_sensor.aggregate(Arrays.asList(pipeline));
+        AggregationOutput output = collection.aggregate(Arrays.asList(pipeline));
         for (DBObject dbObject : output.results()) {
             String documentId = dbObject.get("_id").toString();
             if (!processedIds.contains(documentId)) {

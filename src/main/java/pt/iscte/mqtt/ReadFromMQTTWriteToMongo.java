@@ -84,6 +84,7 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
             JOptionPane.showMessageDialog(null, "The CloudToMongo.ini file wasn't found.",
                     "CloudToMongo", JOptionPane.ERROR_MESSAGE);
         }
+
         new ReadFromMQTTWriteToMongo().connectCloud();
         new ReadFromMQTTWriteToMongo().connectMongo();
     }

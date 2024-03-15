@@ -13,15 +13,19 @@ import javax.swing.*;
 import java.awt.*;
 
 public class ReadFromMQTT implements MqttCallback {
-    MqttClient mqttclient;
+    MqttClient mqttclientMaze;
+    MqttClient mqttClientTemp;
+
     static String cloud_server = "";
-    static String cloud_topic = "";
+    static String cloud_topic_maze = "";
+    static String cloud_topic_temp = "";
+
     static JTextArea documentLabel = new JTextArea("\n");
 
     private static void createWindow() {
-        JFrame frame = new JFrame("Receive Cloud");
+        JFrame frame = new JFrame("Receive to Cloud");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        JLabel textLabel = new JLabel("Data sent to broker: ", SwingConstants.CENTER);
+        JLabel textLabel = new JLabel("Data recieved to broker: ", SwingConstants.CENTER);
         textLabel.setPreferredSize(new Dimension(600, 30));
         JScrollPane scroll = new JScrollPane (documentLabel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         scroll.setPreferredSize(new Dimension(600, 200));
@@ -41,23 +45,31 @@ public class ReadFromMQTT implements MqttCallback {
             Properties p = new Properties();
             p.load(new FileInputStream("src/main/java/pt/iscte/mqtt/ReceiveCloud.ini"));
             cloud_server = p.getProperty("cloud_server");
-            cloud_topic = p.getProperty("cloud_topic");
+            cloud_topic_maze = p.getProperty("cloud_topic_maze");
+            System.out.println(cloud_topic_maze);
+            cloud_topic_temp = p.getProperty("cloud_topic_temp");
+            System.out.println(cloud_topic_temp);
         } catch (Exception e) {
             System.out.println("Error reading ReceiveCloud.ini file " + e);
             JOptionPane.showMessageDialog(null, "The ReceiveCloud.ini file wasn't found.", "Receive Cloud", JOptionPane.ERROR_MESSAGE);
         }
-        new ReadFromMQTT().connectCloud();
 
+        new ReadFromMQTT().connectCloud();
     }
 
     public void connectCloud() {
         int i;
         try {
             i = new Random().nextInt(100000);
-            mqttclient = new MqttClient(cloud_server, "ReceiveCloud" + i + "_" + cloud_topic);
-            mqttclient.connect();
-            mqttclient.setCallback(this);
-            mqttclient.subscribe(cloud_topic);
+            mqttclientMaze = new MqttClient(cloud_server, "ReceiveCloud" + i + "_" + cloud_topic_maze);
+            mqttclientMaze.connect();
+            mqttclientMaze.setCallback(this);
+            mqttclientMaze.subscribe(cloud_topic_maze);
+
+            mqttClientTemp = new MqttClient(cloud_server, "ReceiveCloud" + i + "_" + cloud_topic_temp);
+            mqttClientTemp.connect();
+            mqttClientTemp.setCallback(this);
+            mqttClientTemp.subscribe(cloud_topic_temp);
         } catch (MqttException e) {
             e.printStackTrace();
         }

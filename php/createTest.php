@@ -1,5 +1,12 @@
 <?php
+session_start();
 
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
+    echo "User isn't logged in, redirecting to landing page";
+    header("Location: landingPage.php");
+} else {
+    echo "Welcome " . $_SESSION['name'];
+}
 
 ?>
 
@@ -8,55 +15,58 @@
 <head>
     <meta charset="UTF-8">
     <title>LoginPagePISID</title>
-    <!--        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">-->
 </head>
 
-<body class="bg-gray-200">
-<header class="bg-green-500 text-white p-6 border-b-4 border-orange-500">
-    <div class="container mx-auto flex justify-between items-center">
-        <h1 class="font-bold">Lab Rats</h1>
+<body>
+<header>
+    <div>
+        <h1>Lab Rats</h1>
         <nav>
-            <ul class="flex">
-                <li class="mr-6"><a href="#" class="text-white uppercase">Home</a></li>
-                <li class="mr-6"><a href="testList.php" class="text-white uppercase">List Tests</a></li>
-                <li class="mr-6"><a href="#" id="logoutBtn" class="text-orange-500 font-bold uppercase">Logout</a></li>
+            <ul>
+                <li><a href="landingPage.php">Home</a></li>
+                <li><a href="testList.php">Test List</a></li>
+                <li><a href="createTest.php">Create new Test</a></li>
+                <li><a href="actions/logout.php">Logout</a></li>
             </ul>
         </nav>
     </div>
 </header>
 
-<div class="container">
+<div>
     <h1>Create Test</h1>
-    <table>
-        <tr>
-            <th>Description</th>
-            <td><input type="text" id="description" name="description"></td>
-        </tr>
-        <tr>
-            <th>Investigator</th>
-            <td><input type="text" id="investigator" name="investigator"></td>
-        </tr>
-        <tr>
-            <th>Number of Rats</th>
-            <td><input type="number" id="numberOfRats" name="numberOfRats"></td>
-        </tr>
-        <tr>
-            <th>Limit of Rats per Room</th>
-            <td><input type="number" id="ratLimit" name="ratLimit"></td>
-        </tr>
-        <tr>
-            <th>Time without Movement (in seconds)</th>
-            <td><input type="number" id="timeWithoutMovement" name="timeWithoutMovement"></td>
-        </tr>
-        <tr>
-            <th>Ideal Temperature</th>
-            <td><input type="number" id="idealTemperature" name="idealTemperature"></td>
-        </tr>
-        <tr>
-            <th>Maximum Temperature Variation</th>
-            <td><input type="number" id="maxTimeWithoutMovement" name="maxTimeWithoutMovement"></td>
-        </tr>
-    </table>
+    <form action="actions/createNewTest.php" method="post">
+        <label for="description">Description:</label>
+        <input type="text" id="description" name="description">
+
+        <br><br>
+
+        <label for="numberOfRats">Number of Rats:</label>
+        <input type="number" required="" id="numberOfRats" name="numberOfRats">
+
+        <br><br>
+
+        <label for="ratLimit">Rat Limit per Room:</label>
+        <input type="number" required="" id="ratLimit" name="ratLimit">
+
+        <br><br>
+
+        <label for="timeWithoutMovement">Time limit without Rat Movement:</label>
+        <input type="number" required="" id="timeWithoutMovement" name="timeWithoutMovement">
+
+        <br><br>
+
+        <label for="idealTemperature">Ideal Temperature:</label>
+        <input type="number" required="" id="idealTemperature" name="idealTemperature">
+
+        <br><br>
+
+        <label for="maxTempVariation">Maximum temperature deviation:</label>
+        <input type="number" required="" id="maxTempVariation" name="maxTempVariation">
+
+        <br><br>
+
+        <input type="submit" value="login" name="login">
+    </form>
 </div>
 
 </body>

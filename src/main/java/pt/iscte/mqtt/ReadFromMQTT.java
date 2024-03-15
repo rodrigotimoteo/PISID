@@ -46,9 +46,7 @@ public class ReadFromMQTT implements MqttCallback {
             p.load(new FileInputStream("src/main/java/pt/iscte/mqtt/ReceiveCloud.ini"));
             cloud_server = p.getProperty("cloud_server");
             cloud_topic_maze = p.getProperty("cloud_topic_maze");
-            System.out.println(cloud_topic_maze);
             cloud_topic_temp = p.getProperty("cloud_topic_temp");
-            System.out.println(cloud_topic_temp);
         } catch (Exception e) {
             System.out.println("Error reading ReceiveCloud.ini file " + e);
             JOptionPane.showMessageDialog(null, "The ReceiveCloud.ini file wasn't found.", "Receive Cloud", JOptionPane.ERROR_MESSAGE);

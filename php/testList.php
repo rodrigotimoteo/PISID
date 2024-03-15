@@ -1,20 +1,32 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
+    echo "User isn't logged in, redirecting to landing page";
+    header("Location: landingPage.php");
+} else {
+    echo "Welcome " . $_SESSION['name'];
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
         <title>LoginPagePISID</title>
-    <!--        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">-->
     </head>
 
-    <body class="bg-gray-200">
-        <header class="bg-green-500 text-white p-6 border-b-4 border-orange-500">
-            <div class="container mx-auto flex justify-between items-center">
-                <h1 class="font-bold">Lab Rats</h1>
+    <body>
+        <header>
+            <div>
+                <h1>Lab Rats</h1>
                 <nav>
-                    <ul class="flex">
-                        <li class="mr-6"><a href="#" class="text-white uppercase">Home</a></li>
-                        <li class="mr-6"><a href="testList.php" class="text-white uppercase">List Tests</a></li>
-                        <li class="mr-6"><a href="#" id="logoutBtn" class="text-orange-500 font-bold uppercase">Logout</a></li>
+                    <ul>
+                        <li><a href="landingPage.php">Home</a></li>
+                        <li><a href="testList.php">Test List</a></li>
+                        <li><a href="createTest.php">Create new Test</a></li>
+                        <li><a href="actions/logout.php">Logout</a></li>
                     </ul>
                 </nav>
             </div>

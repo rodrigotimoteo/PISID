@@ -65,7 +65,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
 
         <br><br>
 
-        <input type="submit" value="login" name="login">
+        <input type="submit" value="Submit" name="Submit">
     </form>
 </div>
 

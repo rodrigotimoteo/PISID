@@ -1,19 +1,28 @@
 <?php
-session_start();
+    include("config.php");
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        $email = mysqli_real_escape_string($db,$_POST['email']);
+        $password = mysqli_real_escape_string($db,$_POST['password']);
 
-    if ($username == 'admin' && $password == 'admin') {
-        $_SESSION['loggedin'] = true;
-        header("Location: login.php");
-        exit;
-    } else {
-        $error = "Invalid username or password!";
+        $sql = "SELECT id FROM utilizador WHERE username = '$email' and passcode = '$password'";
+        $result = mysqli_query($db, $sql);
+        $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
+        $active = $row['active'];
+
+        $count = mysqli_num_rows($result);
+
+        if($count == 1) {
+            session_register("myusername");
+            $_SESSION['login_user'] = $myusername;
+
+            header("location: welcome.php");
+        }else {
+            $error = "Your Login Name or Password is invalid";
+        }
     }
-}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

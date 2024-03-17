@@ -1,5 +1,4 @@
 package pt.iscte.mysql;
-//(c) ISCTE-IUL, Pedro Ramos, 2022
 
 //import org.bson.Document;
 //import org.bson.*;
@@ -9,105 +8,110 @@ package pt.iscte.mysql;
 //import org.json.JSONObject;
 //import org.json.JSONException;
 
+import org.eclipse.paho.client.mqttv3.*;
+import pt.iscte.CommonUtilities;
+
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.FileInputStream;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.Statement;
-import java.util.Properties;
 
 
-public class WriteToSQL {
+/**
+ * Implements the MqttCallback interface for handling MQTT events and writing data to SQL.
+ */
+public class WriteToSQL implements MqttCallback {
+
+    /**
+     * Static connection to the MySQL database.
+     */
+    static Connection mySQLConnection;
+
+    /**
+     * Static instances of MQTT clients for temperature and maze sensors.
+     */
+    MqttClient mqttClientTemp;
+    MqttClient mqttClientMaze;
+
+    /**
+     * Represents the name of the SQL table.
+     */
+    static String sqlTable;
+
+    /**
+     * JTextArea for displaying document labels.
+     */
     static JTextArea documentLabel = new JTextArea("\n");
-    static Connection connTo;
-    static String sql_database_connection_to = "";
-    static String sql_database_password_to= "";
-    static String sql_database_user_to= "";
-    static String  sql_table_to= "";
-
-
-    private static void createWindow() {
-        JFrame frame = new JFrame("Data Bridge");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        JLabel textLabel = new JLabel("Data : ",SwingConstants.CENTER);
-        textLabel.setPreferredSize(new Dimension(600, 30));
-        JScrollPane scroll = new JScrollPane (documentLabel,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-        scroll.setPreferredSize(new Dimension(600, 200));
-        JButton b1 = new JButton("Stop the program");
-        frame.getContentPane().add(textLabel, BorderLayout.PAGE_START);
-        frame.getContentPane().add(scroll, BorderLayout.CENTER);
-        frame.getContentPane().add(b1, BorderLayout.PAGE_END);
-        frame.setLocationRelativeTo(null);
-        frame.pack();
-        frame.setVisible(true);
-        b1.addActionListener(evt -> System.exit(0));
-    }
 
     public  static void main(String[] args) {
-        createWindow();
-        try {
-            Properties p = new Properties();
-            p.load(new FileInputStream("src/main/java/pt/iscte/mysql/WriteMysql.ini"));
-            sql_table_to= p.getProperty("sql_table_to");
-            sql_database_connection_to = p.getProperty("sql_database_connection_to");
-            sql_database_password_to = p.getProperty("sql_database_password_to");
-            sql_database_user_to= p.getProperty("sql_database_user_to");
-        } catch (Exception e) {
-            System.out.println("Error reading WriteMysql.ini file " + e);
-            JOptionPane.showMessageDialog(null, "The WriteMysql ini file wasn't found.", "Data Migration", JOptionPane.ERROR_MESSAGE);
-        }
-        new WriteToSQL().connectDatabase_to();
-        new WriteToSQL().ReadData();
+        documentLabel = CommonUtilities.createWindow("Data Bridge");
+
+        new WriteToSQL().connectDatabase();
+        new WriteToSQL().connectCloud();
     }
 
-    public void connectDatabase_to() {
-        try {
-            Class.forName("org.mariadb.jdbc.Driver");
-            connTo =  DriverManager.getConnection(sql_database_connection_to,sql_database_user_to,sql_database_password_to);
-            documentLabel.append("SQl Connection:"+sql_database_connection_to+"\n");
-            documentLabel.append("Connection To MariaDB Destination " + sql_database_connection_to + " Succeeded"+"\n");
-        } catch (Exception e){System.out.println("Mysql Server Destination down, unable to make the connection. "+e);}
+    /**
+     * Connects to the MySQL database and displays connection information.
+     */
+    public void connectDatabase() {
+        mySQLConnection = CommonUtilities.connectDatabase();
+        sqlTable = CommonUtilities.getConfig("MySQL", "sqlTable");
+
+        if(mySQLConnection == null)
+            System.exit(1);
+
+        documentLabel.append("Connection To MariaDB Succeeded" + "\n");
     }
 
 
-    public void ReadData() {
-        String doc;
-        int i = 0;
-        while (i < 100) {
-            doc = "{Name:\"Nome_"+i+"\", Location:\"Portugal\", id:"+i+"}";
-            //WriteToMySQL(com.mongodb.util.JSON.serialize(doc));
-            WriteToMySQL(doc);
-            i++;
-        }
+    /**
+     * Connects to the MQTT broker using the configuration from the Configuration.ini file.
+     *
+     * @throws RuntimeException if an error occurs during connection to the MQTT broker
+     */
+    public void connectCloud() {
+        MqttClient[] mqttClients = CommonUtilities.connectCloud(this, "MQTTCloud");
+
+        mqttClientTemp = mqttClients[0];
+        mqttClientMaze = mqttClients[1];
     }
 
-    public void WriteToMySQL (String c){
-        String SQLCommand = getSqlCommand(c);
+    /**
+     * Writes data to a MySQL database based on a specified SQL command generated from a JSON string.
+     *
+     * @param c a JSON string representing the data to be inserted
+     */
+    public void writeToMySQL(String c){
+        String sqlCommand = getSQLCommand(c);
         //System.out.println(SqlCommando);
 
         try {
-            documentLabel.append(SQLCommand + "\n");
+            documentLabel.append(sqlCommand + "\n");
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         try {
-            Statement s = connTo.createStatement();
-            int result = s.executeUpdate(SQLCommand);
+            Statement s = mySQLConnection.createStatement();
+            int result = s.executeUpdate(sqlCommand);
 
-            System.out.println(SQLCommand);
+            System.out.println(sqlCommand);
 
             s.close();
-        } catch (Exception e){System.out.println("Error Inserting in the database . " + e); System.out.println(SQLCommand);}
+        } catch (Exception e){
+            System.err.println("Error Inserting in the database . " + e);
+            System.err.println(sqlCommand);
+        }
     }
 
-    private static String getSqlCommand(String convertedJSON) {
+    /**
+     * Generates an SQL command for inserting data into a specified table based on a JSON string.
+     *
+     * @param convertedJSON a JSON string representing the data to be inserted
+     * @return a String containing the SQL insert command
+     */
+    private String getSQLCommand(String convertedJSON) {
         StringBuilder fields = new StringBuilder();
         StringBuilder values = new StringBuilder();
-        String SqlCommand;
         String[] splitArray = convertedJSON.split(",");
 
         for (int i = 0; i < splitArray.length; i++) {
@@ -119,10 +123,44 @@ public class WriteToSQL {
         }
 
         fields = new StringBuilder(fields.toString().replace("\"", ""));
-        SqlCommand = "Insert into " + sql_table_to + " (" + fields.substring(1, fields.length()) + ") values (" +
+        return "Insert into " + sqlTable + " (" + fields.substring(1, fields.length()) + ") values (" +
                 values.substring(0, values.length() - 1) + ");";
-        return SqlCommand;
     }
 
+    /**
+     * Handles incoming MQTT messages.
+     *
+     * @param s            the topic on which the message was received
+     * @param mqttMessage  the MQTT message received
+     * @throws Exception   if an error occurs while processing the message
+     */
+    @Override
+    public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
+        try {
+            //writeToMySQL(mqttMessage.toString());
+            documentLabel.append(s + "\n");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
+    /**
+     * Called when the connection to the MQTT broker is lost.
+     *
+     * @param cause the reason for the connection loss
+     */
+    @Override
+    public void connectionLost(Throwable cause) {
+
+    }
+
+    /**
+     * Called when a message delivery to an MQTT client is complete.
+     *
+     * @param token the delivery token associated with the message delivery
+     */
+    @Override
+    public void deliveryComplete(IMqttDeliveryToken token) {
+
+    }
 }

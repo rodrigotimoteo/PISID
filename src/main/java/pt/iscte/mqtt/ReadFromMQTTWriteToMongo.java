@@ -1,76 +1,134 @@
 package pt.iscte.mqtt;
 
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
-import pt.iscte.CommonUtilities;
 
+import com.mongodb.*;
+import com.mongodb.util.JSON;
+
+import java.util.*;
+import java.io.*;
 import javax.swing.*;
+import java.awt.*;
 
-/**
- * Implements the MqttCallback interface to handle MQTT message events and writes the received data to MongoDB.
- */
 public class ReadFromMQTTWriteToMongo implements MqttCallback {
-
-    /**
-     * Static instances of MQTT clients for temperature and maze sensors.
-     */
     MqttClient mqttClientTemp;
     MqttClient mqttClientMaze;
 
-    /**
-     * Static collections for storing sensor data in MongoDB.
-     */
-    static DBCollection tempSensor1;
-    static DBCollection tempSensor2;
-    static DBCollection doorSensor;
+    static MongoClient mongoClient;
 
-    /**
-     * JTextArea for displaying document labels.
-     */
+    static DB db;
+
+    static DBCollection temp_sensor_1;
+    static DBCollection temp_sensor_2;
+    static DBCollection door_sensor;
+
+    static String mongo_user = "";
+    static String mongo_password = "";
+    static String mongo_address = "";
+    static String cloud_server = "";
+    static String cloud_topic_temp = "";
+    static String cloud_topic_maze = "";
+    static String mongo_host = "";
+    static String mongo_replica = "";
+    static String mongo_database = "";
+    static String mongo_collection = "";
+    static String mongo_temp1_collection = "";
+    static String mongo_temp2_collection = "";
+    static String mongo_door_collection = "";
+    static String mongo_auth = "";
     static JTextArea documentLabel = new JTextArea("\n");
 
+
+    private static void createWindow() {
+        JFrame frame = new JFrame("Cloud to Mongo");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        JLabel textLabel = new JLabel("Data from broker: ", SwingConstants.CENTER);
+        textLabel.setPreferredSize(new Dimension(600, 30));
+        JScrollPane scroll = new JScrollPane (documentLabel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+        scroll.setPreferredSize(new Dimension(600, 200));
+        JButton b1 = new JButton("Stop the program");
+        frame.getContentPane().add(textLabel, BorderLayout.PAGE_START);
+        frame.getContentPane().add(scroll, BorderLayout.CENTER);
+        frame.getContentPane().add(b1, BorderLayout.PAGE_END);
+        frame.setLocationRelativeTo(null);
+        frame.pack();
+        frame.setVisible(true);
+        b1.addActionListener(evt -> System.exit(0));
+    }
+
     public static void main(String[] args) {
-        documentLabel = CommonUtilities.createWindow("Cloud to Mongo");
+        createWindow();
+        try {
+            Properties mongoProp = new Properties();
+            mongoProp.load(new FileInputStream("src/main/java/pt/iscte/mqtt/CloudToMongo.ini"));
+            mongo_address   = mongoProp.getProperty("mongo_address");
+            mongo_user      = mongoProp.getProperty("mongo_user");
+            mongo_password  = mongoProp.getProperty("mongo_password");
+            mongo_replica   = mongoProp.getProperty("mongo_replica");
+            cloud_server    = mongoProp.getProperty("cloud_server");
+            cloud_topic_temp= mongoProp.getProperty("cloud_topic_temp");
+            cloud_topic_maze= mongoProp.getProperty("cloud_topic_maze");
+            mongo_host      = mongoProp.getProperty("mongo_host");
+            mongo_database  = mongoProp.getProperty("mongo_database");
+            mongo_auth      = mongoProp.getProperty("mongo_authentication");
+            mongo_collection= mongoProp.getProperty("mongo_general_collection");
+            mongo_temp1_collection = mongoProp.getProperty("mongo_temp1_collection");
+            mongo_temp2_collection = mongoProp.getProperty("mongo_temp2_collection");
+            mongo_door_collection  = mongoProp.getProperty("mongo_door_collection");
+        } catch (Exception e) {
+            System.out.println("Error reading CloudToMongo.ini file " + e);
+            JOptionPane.showMessageDialog(null, "The CloudToMongo.ini file wasn't found.",
+                    "CloudToMongo", JOptionPane.ERROR_MESSAGE);
+        }
 
-        new ReadFromMQTTWriteToMongo().connectMongo();
         new ReadFromMQTTWriteToMongo().connectCloud();
+        new ReadFromMQTTWriteToMongo().connectMongo();
     }
 
-    /**
-     * Connects to the MQTT broker using the configuration from the Configuration.ini file.
-     *
-     * @throws RuntimeException if an error occurs during connection to the MQTT broker
-     */
     public void connectCloud() {
-        MqttClient[] mqttClients = CommonUtilities.connectCloud(this, "MQTTCloud");
+        int i;
+        try {
+            i = new Random().nextInt(100000);
+            mqttClientTemp = new MqttClient(cloud_server, "CloudToMongo Temp" + i + "_" + cloud_topic_temp);
+            mqttClientTemp.connect();
+            mqttClientTemp.setCallback(this);
+            mqttClientTemp.subscribe(cloud_topic_temp);
 
-        mqttClientTemp = mqttClients[0];
-        mqttClientMaze = mqttClients[1];
+            i = new Random().nextInt(100000);
+            mqttClientMaze = new MqttClient(cloud_server, "CloudToMongo Maze" + i + "_" + cloud_topic_maze);
+            mqttClientMaze.connect();
+            mqttClientMaze.setCallback(this);
+            mqttClientMaze.subscribe(cloud_topic_maze);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
     }
 
-    /**
-     * Connects to the MongoDB server and initializes database collections.
-     */
     public void connectMongo() {
-        DBCollection[] dbCollections = CommonUtilities.connectMongo();
+        String mongoURI;
+        //mongoURI = "mongodb://";
+        mongoURI = "";
+        if (mongo_auth.equals("true")) mongoURI = mongoURI + mongo_user + ":" + mongo_password + "@";
 
-        tempSensor1 = dbCollections[0];
-        tempSensor2 = dbCollections[1];
-        doorSensor  = dbCollections[2];
+        mongoURI = mongoURI + mongo_address;
+
+        if (!mongo_replica.equals("false"))
+            if (mongo_auth.equals("true")) mongoURI = mongoURI + "/?replicaSet=" + mongo_replica+"&authSource=admin";
+            else mongoURI = mongoURI + "/?replicaSet=" + mongo_replica;
+        else if (mongo_auth.equals("true")) mongoURI = mongoURI  + "/?authSource=admin";
+
+        mongoClient = new MongoClient(new MongoClientURI(mongoURI));
+        db = mongoClient.getDB(mongo_database);
+
+        temp_sensor_1 = db.getCollection(mongo_temp1_collection);
+        temp_sensor_2 = db.getCollection(mongo_temp2_collection);
+        door_sensor   = db.getCollection(mongo_door_collection);
     }
 
-    /**
-     * Processes an incoming MQTT message.
-     *
-     * @param topic the topic on which the message was received
-     * @param c the MQTT message
-     * @throws Exception if an error occurs while processing the message
-     */
     @Override
     public void messageArrived(String topic, MqttMessage c) throws Exception {
         try {
@@ -87,44 +145,23 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
         }
     }
 
-    /**
-     * Inserts a temperature sensor message into the appropriate database collection.
-     *
-     * @param message the temperature sensor message to insert
-     * @param sensor the sensor number
-     */
     private void treatTempSensorMessage(DBObject message, int sensor) {
         if(sensor == 1) {
-            tempSensor1.insert(message);
+            temp_sensor_1.insert(message);
         } else { //Currently the sensor 2 takes wrong inputs (invalid inputs from mqtt)
-            tempSensor2.insert(message);
+            temp_sensor_2.insert(message);
         }
     }
 
-    /**
-     * Inserts a door sensor message into the database collection.
-     *
-     * @param message the door sensor message to insert
-     */
     private void treatDoorSensorMessage(DBObject message) {
-        doorSensor.insert(message);
+        door_sensor.insert(message);
     }
 
-    /**
-     * Called when the connection to the MQTT broker is lost.
-     *
-     * @param cause the reason for the connection loss
-     */
     @Override
     public void connectionLost(Throwable cause) {
 
     }
 
-    /**
-     * Called when a message delivery to an MQTT client is complete.
-     *
-     * @param token the delivery token associated with the message delivery
-     */
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
 

@@ -103,7 +103,7 @@ public class CommonUtilities {
             String mongoURI = "";
 
             //Comment this line to use cloud mongo solution
-            mongoURI = "mongodb://";
+            //mongoURI = "mongodb://";
 
             if (ini.get("Mongo", "MongoAuthentication").equals("true"))
                 mongoURI = mongoURI + ini.get("Mongo", "MongoUser") + ":" + ini.get("Mongo",

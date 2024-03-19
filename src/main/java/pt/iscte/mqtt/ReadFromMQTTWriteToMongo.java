@@ -4,6 +4,7 @@ package pt.iscte.mqtt;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
+import com.mongodb.util.JSONParseException;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -76,16 +77,92 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
     public void messageArrived(String topic, MqttMessage c) throws Exception {
         try {
             DBObject document_json;
-            document_json = (DBObject) JSON.parse(c.toString());
+
+            String mqttMessageString = addBackslashSpecialCharacters(c.toString());
+            mqttMessageString = fixInvalidJSON(mqttMessageString);
+
+            document_json = (DBObject) JSON.parse(mqttMessageString);
+
             if(document_json.containsField("SalaOrigem"))
                 treatDoorSensorMessage(document_json);
             else
                 treatTempSensorMessage(document_json, (Integer) document_json.get("Sensor"));
 
             documentLabel.append(c + "\n");
+
+        } catch (JSONParseException e) {
+            System.err.println("Error while JSON parsing");
+            throw new Exception("Error while JSON parsing");
+
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Error treating message");
+            throw new Exception("Error treating message");
         }
+    }
+
+    /**
+     * Fixes invalid JSON by adding quotes around certain values.
+     *
+     * @param str The input string containing JSON data.
+     * @return A string with corrected JSON format.
+     */
+    private String fixInvalidJSON(String str) {
+        StringBuilder result = new StringBuilder();
+
+        String[] jsonSeparateStrings = str.split(" ");
+
+        result.append(jsonSeparateStrings[0]).append(" ").append(jsonSeparateStrings[1]);
+
+        String needChangeString = jsonSeparateStrings[2];
+        String[] needChangeStringArray = needChangeString.split(":");
+        String[] bracketStringArray = needChangeStringArray[1].split(",");
+
+        result.append(needChangeStringArray[0]).append(":\"").append(bracketStringArray[0]).append("\",");
+
+        needChangeString = jsonSeparateStrings[3];
+        needChangeStringArray = needChangeString.split(":");
+        bracketStringArray = needChangeStringArray[1].split("}");
+
+        result.append(needChangeStringArray[0]).append(":\"").append(bracketStringArray[0]).append("\"}");
+
+        return result.toString();
+    }
+
+    /**
+     * Adds a backslash before any special characters in the given string.
+     *
+     * @param str The input string.
+     * @return The modified string with backslashes added before special characters.
+     */
+    private String addBackslashSpecialCharacters(String str) {
+        StringBuilder result = new StringBuilder();
+
+        for (int i = 0; i < str.length(); i++) {
+            char ch = str.charAt(i);
+            if (isSpecialCharacter(ch)) {
+                // Append backslash before the special character
+                result.append("\\").append(ch);
+            } else {
+                // Append the character as it is
+                result.append(ch);
+            }
+        }
+
+        return result.toString();
+    }
+
+    /**
+     * Checks whether a given character is a special character.
+     *
+     * @param ch The character to be checked.
+     * @return {@code true} if the character is a special character, {@code false} otherwise.
+     */
+    private boolean isSpecialCharacter(char ch) {
+        //Define the set of special characters
+        String specialCharacters = "!@#$%^&*()_=+[]|;<>?/";
+
+        //Check if the character is a special character
+        return specialCharacters.indexOf(ch) != -1;
     }
 
     /**

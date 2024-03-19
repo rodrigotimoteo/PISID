@@ -1,13 +1,5 @@
 package pt.iscte.mysql;
 
-//import org.bson.Document;
-//import org.bson.*;
-//import org.bson.conversions.*;
-
-//import org.json.JSONArray;
-//import org.json.JSONObject;
-//import org.json.JSONException;
-
 import org.eclipse.paho.client.mqttv3.*;
 import pt.iscte.CommonUtilities;
 

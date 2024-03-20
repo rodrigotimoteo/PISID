@@ -1,9 +1,12 @@
 package pt.iscte.mysql;
 
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 import org.eclipse.paho.client.mqttv3.*;
 import pt.iscte.CommonUtilities;
 
 import javax.swing.*;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.Statement;
 
@@ -27,7 +30,9 @@ public class WriteToSQL implements MqttCallback {
     /**
      * Represents the name of the SQL table.
      */
-    static String sqlTable;
+    static String doorProcedure;
+
+    static String tempProcedure;
 
     /**
      * JTextArea for displaying document labels.
@@ -46,7 +51,8 @@ public class WriteToSQL implements MqttCallback {
      */
     public void connectDatabase() {
         mySQLConnection = CommonUtilities.connectDatabase();
-        sqlTable = CommonUtilities.getConfig("MySQL", "sqlTable");
+        doorProcedure = CommonUtilities.getConfig("MySQL", "sqlDoorProcedure");
+        tempProcedure = CommonUtilities.getConfig("MySQL", "sqlTempProcedure");
 
         if(mySQLConnection == null)
             System.exit(1);
@@ -61,7 +67,7 @@ public class WriteToSQL implements MqttCallback {
      * @throws RuntimeException if an error occurs during connection to the MQTT broker
      */
     public void connectCloud() {
-        MqttClient[] mqttClients = CommonUtilities.connectCloud(this, "MQTTCloud");
+        MqttClient[] mqttClients = CommonUtilities.connectCloud(this, "MQTT");
 
         mqttClientTemp = mqttClients[0];
         mqttClientMaze = mqttClients[1];
@@ -73,8 +79,14 @@ public class WriteToSQL implements MqttCallback {
      * @param c a JSON string representing the data to be inserted
      */
     public void writeToMySQL(String c){
-        String sqlCommand = getSQLCommand(c);
-        //System.out.println(SqlCommando);
+        String sqlCommand;
+
+        if(((DBObject) JSON.parse(c)).containsField("SalaOrigem"))
+            sqlCommand = getSQLCommand(c, doorProcedure);
+        else
+            sqlCommand = getSQLCommand(c, tempProcedure);
+
+        System.out.println(sqlCommand);
 
         try {
             documentLabel.append(sqlCommand + "\n");
@@ -83,40 +95,88 @@ public class WriteToSQL implements MqttCallback {
         }
 
         try {
-            Statement s = mySQLConnection.createStatement();
-            int result = s.executeUpdate(sqlCommand);
+            CallableStatement statement = mySQLConnection.prepareCall(sqlCommand);
+            boolean result = statement.execute();
 
-            System.out.println(sqlCommand);
+            System.out.println(result);
 
-            s.close();
+            statement.close();
+
         } catch (Exception e){
-            System.err.println("Error Inserting in the database . " + e);
+            System.err.println("Error Inserting in the database. " + e);
             System.err.println(sqlCommand);
         }
     }
 
     /**
-     * Generates an SQL command for inserting data into a specified table based on a JSON string.
+     * Constructs an SQL command string to execute a stored procedure with the provided JSON data.
      *
-     * @param convertedJSON a JSON string representing the data to be inserted
-     * @return a String containing the SQL insert command
+     * @param convertedJSON A string representing JSON data to be passed as arguments to the stored procedure.
+     * @param procedure     The name of the stored procedure to be executed.
+     * @return A string containing the SQL command to execute the specified stored procedure with the given JSON data.
      */
-    private String getSQLCommand(String convertedJSON) {
-        StringBuilder fields = new StringBuilder();
+    private String getSQLCommand(String convertedJSON, String procedure) {
+        StringBuilder sqlCommand = new StringBuilder();
+
+        sqlCommand.append("{CALL ").append(procedure).append("('");
+
         StringBuilder values = new StringBuilder();
         String[] splitArray = convertedJSON.split(",");
 
-        for (int i = 0; i < splitArray.length; i++) {
+        sqlCommand.append(extractTimestamp(splitArray[1])).append(", ");
+
+        for (int i = 2; i < splitArray.length; i++) {
             String[] splitArray2 = splitArray[i].split(":");
-            if (i == 0) fields = new StringBuilder(splitArray2[0]);
-            else fields.append(", ").append(splitArray2[0]);
-            if (i == 0) values = new StringBuilder(splitArray2[1]);
-            else values.append(", ").append(splitArray2[1]);
+            if (i > 2) values.append(", ");
+            values.append(removeQuotes(splitArray2[1].trim()));
         }
 
-        fields = new StringBuilder(fields.toString().replace("\"", ""));
-        return "Insert into " + sqlTable + " (" + fields.substring(1, fields.length()) + ") values (" +
-                values.substring(0, values.length() - 1) + ");";
+        sqlCommand.append(values).append(")}");
+
+        return sqlCommand.toString();
+    }
+
+    /**
+     * Extracts the timestamp from the given time string.
+     *
+     * @param time The time string from which to extract the timestamp.
+     * @return The extracted timestamp in the format "HH:mm:ss.SSS".
+     *         Returns null if the time string format is invalid.
+     */
+    private String extractTimestamp(String time) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        String[] timeSepareted = time.split(" ");
+
+        if(timeSepareted.length == 5) {
+            stringBuilder.append(timeSepareted[3].substring(1)).append(" ");
+
+            timeSepareted = timeSepareted[4].split("\\.");
+
+            stringBuilder.append(timeSepareted[0]).append("'");
+
+            return stringBuilder.toString();
+        }
+
+        return null;
+    }
+
+    /**
+     * Removes the leading and trailing quotes from the given string.
+     *
+     * @param string The string from which to remove quotes.
+     * @return The string without leading and trailing quotes.
+     */
+    private String removeQuotes(String string) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for(int i = 1; i < string.length(); i++) {
+            if(string.charAt(i) == '"') break;
+
+            stringBuilder.append(string.charAt(i));
+        }
+
+        return stringBuilder.toString();
     }
 
     /**
@@ -129,7 +189,7 @@ public class WriteToSQL implements MqttCallback {
     @Override
     public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
         try {
-            //writeToMySQL(mqttMessage.toString());
+            writeToMySQL(mqttMessage.toString());
             documentLabel.append(s + "\n");
         } catch (Exception e) {
             e.printStackTrace();

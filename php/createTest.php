@@ -26,6 +26,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
                 <li><a href="landingPage.php">Home</a></li>
                 <li><a href="testList.php">Test List</a></li>
                 <li><a href="createTest.php">Create new Test</a></li>
+                <li><a href="userPage.php">Edit user</a></li>
                 <li><a href="actions/logout.php">Logout</a></li>
             </ul>
         </nav>

@@ -78,10 +78,10 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
         try {
             DBObject document_json;
 
-            String mqttMessageString = addBackslashSpecialCharacters(c.toString());
-            mqttMessageString = fixInvalidJSON(mqttMessageString);
+//            String mqttMessageString = addBackslashSpecialCharacters(c.toString());
+//            mqttMessageString = fixInvalidJSON(mqttMessageString);
 
-            document_json = (DBObject) JSON.parse(mqttMessageString);
+            document_json = (DBObject) JSON.parse(c.toString());
 
             if(document_json.containsField("SalaOrigem"))
                 treatDoorSensorMessage(document_json);
@@ -96,7 +96,7 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
 
         } catch (Exception e) {
             System.err.println("Error treating message");
-            throw new Exception("Error treating message");
+            //throw new Exception("Error treating message");
         }
     }
 
@@ -113,17 +113,14 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
 
         result.append(jsonSeparateStrings[0]).append(" ").append(jsonSeparateStrings[1]);
 
-        String needChangeString = jsonSeparateStrings[2];
-        String[] needChangeStringArray = needChangeString.split(":");
-        String[] bracketStringArray = needChangeStringArray[1].split(",");
+        result.append(" ").append(jsonSeparateStrings[2]);
 
-        result.append(needChangeStringArray[0]).append(":\"").append(bracketStringArray[0]).append("\",");
+        String needChangeString = jsonSeparateStrings[7];
+        String[] bracketStringArray = needChangeString.split("}");
 
-        needChangeString = jsonSeparateStrings[3];
-        needChangeStringArray = needChangeString.split(":");
-        bracketStringArray = needChangeStringArray[1].split("}");
-
-        result.append(needChangeStringArray[0]).append(":\"").append(bracketStringArray[0]).append("\"}");
+        result.append(" ").append(jsonSeparateStrings[3]).append("\"").append(jsonSeparateStrings[4]).append("\"")
+                .append(jsonSeparateStrings[5]).append(" ").append(jsonSeparateStrings[6]).append("\"")
+                .append(bracketStringArray[0]).append("\"}");
 
         return result.toString();
     }

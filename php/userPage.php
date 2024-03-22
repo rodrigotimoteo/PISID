@@ -1,15 +1,3 @@
-<?php
-session_start();
-
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
-    echo "User isn't logged in, redirecting to landing page";
-    header("Location: landingPage.php");
-} else {
-    echo "Welcome " . $_SESSION['name'];
-}
-
-?>
-
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -34,7 +22,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
         </header>
 
         <div class="container">
-            <h1>List Tests</h1>
+            <h1>User Page</h1>
         </div>
 
     </body>

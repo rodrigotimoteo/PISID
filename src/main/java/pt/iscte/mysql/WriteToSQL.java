@@ -8,8 +8,6 @@ import pt.iscte.CommonUtilities;
 import javax.swing.*;
 import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.Statement;
-
 
 /**
  * Implements the MqttCallback interface for handling MQTT events and writing data to SQL.

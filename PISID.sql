@@ -1,509 +1,857 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
+-- MariaDB dump 10.19  Distrib 10.4.28-MariaDB, for osx10.10 (x86_64)
 --
--- Host: localhost
--- Generation Time: Mar 22, 2024 at 05:43 PM
--- Server version: 10.4.28-MariaDB
--- PHP Version: 8.2.4
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-START TRANSACTION;
-SET time_zone = "+00:00";
-
+-- Host: localhost    Database: PISID
+-- ------------------------------------------------------
+-- Server version	10.4.28-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Database: `PISID`
+-- Table structure for table `Alerta`
 --
 
--- --------------------------------------------------------
-
---
--- Table structure for table `alerta`
---
-
-CREATE TABLE `alerta` (
+DROP TABLE IF EXISTS `Alerta`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `Alerta` (
   `id_alerta` int(11) NOT NULL,
-  `hora` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `sala` int(11) NOT NULL,
-  `sensor` int(11) NOT NULL,
-  `leitura` decimal(4,2) NOT NULL,
-  `tipo_alerta` varchar(20) NOT NULL,
+  `id_experiencia` int(11) DEFAULT NULL,
+  `hora` timestamp NOT NULL DEFAULT current_timestamp(),
+  `sala` int(11) DEFAULT NULL,
+  `sensor` int(11) DEFAULT NULL,
+  `leitura` decimal(4,2) DEFAULT NULL,
+  `tipo_alerta` enum('TemperaturaDesvioExcedido','TemperaturaProximaDeExcederMax','NumeroRatos','AusensiaMovimento','TempoMaxExcedido') NOT NULL,
   `mensagem` varchar(100) DEFAULT NULL,
-  `hora_escrita` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
+  PRIMARY KEY (`id_alerta`),
+  KEY `alerta_id_exp` (`id_experiencia`),
+  CONSTRAINT `alerta_id_exp` FOREIGN KEY (`id_experiencia`) REFERENCES `Experiencia` (`id_experiencia`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `estados_experiencia`
---
-
-CREATE TABLE `estados_experiencia` (
-  `estado_id` int(11) NOT NULL,
-  `estado_nome` varchar(50) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `estados_experiencia`
+-- Dumping data for table `Alerta`
 --
 
-INSERT INTO `estados_experiencia` (`estado_id`, `estado_nome`) VALUES
-(1, 'terminada'),
-(2, 'a decorrer'),
-(3, 'por iniciar');
-
--- --------------------------------------------------------
+LOCK TABLES `Alerta` WRITE;
+/*!40000 ALTER TABLE `Alerta` DISABLE KEYS */;
+/*!40000 ALTER TABLE `Alerta` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
--- Table structure for table `experiencia`
+-- Table structure for table `Experiencia`
 --
 
-CREATE TABLE `experiencia` (
+DROP TABLE IF EXISTS `Experiencia`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `Experiencia` (
   `id_experiencia` int(11) NOT NULL,
   `descricao` text DEFAULT NULL,
-  `estado_experiencia` int(11) NOT NULL,
+  `estado_experiencia` enum('Por Iniciar','A decorrer','Terminada') NOT NULL,
   `investigador` varchar(50) NOT NULL,
-  `datahora` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `data_hora_criacao` timestamp NOT NULL DEFAULT current_timestamp(),
+  `data_hora_ult_edicao` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `data_hora_inicio` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `data_hora_conclusao` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `numero_ratos` int(11) NOT NULL,
   `limite_ratos_sala` int(11) NOT NULL,
   `segundos_sem_movimento` int(11) NOT NULL,
   `temperatura_ideal` decimal(4,2) NOT NULL,
-  `variacao_temperatura_maxima` decimal(4,2) NOT NULL
+  `variacao_temperatura_maxima` decimal(4,2) NOT NULL,
+  `num_movimentos_ratos` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id_experiencia`),
+  KEY `utilizador_id_exp` (`investigador`),
+  CONSTRAINT `utilizador_id_exp` FOREIGN KEY (`investigador`) REFERENCES `Utilizador` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `experiencia`
+-- Dumping data for table `Experiencia`
 --
 
-INSERT INTO `experiencia` (`id_experiencia`, `descricao`, `estado_experiencia`, `investigador`, `datahora`, `numero_ratos`, `limite_ratos_sala`, `segundos_sem_movimento`, `temperatura_ideal`, `variacao_temperatura_maxima`) VALUES
-(4, 'NovoProjecto', 3, 'arthurcabrao91@aiesec.net', '2024-03-22 15:23:45', 20, 15, 10, 16.00, 4.00);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `medicoesPassagens`
---
-
-CREATE TABLE `medicoesPassagens` (
-  `id_medicacao` int(11) NOT NULL,
-  `hora` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `sala_origem` int(11) NOT NULL,
-  `sala_destino` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+LOCK TABLES `Experiencia` WRITE;
+/*!40000 ALTER TABLE `Experiencia` DISABLE KEYS */;
+/*!40000 ALTER TABLE `Experiencia` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
--- Dumping data for table `medicoesPassagens`
+-- Table structure for table `ExperienciaSubstancia`
 --
 
-INSERT INTO `medicoesPassagens` (`id_medicacao`, `hora`, `sala_origem`, `sala_destino`) VALUES
-(1, '2024-03-20 20:35:22', 7, 5),
-(2, '2024-03-20 20:35:22', 7, 5),
-(3, '2024-03-20 20:35:23', 5, 3),
-(4, '2024-03-20 20:35:23', 3, 2),
-(5, '2024-03-20 20:35:23', 5, 7),
-(6, '2024-03-20 20:35:23', 5, 3),
-(7, '2024-03-20 20:35:23', 1, 3),
-(8, '2024-03-20 20:35:24', 4, 5),
-(9, '2024-03-20 20:35:24', 7, 5),
-(10, '2024-03-20 20:35:24', 5, 7),
-(11, '2024-03-20 20:35:24', 2, 5),
-(12, '2024-03-20 20:35:25', 3, 2),
-(13, '2024-03-20 20:35:25', 6, 8),
-(14, '2024-03-20 20:35:25', 5, 7),
-(15, '2024-03-20 20:35:25', 6, 8),
-(16, '2024-03-20 20:35:26', 5, 3),
-(17, '2024-03-20 20:35:26', 5, 6),
-(18, '2024-03-20 20:35:26', 2, 4),
-(19, '2024-03-21 11:55:28', 6, 8),
-(20, '2024-03-21 11:55:28', 2, 4),
-(21, '2024-03-21 11:55:28', 1, 3),
-(22, '2024-03-21 11:55:28', 3, 2),
-(23, '2024-03-21 11:55:29', 5, 3),
-(24, '2024-03-21 11:55:29', 2, 4),
-(25, '2024-03-21 11:55:30', 7, 5),
-(26, '2024-03-21 11:55:31', 7, 5),
-(27, '2024-03-21 11:55:31', 7, 5),
-(28, '2024-03-21 11:55:31', 9, 7),
-(29, '2024-03-21 11:55:31', 8, 10),
-(30, '2024-03-21 11:55:31', 7, 5),
-(31, '2024-03-21 11:55:31', 8, 9),
-(32, '2024-03-21 11:55:31', 4, 5),
-(33, '2024-03-21 11:55:31', 1, 3),
-(34, '2024-03-21 11:55:31', 4, 5),
-(35, '2024-03-21 11:55:31', 3, 2),
-(36, '2024-03-21 11:55:32', 3, 2),
-(37, '2024-03-21 11:55:32', 7, 5),
-(38, '2024-03-21 11:55:32', 5, 7),
-(39, '2024-03-21 11:55:33', 5, 6),
-(40, '2024-03-21 11:55:33', 5, 7),
-(41, '2024-03-21 11:55:33', 8, 10),
-(42, '2024-03-21 11:55:33', 2, 4),
-(43, '2024-03-21 11:55:34', 7, 5),
-(44, '2024-03-21 11:55:34', 4, 5),
-(45, '2024-03-21 11:55:34', 5, 3),
-(46, '2024-03-21 11:55:34', 2, 5),
-(47, '2024-03-21 11:55:34', 4, 5),
-(48, '2024-03-21 11:55:34', 6, 8),
-(49, '2024-03-21 11:55:34', 3, 2),
-(50, '2024-03-21 11:55:35', 6, 8),
-(51, '2024-03-21 11:55:35', 6, 8),
-(52, '2024-03-21 11:55:35', 7, 5),
-(53, '2024-03-21 11:55:35', 5, 7),
-(54, '2024-03-21 11:55:35', 5, 6),
-(55, '2024-03-21 11:55:35', 2, 5),
-(56, '2024-03-21 11:55:36', 5, 3),
-(57, '2024-03-21 11:55:36', 7, 5),
-(58, '2024-03-21 11:55:36', 5, 3),
-(59, '2024-03-21 11:55:37', 5, 7),
-(60, '2024-03-21 11:55:37', 5, 7),
-(61, '2024-03-21 11:55:37', 2, 4),
-(62, '2024-03-21 11:55:37', 3, 2),
-(63, '2024-03-21 11:55:37', 1, 2),
-(64, '2024-03-21 11:55:38', 3, 2),
-(65, '2024-03-21 11:55:38', 8, 9),
-(66, '2024-03-21 11:55:38', 5, 7),
-(67, '2024-03-21 11:55:38', 5, 7),
-(68, '2024-03-21 11:55:39', 3, 2),
-(69, '2024-03-21 11:55:39', 7, 5),
-(70, '2024-03-21 11:55:39', 7, 5),
-(71, '2024-03-21 11:55:40', 7, 5),
-(72, '2024-03-21 11:55:40', 4, 5),
-(73, '2024-03-21 11:55:40', 1, 2),
-(74, '2024-03-21 11:55:41', 5, 6),
-(75, '2024-03-21 11:55:41', 4, 5),
-(76, '2024-03-21 11:55:41', 5, 3),
-(77, '2024-03-21 11:55:41', 2, 5),
-(78, '2024-03-21 11:55:42', 2, 4),
-(79, '2024-03-21 11:55:42', 2, 4),
-(80, '2024-03-21 11:55:42', 7, 5),
-(81, '2024-03-21 11:55:42', 6, 8),
-(82, '2024-03-21 11:55:43', 2, 4),
-(83, '2024-03-21 11:55:43', 6, 8),
-(84, '2024-03-21 11:55:43', 7, 5),
-(85, '2024-03-21 11:55:43', 9, 7),
-(86, '2024-03-21 11:55:43', 1, 2),
-(87, '2024-03-21 11:55:43', 1, 3),
-(88, '2024-03-21 11:55:44', 2, 5),
-(89, '2024-03-21 11:55:44', 5, 3),
-(90, '2024-03-21 11:55:44', 3, 2),
-(91, '2024-03-21 11:55:44', 5, 7),
-(92, '2024-03-21 11:55:44', 2, 5),
-(93, '2024-03-21 11:55:44', 2, 4),
-(94, '2024-03-21 11:55:45', 5, 6),
-(95, '2024-03-21 11:55:45', 1, 3),
-(96, '2024-03-21 11:55:45', 8, 9),
-(97, '2024-03-21 11:55:46', 5, 6),
-(98, '2024-03-21 11:55:46', 3, 2),
-(99, '2024-03-21 11:55:46', 3, 2),
-(100, '2024-03-21 11:55:47', 4, 5),
-(101, '2024-03-21 11:55:47', 3, 2),
-(102, '2024-03-21 11:55:47', 2, 4),
-(103, '2024-03-21 11:55:48', 7, 5),
-(104, '2024-03-21 11:55:48', 6, 8),
-(105, '2024-03-21 11:55:48', 6, 8),
-(106, '2024-03-21 11:55:49', 5, 3),
-(107, '2024-03-21 11:55:49', 5, 3),
-(108, '2024-03-21 11:55:49', 5, 3),
-(109, '2024-03-21 11:55:49', 4, 5),
-(110, '2024-03-21 11:55:49', 1, 3),
-(111, '2024-03-21 11:55:50', 8, 9),
-(112, '2024-03-21 11:55:50', 9, 7),
-(113, '2024-03-21 11:55:50', 7, 5),
-(114, '2024-03-21 11:55:50', 3, 2),
-(115, '2024-03-21 11:55:51', 8, 9),
-(116, '2024-03-21 11:55:51', 5, 3),
-(117, '2024-03-21 11:55:52', 5, 3),
-(118, '2024-03-21 11:55:52', 7, 5),
-(119, '2024-03-21 11:55:52', 3, 2),
-(120, '2024-03-21 11:55:52', 3, 2),
-(121, '2024-03-21 11:55:52', 5, 6),
-(122, '2024-03-21 11:55:52', 7, 5),
-(123, '2024-03-21 11:55:52', 4, 5),
-(124, '2024-03-21 11:55:52', 3, 2),
-(125, '2024-03-21 11:55:53', 2, 5),
-(126, '2024-03-21 11:55:53', 6, 8),
-(127, '2024-03-21 11:55:53', 7, 5),
-(128, '2024-03-21 11:55:53', 5, 3),
-(129, '2024-03-21 11:55:53', 7, 5),
-(130, '2024-03-21 11:55:53', 2, 5),
-(131, '2024-03-21 11:55:53', 3, 2),
-(132, '2024-03-21 11:55:54', 3, 2),
-(133, '2024-03-21 11:55:54', 5, 6),
-(134, '2024-03-21 11:55:55', 5, 7),
-(135, '2024-03-21 11:55:55', 5, 7),
-(136, '2024-03-21 11:55:55', 5, 6),
-(137, '2024-03-21 11:55:55', 4, 5),
-(138, '2024-03-21 11:55:55', 2, 4),
-(139, '2024-03-21 11:55:55', 1, 2),
-(140, '2024-03-21 11:55:56', 9, 7),
-(141, '2024-03-21 11:55:56', 8, 9),
-(142, '2024-03-21 11:55:56', 3, 2),
-(143, '2024-03-21 11:55:56', 5, 7),
-(144, '2024-03-21 11:55:56', 2, 5),
-(145, '2024-03-21 11:55:57', 9, 7),
-(146, '2024-03-21 11:55:57', 2, 5),
-(147, '2024-03-21 11:55:58', 5, 6),
-(148, '2024-03-21 11:55:58', 2, 5),
-(149, '2024-03-21 11:55:58', 7, 5),
-(150, '2024-03-21 11:55:58', 1, 2),
-(151, '2024-03-21 11:55:59', 6, 8),
-(152, '2024-03-21 11:55:59', 7, 5),
-(153, '2024-03-21 11:55:59', 4, 5),
-(154, '2024-03-21 11:55:59', 2, 5),
-(155, '2024-03-21 11:56:00', 2, 5),
-(156, '2024-03-21 11:56:00', 5, 3),
-(157, '2024-03-21 11:56:00', 2, 5),
-(158, '2024-03-21 11:56:00', 5, 7),
-(159, '2024-03-21 11:56:01', 5, 7),
-(160, '2024-03-21 11:56:01', 5, 7),
-(161, '2024-03-21 11:56:01', 6, 8),
-(162, '2024-03-21 11:56:01', 6, 8),
-(163, '2024-03-21 11:56:01', 1, 2),
-(164, '2024-03-21 11:56:01', 5, 7),
-(165, '2024-03-21 11:56:01', 1, 3),
-(166, '2024-03-21 11:56:02', 2, 4),
-(167, '2024-03-21 11:56:02', 8, 9),
-(168, '2024-03-21 11:56:02', 5, 7),
-(169, '2024-03-21 11:56:02', 5, 6),
-(170, '2024-03-21 11:56:03', 5, 3),
-(171, '2024-03-21 11:56:03', 3, 2),
-(172, '2024-03-21 11:56:03', 5, 7),
-(173, '2024-03-21 11:56:03', 5, 3),
-(174, '2024-03-21 11:56:03', 7, 5),
-(175, '2024-03-21 11:56:04', 5, 6),
-(176, '2024-03-21 11:56:04', 3, 2),
-(177, '2024-03-21 11:56:05', 8, 10),
-(178, '2024-03-21 11:56:05', 7, 5),
-(179, '2024-03-21 11:56:05', 5, 3),
-(180, '2024-03-21 11:56:05', 2, 4),
-(181, '2024-03-21 11:56:05', 2, 5),
-(182, '2024-03-21 11:56:06', 8, 10),
-(183, '2024-03-21 11:56:06', 6, 8),
-(184, '2024-03-21 11:56:06', 1, 3),
-(185, '2024-03-21 11:56:06', 3, 2),
-(186, '2024-03-21 11:56:06', 2, 4),
-(187, '2024-03-21 11:56:06', 3, 2),
-(188, '2024-03-21 11:56:06', 5, 6),
-(189, '2024-03-21 11:56:07', 2, 5),
-(190, '2024-03-21 11:56:07', 1, 2),
-(191, '2024-03-21 11:56:07', 3, 2),
-(192, '2024-03-21 11:56:08', 9, 7),
-(193, '2024-03-21 11:56:08', 3, 2),
-(194, '2024-03-21 11:56:08', 7, 5),
-(195, '2024-03-21 11:56:08', 2, 4),
-(196, '2024-03-21 11:56:09', 7, 5),
-(197, '2024-03-21 11:56:09', 6, 8),
-(198, '2024-03-21 11:56:09', 5, 3),
-(199, '2024-03-21 11:56:10', 5, 7),
-(200, '2024-03-21 11:56:10', 7, 5),
-(201, '2024-03-21 11:56:10', 4, 5),
-(202, '2024-03-21 11:56:10', 7, 5),
-(203, '2024-03-21 11:56:10', 5, 7),
-(204, '2024-03-21 11:56:11', 7, 5);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `medicoesSalas`
---
-
-CREATE TABLE `medicoesSalas` (
+DROP TABLE IF EXISTS `ExperienciaSubstancia`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ExperienciaSubstancia` (
+  `id_substancia_exp` int(11) NOT NULL,
   `id_experiencia` int(11) NOT NULL,
-  `sala` int(11) NOT NULL,
-  `numero_ratos_final` int(11) NOT NULL
+  `substancia` varchar(20) NOT NULL,
+  `num_ratos_administrada` int(11) NOT NULL,
+  PRIMARY KEY (`id_substancia_exp`,`id_experiencia`),
+  KEY `substancia_id_exp` (`id_experiencia`),
+  CONSTRAINT `substancia_id_exp` FOREIGN KEY (`id_experiencia`) REFERENCES `Experiencia` (`id_experiencia`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `medicoesTemperatura`
+-- Dumping data for table `ExperienciaSubstancia`
 --
 
-CREATE TABLE `medicoesTemperatura` (
+LOCK TABLES `ExperienciaSubstancia` WRITE;
+/*!40000 ALTER TABLE `ExperienciaSubstancia` DISABLE KEYS */;
+/*!40000 ALTER TABLE `ExperienciaSubstancia` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `MedicoesPassagens`
+--
+
+DROP TABLE IF EXISTS `MedicoesPassagens`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `MedicoesPassagens` (
   `id_medicao` int(11) NOT NULL,
-  `hora` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `leitura` decimal(4,2) NOT NULL,
-  `sensor` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `parametrosadicionais`
---
-
-CREATE TABLE `parametrosadicionais` (
   `id_experiencia` int(11) NOT NULL,
-  `num_movimentos_ratos` int(11) DEFAULT NULL
+  `hora` timestamp NOT NULL DEFAULT current_timestamp(),
+  `sala_origem` int(11) NOT NULL,
+  `sala_destino` int(11) NOT NULL,
+  PRIMARY KEY (`id_medicao`) USING BTREE,
+  KEY `med_passagem_exp` (`id_experiencia`),
+  CONSTRAINT `med_passagem_exp` FOREIGN KEY (`id_experiencia`) REFERENCES `Experiencia` (`id_experiencia`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `tipo_utilizador`
+-- Dumping data for table `MedicoesPassagens`
 --
 
-CREATE TABLE `tipo_utilizador` (
-  `tipo_id` varchar(3) NOT NULL,
-  `cargo` varchar(20) NOT NULL
+LOCK TABLES `MedicoesPassagens` WRITE;
+/*!40000 ALTER TABLE `MedicoesPassagens` DISABLE KEYS */;
+/*!40000 ALTER TABLE `MedicoesPassagens` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `BeforeInsert_MouseMovement` BEFORE INSERT ON `MedicoesPassagens` FOR EACH ROW BEGIN	
+	DECLARE originalValue INT;
+    
+    IF NEW.sala_origem = 0 THEN
+    	SELECT sala_0 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    ELSEIF NEW.sala_origem = 1 THEN
+    	SELECT sala_1 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    ELSEIF NEW.sala_origem = 2 THEN
+    	SELECT sala_2 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+	ELSEIF NEW.sala_origem = 3 THEN
+    	SELECT sala_3 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+	ELSEIF NEW.sala_origem = 4 THEN
+    	SELECT sala_4 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+	ELSEIF NEW.sala_origem = 5 THEN
+    	SELECT sala_5 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+	ELSEIF NEW.sala_origem = 6 THEN
+    	SELECT sala_6 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+	ELSEIF NEW.sala_origem = 7 THEN
+    	SELECT sala_7 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+	ELSEIF NEW.sala_origem = 8 THEN
+    	SELECT sala_8 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    ELSEIF NEW.sala_origem = 9 THEN
+    	SELECT sala_9 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+	ELSE
+    	SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid Room.';
+	END IF;
+    
+    IF originalValue = 0 THEN
+    	SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid movement, room already at 0 mouses';
+    END IF;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `AfterInsert_MouseMovement` AFTER INSERT ON `MedicoesPassagens` FOR EACH ROW BEGIN	
+	DECLARE finalMouseValue INT;
+    DECLARE maxMouseValue INT;
+    
+    IF NEW.sala_destino = 0 THEN
+    	SELECT sala_0 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    ELSEIF NEW.sala_destino = 1 THEN
+    	SELECT sala_1 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    ELSEIF NEW.sala_destino = 2 THEN
+    	SELECT sala_2 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+	ELSEIF NEW.sala_destino = 3 THEN
+    	SELECT sala_3 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+	ELSEIF NEW.sala_destino = 4 THEN
+    	SELECT sala_4 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+	ELSEIF NEW.sala_destino = 5 THEN
+    	SELECT sala_5 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+	ELSEIF NEW.sala_destino = 6 THEN
+    	SELECT sala_6 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+	ELSEIF NEW.sala_destino = 7 THEN
+    	SELECT sala_7 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+	ELSEIF NEW.sala_destino = 8 THEN
+    	SELECT sala_8 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    ELSEIF NEW.sala_destino = 9 THEN
+    	SELECT sala_9 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+	ELSE
+    	SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid Room.';
+	END IF;
+    
+    SELECT limite_ratos_sala INTO maxMouseValue FROM Experiencia WHERE id_experiencia = NEW.id_experiencia;
+    
+    IF finalMouseValue >= maxMouseValue THEN
+    	SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid movement, room already at 0 mouses';
+    END IF;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+
+--
+-- Table structure for table `MedicoesSalas`
+--
+
+DROP TABLE IF EXISTS `MedicoesSalas`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `MedicoesSalas` (
+  `id_experiencia` int(11) NOT NULL,
+  `sala_0` int(11) NOT NULL,
+  `sala_1` int(11) NOT NULL,
+  `sala_2` int(11) NOT NULL,
+  `sala_3` int(11) NOT NULL,
+  `sala_4` int(11) NOT NULL,
+  `sala_5` int(11) NOT NULL,
+  `sala_6` int(11) NOT NULL,
+  `sala_7` int(11) NOT NULL,
+  `sala_8` int(11) NOT NULL,
+  `sala_9` int(11) NOT NULL,
+  PRIMARY KEY (`id_experiencia`),
+  CONSTRAINT `medicoes_id_exp` FOREIGN KEY (`id_experiencia`) REFERENCES `Experiencia` (`id_experiencia`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `tipo_utilizador`
+-- Dumping data for table `MedicoesSalas`
 --
 
-INSERT INTO `tipo_utilizador` (`tipo_id`, `cargo`) VALUES
-('INV', 'Investigador');
-
--- --------------------------------------------------------
+LOCK TABLES `MedicoesSalas` WRITE;
+/*!40000 ALTER TABLE `MedicoesSalas` DISABLE KEYS */;
+/*!40000 ALTER TABLE `MedicoesSalas` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
--- Table structure for table `utilizador`
+-- Table structure for table `MedicoesTemperatura`
 --
 
-CREATE TABLE `utilizador` (
+DROP TABLE IF EXISTS `MedicoesTemperatura`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `MedicoesTemperatura` (
+  `id_medicao` int(11) NOT NULL,
+  `id_experiencia` int(11) NOT NULL,
+  `hora` timestamp NOT NULL DEFAULT current_timestamp(),
+  `leitura` decimal(4,2) NOT NULL,
+  `sensor` int(11) NOT NULL,
+  PRIMARY KEY (`id_medicao`),
+  KEY `med_temperatura_exp` (`id_experiencia`),
+  CONSTRAINT `med_temperatura_exp` FOREIGN KEY (`id_experiencia`) REFERENCES `Experiencia` (`id_experiencia`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `MedicoesTemperatura`
+--
+
+LOCK TABLES `MedicoesTemperatura` WRITE;
+/*!40000 ALTER TABLE `MedicoesTemperatura` DISABLE KEYS */;
+/*!40000 ALTER TABLE `MedicoesTemperatura` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `AfterInsert_TemperatureReading` AFTER INSERT ON `MedicoesTemperatura` FOR EACH ROW BEGIN
+
+	DECLARE average_temp INT;
+    DECLARE base_temp INT;
+    DECLARE max_deviation INT;
+    
+    DECLARE running_time INT;
+    
+    SELECT GetAverageTemperature() INTO average_temp;
+    SELECT temperatura_ideal INTO base_temp FROM Experiencia WHERE id_experiencia = NEW.id_experiencia;
+    SELECT variacao_temperatura_maximo INTO max_deviation FROM Experiencia WHERE id_experiencia = NEW.id_experiencia;
+    
+    SELECT GetRunningTime() INTO running_time;
+    
+
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+
+--
+-- Table structure for table `Utilizador`
+--
+
+DROP TABLE IF EXISTS `Utilizador`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `Utilizador` (
   `email` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
   `nome` varchar(100) NOT NULL,
   `telefone` varchar(12) NOT NULL,
-  `tipo` varchar(3) NOT NULL
+  `tipo` enum('Investigador','Administrador') NOT NULL,
+  PRIMARY KEY (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `utilizador`
+-- Dumping data for table `Utilizador`
 --
 
-INSERT INTO `utilizador` (`email`, `password`, `nome`, `telefone`, `tipo`) VALUES
-('arthurcabrao91@aiesec.net', 'rumenaborim', 'Artur Cabral', '917863498', 'INV');
+LOCK TABLES `Utilizador` WRITE;
+/*!40000 ALTER TABLE `Utilizador` DISABLE KEYS */;
+/*!40000 ALTER TABLE `Utilizador` ENABLE KEYS */;
+UNLOCK TABLES;
 
 --
--- Indexes for dumped tables
+-- Dumping routines for database 'PISID'
 --
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP FUNCTION IF EXISTS `GetAverageTemperature` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` FUNCTION `GetAverageTemperature`() RETURNS decimal(4,2)
+BEGIN
+	DECLARE averageTemperature DECIMAL(4,2);
+    
+    SELECT AVG(leitura) INTO averageTemperature
+    FROM (
+        SELECT leitura
+        FROM MedicoesTemperatura
+        ORDER BY hora DESC
+        LIMIT 10
+    ) AS last_ten_entries;
+    
+    RETURN averageTemperature;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP FUNCTION IF EXISTS `GetRunningTest` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` FUNCTION `GetRunningTest`() RETURNS int(11)
+BEGIN
+    DECLARE experience_id INT;
+    
+    SELECT id_experiencia INTO experience_id FROM Experiencia WHERE estado_experiencia = "A decorrer";
+    
+    RETURN experience_id;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP FUNCTION IF EXISTS `GetRunningTime` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` FUNCTION `GetRunningTime`() RETURNS int(11)
+BEGIN
+	DECLARE elapsedSeconds INT DEFAULT 0;
+    DECLARE testCount INT;
+    DECLARE testId INT;
+    DECLARE startTime TIMESTAMP;
+    
+    SELECT COUNT(*) INTO testCount FROM Experiencia WHERE estado_experiencia = "A decorrer";
+  
+	IF testCount > 0 THEN
+    	SELECT id_experiencia INTO testId FROM Experiencia WHERE estado_experiencia = "A decorrer" LIMIT 1;
+        SELECT data_hora_inicio INTO startTime FROM Experiencia WHERE id_experiencia = testId;
 
---
--- Indexes for table `alerta`
---
-ALTER TABLE `alerta`
-  ADD PRIMARY KEY (`id_alerta`);
+    	SET elapsedSeconds = TIMESTAMPDIFF(SECOND, startTime, CURRENT_TIMESTAMP);
+        
+    END IF;
+    
+    RETURN elapsedSeconds;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `AssignInvestigator` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `AssignInvestigator`(IN `investigador_email` INT, IN `test_id` INT)
+BEGIN
+    DECLARE testCount INT;
+    DECLARE userCount INT;
 
---
--- Indexes for table `estados_experiencia`
---
-ALTER TABLE `estados_experiencia`
-  ADD PRIMARY KEY (`estado_id`),
-  ADD KEY `estado_id` (`estado_id`);
+    SELECT COUNT(*) INTO testCount FROM Experiencia WHERE id_experiencia = test_id;
+	SELECT COUNT(*) INTO userCount FROM Utilizador WHERE email = investigador_email;
 
---
--- Indexes for table `experiencia`
---
-ALTER TABLE `experiencia`
-  ADD PRIMARY KEY (`id_experiencia`),
-  ADD KEY `utilizador_id_exp` (`investigador`),
-  ADD KEY `estado_exp` (`estado_experiencia`);
+    IF testCount > 0 THEN
+    	
+        IF userCount > 0 THEN
+    		UPDATE Experiencia SET investigador = investigador_email WHERE id_experiencia = test_id;
+        	SELECT CONCAT('Test with ID ', test_id, ' has been updated and attributed user with email .', investigador_email) AS 'Message';
+        ELSE
+        	SELECT 'User not found.' AS 'Message';
+        END IF;
+    ELSE
+        SELECT 'Test not found.' AS 'Message';
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `CreateExpSubstance` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `CreateExpSubstance`(IN `test_id` INT, IN `test_substance` VARCHAR(20), IN `test_num_ratos_administrada` INT)
+BEGIN
 
---
--- Indexes for table `medicoesPassagens`
---
-ALTER TABLE `medicoesPassagens`
-  ADD PRIMARY KEY (`id_medicacao`);
+	DECLARE testCount INT;
+    
+    SELECT COUNT(*) INTO testCount FROM Experiencia WHERE id_experiencia = test_id;
+    
+    IF testCount > 0 THEN
+		INSERT INTO ExperienciaSubstancia (id_experiencia, substancia, num_ratos_administrada)
+   		VALUES (test_id, test_substance, test_num_ratos_administrada);
+	END IF;
+    
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `CreateNewUser` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `CreateNewUser`(IN `user_email` VARCHAR(50), IN `user_password` VARCHAR(255), IN `user_nome` VARCHAR(100), IN `user_telemovel` VARCHAR(12))
+BEGIN
+	INSERT INTO Utilizador (email, password, nome, telefone, tipo)
+    VALUES (user_email, user_password, user_nome, user_telemovel, "Investigador");
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `DeleteExpSubstance` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `DeleteExpSubstance`(IN `substance_id` INT)
+BEGIN
+	DECLARE substanceCount INT;
+    
+    SELECT COUNT(*) INTO substanceCount FROM Experiencia WHERE id_substancia_exp = substance_id;
+    
+    IF substanceCount > 0 THEN
+    	DELETE FROM ExperienciaSubstancia WHERE id_substancia_exp = substance_id;
+        SELECT 'Substance has been deleted.' AS 'Message';
+    ELSE
+    	SELECT 'Substance not found.' AS 'Message';
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `DeleteTest` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `DeleteTest`(IN `delete_id_exp` INT)
+BEGIN
+	DECLARE testCount INT;
+    
+    SELECT COUNT(*) INTO testCount FROM Experiencia WHERE id_experiencia = delete_id_exp;
+    
+    IF testCount > 0 THEN
+    	DELETE FROM Experiencia WHERE id_experiencia = delete_id_exp;
+        SELECT CONCAT('Test with ID ', delete_id_exp, ' has been deleted.') AS 'Message';
+    ELSE
+    	SELECT 'Test does not exist' AS 'Message';
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `DeleteUser` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `DeleteUser`(IN `test_id` VARCHAR(50))
+BEGIN
+	DECLARE testCount INT;
+    
+    SELECT COUNT(*) INTO testCount FROM Experiencia WHERE id_experiencia = test_id;
+    
+    IF testCount > 0 THEN
+    	DELETE FROM Experiencia WHERE id_experiencia = test_id;
+        SELECT 'Test has been deleted.' AS 'Message';
+    ELSE
+    	SELECT 'Test not found.' AS 'Message';
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `EditExpSubstance` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `EditExpSubstance`(IN `substance_id` INT, IN `test_substance` VARCHAR(20), IN `test_num_ratos_adm` INT)
+BEGIN
+	DECLARE substanceCount INT;
+    
+    SELECT COUNT(*) INTO substanceCount FROM ExperienciaSubstancia WHERE id_substancia_exp = substance_id;
+    
+    IF substanceCount > 0 THEN
+        UPDATE ExperienciaSubstancia SET substancia = test_substance, num_ratos_administrada = test_num_ratos_adm WHERE email = userEmail;
+        SELECT 'Substance has been updated.' AS 'Message';
+    ELSE
+        SELECT 'Substance not found.' AS 'Message';
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `EditTest` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `EditTest`(IN `test_description` TEXT, IN `test_number_of_rats` INT, IN `test_limit_per_room` INT, IN `test_id` INT, IN `test_seconds_without_movement` INT, IN `test_ideal_temperature` INT, IN `test_max_temp_deviation` INT)
+BEGIN
+	DECLARE testCount INT;
+    
+    SELECT COUNT(*) INTO testCount FROM Experiencia WHERE id_experiencia = test_id;
+    
+    IF testCount > 0 THEN
+        UPDATE Experiencia SET data_hora_ult_edicao = CURRENT_TIMESTAMP, descricao = test_description, limite_ratos_sala = test_limit_per_room, numero_ratos = test_number_of_rats, segundos_sem_movimento = test_seconds_without_movement, temperatura_ideal = test_ideal_temperature, variacao_temperatura = test_max_temp_deviation WHERE id_experiencia = test_id;
+        SELECT 'Test has been updated.' AS 'Message';
+    ELSE
+        SELECT 'Test not found.' AS 'Message';
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `EditUser` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `EditUser`(IN `user_password` VARCHAR(255), IN `user_nome` VARCHAR(100), IN `user_telefone` VARCHAR(12), IN `user_email` VARCHAR(50))
+BEGIN
+	DECLARE userCount INT;
+    
+    SELECT COUNT(*) INTO userCount FROM Utilizador WHERE email = userEmail;
+    
+    IF userCount > 0 THEN
+        UPDATE Utilizador SET name = user_nome, telefone = user_telefone, password = user_password WHERE email = userEmail;
+        SELECT CONCAT('User with email ', userEmail, ' has been updated.') AS 'Message';
+    ELSE
+        SELECT 'User not found.' AS 'Message';
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `FinishTest` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `FinishTest`(IN `test_id` INT)
+BEGIN
+	DECLARE testCount INT;
+    
+    SELECT COUNT(*) INTO testCount FROM Experiencia WHERE id_experiencia = test_id;
+    
+    IF testCount > 0 THEN
+        UPDATE Experiencia SET estado_experiencia = "Terminada" WHERE id_experiencia = test_id;
+        SELECT CONCAT('Ended test with ID ', test_id) AS 'Message';
+    ELSE
+        SELECT 'Test not found.' AS 'Message';
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `InsertNewAlert` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InsertNewAlert`(IN `test_id` INT, IN `test_reading` INT, IN `test_message` VARCHAR(100), IN `test_room` INT, IN `test_sensor` INT, IN `alert_type` VARCHAR(20))
+BEGIN
 
---
--- Indexes for table `medicoesSalas`
---
-ALTER TABLE `medicoesSalas`
-  ADD PRIMARY KEY (`id_experiencia`,`sala`);
+	DECLARE testCount INT;
+    
+    SELECT COUNT(*) INTO testCount FROM Experiencia WHERE id_experiencia = test_id;
+    
+    IF testCount > 0 THEN
+		INSERT INTO Alerta (id_experiencia, hora, leitura, mensagem, sala, sensor, tipo_alerta)
+   		VALUES (test_id, CURRENT_TIMESTAMP, test_reading, test_message, test_room, test_sensor, alert_type);
+    END IF;
 
---
--- Indexes for table `medicoesTemperatura`
---
-ALTER TABLE `medicoesTemperatura`
-  ADD PRIMARY KEY (`id_medicao`);
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `InsertNewMedicaoPassagem` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InsertNewMedicaoPassagem`(IN `new_hora` TIMESTAMP, IN `new_sala_origem` INT, IN `new_sala_destino` INT)
+BEGIN
+    DECLARE testId INT;
 
---
--- Indexes for table `parametrosadicionais`
---
-ALTER TABLE `parametrosadicionais`
-  ADD PRIMARY KEY (`id_experiencia`);
+    SELECT GetRunningTest() INTO testId;
 
---
--- Indexes for table `tipo_utilizador`
---
-ALTER TABLE `tipo_utilizador`
-  ADD PRIMARY KEY (`tipo_id`),
-  ADD KEY `tipo_id` (`tipo_id`);
+	INSERT INTO MedicoesPassagens (hora, id_experiencia, sala_origem, sala_destino)
+   	VALUES (new_hora, testId, new_sala_origem, new_sala_destino);
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `InsertNewMedicaoTemperatura` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InsertNewMedicaoTemperatura`(IN `new_hora` TIMESTAMP, IN `new_leitura` DECIMAL(4,2), IN `new_sensor` INT)
+BEGIN
+	DECLARE testId INT;
 
---
--- Indexes for table `utilizador`
---
-ALTER TABLE `utilizador`
-  ADD PRIMARY KEY (`email`),
-  ADD KEY `email` (`email`),
-  ADD KEY `tipo` (`tipo`);
+    SELECT GetRunningTest() INTO testId;
 
---
--- AUTO_INCREMENT for dumped tables
---
+	INSERT INTO MedicoesTemperatura (hora, id_experiencia, leitura, sensor)
+    VALUES (new_hora, testId, new_leitura, new_sensor);
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `InsertNewTest` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `InsertNewTest`(IN `test_description` TEXT, IN `test_number_of_rats` INT, IN `test_limit_per_room` INT, IN `test_time_without_movement` INT, IN `test_ideal_temperature` INT, IN `test_max_temperature_deviation` INT, IN `test_investigador` VARCHAR(50))
+BEGIN
+    INSERT INTO experiencia (descricao, estado_experiencia, numero_ratos, limite_ratos_sala, segundos_sem_movimento, temperatura_ideal, variacao_temperatura_maxima, investigador, data_hora_criacao)
+    VALUES (test_description, "Por Iniciar", test_number_of_rats, test_limit_per_room, test_time_without_movement, test_ideal_temperature, test_max_temperature_deviation, test_investigador, CURRENT_TIMESTAMP);
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+/*!50003 DROP PROCEDURE IF EXISTS `StartTest` */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+DELIMITER ;;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `StartTest`(IN `test_id` INT)
+BEGIN
+	DECLARE testCount INT;
+    
+    SELECT COUNT(*) INTO testCount FROM Experiencia WHERE id_experiencia = test_id;
+    
+    IF testCount > 0 THEN
+        UPDATE Experiencia SET estado_experiencia = "A decorrer" WHERE id_experiencia = test_id;
+        SELECT CONCAT('Started test with ID ', test_id) AS 'Message';
+    ELSE
+        SELECT 'Test not found.' AS 'Message';
+    END IF;
+END ;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
---
--- AUTO_INCREMENT for table `alerta`
---
-ALTER TABLE `alerta`
-  MODIFY `id_alerta` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `experiencia`
---
-ALTER TABLE `experiencia`
-  MODIFY `id_experiencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `medicoesPassagens`
---
-ALTER TABLE `medicoesPassagens`
-  MODIFY `id_medicacao` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=205;
-
---
--- AUTO_INCREMENT for table `medicoesTemperatura`
---
-ALTER TABLE `medicoesTemperatura`
-  MODIFY `id_medicao` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- Constraints for dumped tables
---
-
---
--- Constraints for table `experiencia`
---
-ALTER TABLE `experiencia`
-  ADD CONSTRAINT `estado_exp` FOREIGN KEY (`estado_experiencia`) REFERENCES `estados_experiencia` (`estado_id`),
-  ADD CONSTRAINT `utilizador_id_exp` FOREIGN KEY (`investigador`) REFERENCES `utilizador` (`email`);
-
---
--- Constraints for table `medicoesSalas`
---
-ALTER TABLE `medicoesSalas`
-  ADD CONSTRAINT `medicoes_id_exp` FOREIGN KEY (`id_experiencia`) REFERENCES `experiencia` (`id_experiencia`);
-
---
--- Constraints for table `parametrosadicionais`
---
-ALTER TABLE `parametrosadicionais`
-  ADD CONSTRAINT `param_adic_id_exp` FOREIGN KEY (`id_experiencia`) REFERENCES `experiencia` (`id_experiencia`);
-
---
--- Constraints for table `utilizador`
---
-ALTER TABLE `utilizador`
-  ADD CONSTRAINT `utilizador_tipo` FOREIGN KEY (`tipo`) REFERENCES `tipo_utilizador` (`tipo_id`);
-COMMIT;
-
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2024-04-19 17:52:40

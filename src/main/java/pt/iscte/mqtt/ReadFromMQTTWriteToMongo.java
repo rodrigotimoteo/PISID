@@ -1,4 +1,3 @@
-
 package pt.iscte.mqtt;
 
 import com.mongodb.DBCollection;
@@ -78,25 +77,24 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
         try {
             DBObject document_json;
 
-//            String mqttMessageString = addBackslashSpecialCharacters(c.toString());
-//            mqttMessageString = fixInvalidJSON(mqttMessageString);
+            String mqttMessageString = fixInvalidJSON(c.toString());
+            mqttMessageString = addBackslashSpecialCharacters(mqttMessageString);
 
-            document_json = (DBObject) JSON.parse(c.toString());
+            document_json = (DBObject) JSON.parse(mqttMessageString);
 
             if(document_json.containsField("SalaOrigem"))
                 treatDoorSensorMessage(document_json);
             else
-                treatTempSensorMessage(document_json, (Integer) document_json.get("Sensor"));
+                treatTempSensorMessage(document_json, (String) document_json.get("Sensor"));
 
             documentLabel.append(c + "\n");
 
         } catch (JSONParseException e) {
-            System.err.println("Error while JSON parsing");
+            System.err.println("Error while JSON parsing " + c);
             throw new Exception("Error while JSON parsing");
 
         } catch (Exception e) {
-            System.err.println("Error treating message");
-            //throw new Exception("Error treating message");
+            System.err.println("Error treating message" + c);
         }
     }
 
@@ -109,19 +107,78 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
     private String fixInvalidJSON(String str) {
         StringBuilder result = new StringBuilder();
 
-        String[] jsonSeparateStrings = str.split(" ");
+        str = str.replaceAll("\\s", "");
 
-        result.append(jsonSeparateStrings[0]).append(" ").append(jsonSeparateStrings[1]);
+        String[] jsonSeparateStrings = str.split(":");
 
-        result.append(" ").append(jsonSeparateStrings[2]);
+        // Appends the first part of the message {Hora:
+        result.append(jsonSeparateStrings[0]).append(":").append('"');
 
-        String needChangeString = jsonSeparateStrings[7];
-        String[] bracketStringArray = needChangeString.split("}");
+        // Appends the second part of the message containing the date (since space have been removed the date input as
+        // to be manual therefore the loop is hardcoded {Hora:"2024-04-19
+        int i = 0;
+        int countedNumbers = 0;
 
-        result.append(" ").append(jsonSeparateStrings[3]).append("\"").append(jsonSeparateStrings[4]).append("\"")
-                .append(jsonSeparateStrings[5]).append(" ").append(jsonSeparateStrings[6]).append("\"")
-                .append(bracketStringArray[0]).append("\"}");
+        if(jsonSeparateStrings[1].charAt(i) == '\'' || jsonSeparateStrings[1].charAt(i) == '"') i++;
 
+        while(countedNumbers < 8) {
+            result.append(jsonSeparateStrings[1].charAt(i++));
+            if(Character.isDigit(jsonSeparateStrings[1].charAt(i))) countedNumbers++;
+        }
+
+        // Adds a space between the date and timestamp {Hora:"2024-04-19
+        result.append(" ");
+
+        // Adds the first part of the timestamp {Hora:"2024-04-19 16
+        while(i < jsonSeparateStrings[1].length())
+            result.append(jsonSeparateStrings[1].charAt(i++));
+
+        // Adds the first colon, second part of timestamp and another colon {Hora:"2024-04-19 16:15:
+        result.append(":").append(jsonSeparateStrings[2]).append(":");
+
+        // Adds the rest of the timestamp until the quotes appear {Hora:"2024-04-19 16:15:40.616239
+        i = 0;
+        while(jsonSeparateStrings[3].charAt(i) != '"' && jsonSeparateStrings[3].charAt(i) != '\'')
+            result.append(jsonSeparateStrings[3].charAt(i++));
+
+        // Adds the quote and comma {Hora:"2024-04-19 16:15:40.616239",
+        result.append('"').append(", ");
+
+        // Adds the second field's name {Hora:"2024-04-19 16:15:40.616239", Leitura
+        // The second field's name can be Leitura or SalaOrigem
+        i += 2;
+        while(i < jsonSeparateStrings[3].length())
+            result.append(jsonSeparateStrings[3].charAt(i++));
+
+        // Adds the colon and quote {Hora:"2024-04-19 16:15:40.616239", Leitura:"
+        result.append(':').append('"');
+
+        // Adds the value assigned to the second field {Hora:"2024-04-19 16:15:40.616239", Leitura:"39.613364
+        i = 0;
+        while(jsonSeparateStrings[4].charAt(i) != ',')
+            result.append(jsonSeparateStrings[4].charAt(i++));
+
+        // Adds the quote and the comma {Hora:"2024-04-19 16:15:40.616239", Leitura:"39.613364",
+        result.append('"').append(", ");
+
+        // Adds the third and final field's name {Hora:"2024-04-19 16:15:40.616239", Leitura:"39.613364", Sensor
+        // Can be Sensor or SalaDestino
+        i++;
+        while(i < jsonSeparateStrings[4].length())
+            result.append(jsonSeparateStrings[4].charAt(i++));
+
+        // Adds the colon and the quote before the value {Hora:"2024-04-19 16:15:40.616239", Leitura:"39.613364", Sensor:"
+        result.append(':').append('"');
+
+        // Adds the final value {Hora:"2024-04-19 16:15:40.616239", Leitura:"39.613364", Sensor:"2
+        i = 0;
+        while(jsonSeparateStrings[5].charAt(i) != '}')
+            result.append(jsonSeparateStrings[5].charAt(i++));
+
+        // Adds the final quote and bracket
+        result.append('"').append(" }");
+
+        // Returns the final result
         return result.toString();
     }
 
@@ -168,8 +225,8 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
      * @param message the temperature sensor message to insert
      * @param sensor the sensor number
      */
-    private void treatTempSensorMessage(DBObject message, int sensor) {
-        if(sensor == 1) {
+    private void treatTempSensorMessage(DBObject message, String sensor) {
+        if(sensor.equals("1")) {
             tempSensor1.insert(message);
         } else { //Currently the sensor 2 takes wrong inputs (invalid inputs from mqtt)
             tempSensor2.insert(message);

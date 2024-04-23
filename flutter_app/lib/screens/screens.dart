@@ -1,3 +1,3 @@
-export 'readingsScreen.dart';
-export 'alertScreen.dart';
-export 'readingRoomsScreen.dart';
+export 'readings_screen.dart';
+export 'alert_screen.dart';
+export 'reading_rooms_screen.dart';

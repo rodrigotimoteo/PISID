@@ -40,7 +40,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
         }
 
         .container {
-            max-width: 800px;
+            max-width: 1800px;
             margin: 0 auto;
             width: 100%;
             height: 700px;
@@ -125,7 +125,6 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
         <a href="userPage.php">Edit User</a>
         <a href="actions/logout.php">Logout</a>
     </div>
-
     <div class="container">
         <div class="test-list">
             <h1>Tests</h1>
@@ -138,7 +137,10 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
                     <th>Action 1</th>
                     <th>Action 2</th>
                     <th>Action 3</th>
+                    <th>Action 4</th>
+                    <th>Action 5</th>
                 </tr>
+                <!-- Sample rows for demonstration purposes -->
                 <tr>
                     <td>1</td>
                     <td>Finished</td>
@@ -147,6 +149,8 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
                     <td><button class="edit">Start Test</button></td>
                     <td><button class="delete">Assign Investigator</button></td>
                     <td><button class="delete">Edit Test</button></td>
+                    <td><a href="deleteTest.php?test_id=1"><button class="delete">Delete Test</button></a></td>
+                    <td><a href="finishTest.php?test_id=1"><button class="edit">Finish Test</button></a></td>
                 </tr>
                 <tr>
                     <td>2</td>
@@ -156,6 +160,8 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
                     <td><button class="edit">Start Test</button></td>
                     <td><button class="delete">Assign Investigator</button></td>
                     <td><button class="delete">Edit Test</button></td>
+                    <td><a href="deleteTest.php?test_id=2"><button class="delete">Delete Test</button></a></td>
+                    <td><a href="finishTest.php?test_id=2"><button class="edit">Finish Test</button></a></td>
                 </tr>
                 <tr>
                     <td>3</td>
@@ -165,6 +171,8 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
                     <td><button class="edit">Start Test</button></td>
                     <td><button class="delete">Assign Investigator</button></td>
                     <td><button class="delete">Edit Test</button></td>
+                    <td><a href="deleteTest.php?test_id=3"><button class="delete">Delete Test</button></a></td>
+                    <td><a href="finishTest.php?test_id=3"><button class="edit">Finish Test</button></a></td>
                 </tr>
             </table>
         </div>

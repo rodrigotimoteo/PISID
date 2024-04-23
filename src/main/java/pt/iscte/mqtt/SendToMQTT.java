@@ -124,7 +124,7 @@ public class SendToMQTT implements MqttCallback {
         AggregationOutput output = collection.aggregate(Arrays.asList(pipeline));
         String idStored=hasStoredId();
         boolean arrivedToValueStored = true;
-        if(!(idStored.isEmpty())){
+        if(!(idStored==null)){
             arrivedToValueStored=false;
         }
         System.out.println(idStored);
@@ -247,21 +247,23 @@ public class SendToMQTT implements MqttCallback {
     
     }
 
-    public void idMessageStored(String messageID){
-        try{
-            PrintWriter fileWriter = new PrintWriter((new File("").getAbsolutePath()+"lastIdValue.txt.txt"));
-            fileWriter.println(messageID);
+    public void idMessageStored(String messageID) {
+        try {
+            String fileName = (((new File("").getAbsolutePath()+"src\\main\\java\\pt\\iscte\\mqtt\\")+"lastIdValue.txt"));
+            PrintWriter fileWriter = new PrintWriter(fileName);
+            fileWriter.write(messageID);
+            fileWriter.flush();
             fileWriter.close();
-            }catch (FileNotFoundException e) {
-             e.printStackTrace();
-            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public String hasStoredId(){
         String storedId = null; // Default value if no ID is found or file doesn't exist
 
         try {
-            File file = new File(new File("").getAbsolutePath() + "lastIdValue.txt.txt");
+            File file = new File(new File("").getAbsolutePath()+"src\\main\\java\\pt\\iscte\\mqtt\\lastIdValue.txt");
             if (file.exists()) {
                 BufferedReader reader = new BufferedReader(new FileReader(file));
                 storedId = reader.readLine();

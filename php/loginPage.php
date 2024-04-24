@@ -39,7 +39,7 @@ header("Location: testList.php");
 
         .container {
             width: 30%; /* Smaller width */
-            max-width: 400px; /* Adjust max-width as needed */
+            max-width: 500px; /* Adjust max-width as needed */
             margin: 0 auto;
             padding: 20px; /* Add some padding for better layout */
             box-sizing: border-box;
@@ -68,7 +68,7 @@ header("Location: testList.php");
             margin-top: 50px;
             padding: 30px;
             border-radius: 15px;
-            height: 450px;
+            height: 400px;
         }
 
         .login h1 {
@@ -163,19 +163,20 @@ header("Location: testList.php");
 <body>
 <section class="container">
     <div class="menu">
-        <a href="../landingPage.php">Home</a>
+        <a href="landingPage.php">Home</a>
     </div>
     <div class="login">
-        <h1>Login</h1>
+        <h1>Lab Rats</h1>
         <form action="actions/login.php" method="post">
             <label id="emailLabel" for="email">Email:</label>
             <input type="text" required="" id="email" name="email" placeholder="Write your email">
             <label id="passwordLabel" for="password">Password:</label>
             <input type="password" required="" id="password" name="password" placeholder="Write your password">
+            <br>
+            <br>
             <div style="text-align:center;">
                 <input type="submit" value="Login" name="login">
-                <br>
-                <a href="#">Forgot Password</a>
+
             </div>
         </form>
     </div>

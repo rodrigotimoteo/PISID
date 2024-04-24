@@ -13,7 +13,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" type="text/css" href="style.css">
+   <!-- <link rel="stylesheet" type="text/css" href="style.css"> -->
     <meta charset="UTF-8">
     <title>LoginPagePISID</title>
 </head>
@@ -174,7 +174,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
             <a class="menu-item" href="landingPage.php">Home</a>
             <a class="menu-item" href="testList.php">Test List</a>
             <a class="menu-item" href="createTest.php">Create Test</a>
-            <a class="menu-item" href="userPage.php">Edit User</a>
+            <a class="menu-item" href="profileChange.php">Profile</a>
             <a class="menu-item" href="actions/logout.php">Logout</a>
         </div>
 

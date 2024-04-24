@@ -135,18 +135,7 @@
             text-align: center;
         }
 
-        .first, .second {
-            font-size: 10em;
-            letter-spacing: -4px;
-            display: inline-block;
-            font-family: 'Lobster', cursive;
-            text-shadow: 3px 3px 0 #999;
-        }
 
-        .second {
-            font-size: 8em;
-            line-height: 150px;
-        }
         a{
         text-decoration: none;
         color: lightgray;
@@ -156,11 +145,11 @@
 <body>
 <section class="container">
     <div class="menu">
-        <a href="../landingPage.php">Home</a>
-        <a href="../testList.php">Test List</a>
-        <a href="../createTest.php">Create Test</a>
-        <a href="../userPage.php">Edit User</a>
-        <a href="../actions/logout.php">Logout</a>
+        <a href="landingPage.php">Home</a>
+        <a href="testList.php">Test List</a>
+        <a href="createTest.php">Create Test</a>
+        <a href="profileChange.php">Profile</a>
+        <a href="actions/logout.php">Logout</a>
     </div>
 
     <div class="container">
@@ -169,9 +158,6 @@
             <form action="actions/editUserInformation.php" method="post">
                 <label for="name">Name:</label>
                 <input type="text" id="name" name="name" required placeholder="Write your name">
-
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required placeholder="Write your password">
 
                 <label for="phone">Phone Number:</label>
                 <input type="tel" id="phone" name="phone" required placeholder="Write your phone number">
@@ -185,13 +171,9 @@
                 <input type="submit" value="Update">
                 <br>
                 <br>
-                <a href="../landingPage.php"> Go Back</a>
+                <a href="landingPage.php"> Go Back</a>
             </form>
         </div>
-    </div>
-    <div class="message">
-        <span class="first">Lab</span>
-        <span class="second">Rats</span>
     </div>
 </section>
 </body>

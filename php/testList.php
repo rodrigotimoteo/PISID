@@ -122,7 +122,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
         <a href="landingPage.php">Home</a>
         <a href="testList.php">Test List</a>
         <a href="createTest.php">Create Test</a>
-        <a href="userPage.php">Edit User</a>
+        <a href="profileChange.php">Profile</a>
         <a href="actions/logout.php">Logout</a>
     </div>
     <div class="container">

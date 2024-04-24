@@ -1,5 +1,19 @@
+<?php
+session_start();
+
+// Check if user is not logged in, then redirect to login page
+/*
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    echo "Please log in to view this page.";
+    header("Location: loginPage.php");
+    exit;
+}
+*/
+?>
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>UserPagePISID</title>
@@ -77,76 +91,29 @@
             transition: all .3s ease-in-out;
         }
 
-        input {
-            margin-bottom: 0px;
-            padding: 10px 5px;
-            width: 100%;
-            background-color: #f4f4f4;
-            border: none;
-            text-align: center;
-            font-size: 16px;
-            font-family: 'Open Sans', sans-serif;
-            font-weight: bold;
-            color: #333;
-            border-radius: 3px;
-        }
 
-        input:focus {
-            background-color: #ccc;
-            border: none;
-            outline: none;
-        }
-
-        input[type=submit] {
-            color: #fff;
-            background: #c32ce1;
-            border: none;
-            font-family: 'Open Sans', sans-serif;
-            font-size: 24px;
-            margin-top: 25px;
-            width: 60%;
-            transition: all .5s ease;
-            cursor: pointer;
-            display: block;
-            margin: 0 auto;
-            border-radius: 5px;
-        }
-
-        input[type=submit]:hover {
-            background-color: #A64141;
-            color: #f4f4f4;
-        }
-
-        .message {
-            position: absolute;
-            top: 500px;
-            left: 460px;
-            transform: rotate(-25deg);
-            text-align: right;
-            margin-left: 20px;
+        .button-container {
             margin-top: 20px;
+            display: flex;
+            justify-content: center;
         }
 
-        .message span {
-            display: block;
-            color: #cccc;
-            position: relative;
-            z-index: -1;
-            bottom: 80px;
-            text-align: center;
-        }
-
-        .first, .second {
-            font-size: 10em;
-            letter-spacing: -4px;
+        .button {
             display: inline-block;
-            font-family: 'Lobster', cursive;
-            text-shadow: 3px 3px 0 #999;
+            padding: 10px 20px;
+            background-color: #c32ce1;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1em;
+            margin-right: 10px;
+            transition: background-color 0.3s ease;
+            font-family: 'Open Sans', sans-serif;
+            cursor: pointer;
         }
 
-        .second {
-            font-size: 8em;
-            line-height: 150px;
+        .button:hover {
+            background-color: #0056b3;
         }
 
         a {
@@ -155,6 +122,7 @@
         }
     </style>
 </head>
+
 <body>
 <section class="container">
     <div class="menu">
@@ -166,27 +134,18 @@
     </div>
 
     <div class="container">
-        <div id="editPass" class="login">
-            <h1>Edit User</h1>
-            <form action="actions/editUserPassword.php" method="post">
+        <div id="editUser" class="login">
+            <h1>User Profile</h1>
+            <div class="button-container">
+                <!-- Button to edit user details -->
+                <a href="editUserPage.php" class="button">Edit User Details</a>
+                <!-- Button to edit password -->
+                <a href="changePassword.php" class="button">Change Password</a>
+            </div>
 
-                <label for="current_password">Current Password:</label>
-                <input type="password" id="current_password" name="current_password" required placeholder="Enter your current password">
-
-                <label for="new_password">New Password:</label>
-                <input type="password" id="new_password" name="new_password" required placeholder="Enter your new password">
-
-
-                <br>
-                <br>
-                <input type="submit" value="Update">
-                <br>
-                <br>
-                <a href="actions/login.php">Go Back</a>
-            </form>
         </div>
     </div>
-
 </section>
 </body>
+
 </html>

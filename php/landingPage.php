@@ -58,14 +58,40 @@
             flex-direction: column; /* Align children in a column */
             align-items: center; /* Center children horizontally */
         }
+        .menu {
+            text-align: center;
+            padding: 20px 0;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .menu a {
+            text-decoration: none;
+            color: #030101;
+            margin: 0 10px;
+            font-size: 18px;
+        }
+
+        .menu a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 
 <body>
 
-<div class="container"> <!-- Added class="container" here -->
+
+<div class="container">
     <div>
-        <h2><span style="color: #000000;">Lab</span> Rats</h2> <!-- Added span for pink color in Lab -->
+        <h2><span style="color: #000000;">Lab</span> Rats</h2>
+    </div>
+    <br>
+    <div class="menu">
+        <a href="landingPage.php">Home</a>
+        <a href="testList.php">Test List</a>
+        <a href="createTest.php">Create Test</a>
+        <a href="profileChange.php">Profile</a>
+        <a href="actions/logout.php">Logout</a>
     </div>
     <br>
     <div>

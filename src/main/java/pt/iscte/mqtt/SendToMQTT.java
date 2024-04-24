@@ -249,7 +249,7 @@ public class SendToMQTT implements MqttCallback {
 
     public void idMessageStored(String messageID) {
         try {
-            String fileName = (((new File("").getAbsolutePath()+"src\\main\\java\\pt\\iscte\\mqtt\\")+"lastIdValue.txt"));
+            String fileName = (((new File("").getPath()+"src//main//java//pt//iscte//mqtt//")+"lastIdValue.txt"));
             PrintWriter fileWriter = new PrintWriter(fileName);
             fileWriter.write(messageID);
             fileWriter.flush();
@@ -263,7 +263,7 @@ public class SendToMQTT implements MqttCallback {
         String storedId = null; // Default value if no ID is found or file doesn't exist
 
         try {
-            File file = new File(new File("").getAbsolutePath()+"src\\main\\java\\pt\\iscte\\mqtt\\lastIdValue.txt");
+            File file = new File(new File("").getPath()+"src//main//java//pt//iscte//mqtt//lastIdValue.txt");
             if (file.exists()) {
                 BufferedReader reader = new BufferedReader(new FileReader(file));
                 storedId = reader.readLine();

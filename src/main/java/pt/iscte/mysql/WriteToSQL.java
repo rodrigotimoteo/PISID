@@ -48,7 +48,7 @@ public class WriteToSQL implements MqttCallback {
      * Connects to the MySQL database and displays connection information.
      */
     public void connectDatabase() {
-        mySQLConnection = CommonUtilities.connectDatabase();
+        mySQLConnection = CommonUtilities.connectLocalDatabase();
         doorProcedure = CommonUtilities.getConfig("MySQL", "sqlDoorProcedure");
         tempProcedure = CommonUtilities.getConfig("MySQL", "sqlTempProcedure");
 

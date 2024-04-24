@@ -1,3 +1,15 @@
+<?php
+session_start();
+/*
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
+    echo "User isn't logged in, redirecting to landing page";
+    header("Location: landingPage.php");
+} else {
+    echo "Welcome " . $_SESSION['name'];
+}
+*/
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -95,7 +107,11 @@
     </div>
     <br>
     <div>
-        <a href="loginPage.php" class="button">Login</a>
+        <?php
+        if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] == false) {
+            echo '<a href="loginPage.php" class="button">Login</a>';
+        }
+        ?>
     </div>
 </div>
 

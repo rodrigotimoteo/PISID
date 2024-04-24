@@ -74,7 +74,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
             margin-top: 50px;
             padding: 30px;
             border-radius: 15px;
-            height: 450px;
+            height: 300px;
         }
 
         .login h1 {
@@ -136,6 +136,10 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     <div class="container">
         <div id="editUser" class="login">
             <h1>User Profile</h1>
+            <br>
+            <br>
+            <br>
+            <br>
             <div class="button-container">
                 <!-- Button to edit user details -->
                 <a href="editUserPage.php" class="button">Edit User Details</a>

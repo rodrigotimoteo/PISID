@@ -21,7 +21,7 @@
         h2 {
             font-size: 3em;
             margin-bottom: 10px;
-            color: #ff69b4; /* Pink color for Lab Rats */
+            color: #000000; /* Pink color for Lab Rats */
         }
 
         p {
@@ -65,9 +65,9 @@
 
 <div class="container"> <!-- Added class="container" here -->
     <div>
-        <h2><span style="color: #ff69b4;">Lab</span> Rats</h2> <!-- Added span for pink color in Lab -->
+        <h2><span style="color: #000000;">Lab</span> Rats</h2> <!-- Added span for pink color in Lab -->
     </div>
-
+    <br>
     <div>
         <a href="loginPage.php" class="button">Login</a>
     </div>

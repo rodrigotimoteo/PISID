@@ -173,18 +173,13 @@ header("Location: testList.php");
             <label id="passwordLabel" for="password">Password:</label>
             <input type="password" required="" id="password" name="password" placeholder="Write your password">
             <div style="text-align:center;">
-                <input type="submit" value="login" name="login">
+                <input type="submit" value="Login" name="login">
                 <br>
-                <br>
-                <br>
-                <br>
-                <a href="#"> Forgot Password</a>
+                <a href="#">Forgot Password</a>
             </div>
         </form>
     </div>
-
- 
-
 </section>
 </body>
+
 </html>

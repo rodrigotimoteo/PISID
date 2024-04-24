@@ -15,6 +15,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.util.Random;
 
@@ -125,9 +126,10 @@ public class CommonUtilities {
 
             DBCollection tempSensor1 = db.getCollection(ini.get("Mongo", "MongoTemp1Collection"));
             DBCollection tempSensor2 = db.getCollection(ini.get("Mongo", "MongoTemp2Collection"));
-            DBCollection doorSensor = db.getCollection(ini.get("Mongo", "MongoDoorCollection"));
+            DBCollection doorSensor  = db.getCollection(ini.get("Mongo", "MongoDoorCollection"));
+            DBCollection solutions   = db.getCollection(ini.get("Mongo", "MongoSolutionsCollection"));
 
-            return new DBCollection[]{tempSensor1, tempSensor2, doorSensor};
+            return new DBCollection[]{tempSensor1, tempSensor2, doorSensor, solutions};
 
         } catch (InvalidFileFormatException e) {
             System.err.println("Invalid File - Not ini File");
@@ -168,7 +170,7 @@ public class CommonUtilities {
      *
      * @return a Connection object representing the established database connection, or null if the connection fails
      */
-    public static Connection connectDatabase() {
+    public static Connection connectLocalDatabase() {
         try {
             Wini ini = new Wini(new File("src/main/java/pt/iscte/Configuration.ini"));
 
@@ -180,6 +182,23 @@ public class CommonUtilities {
             return  DriverManager.getConnection(sqlDatabaseConnection, sqlDatabaseUser, sqlDatabasePassword);
         } catch (Exception e){
             System.err.println("MYSQL Server Destination down, unable to make the connection. " + e);
+        }
+
+        return null;
+    }
+
+    public static Connection connectMazeSettingDatabase() {
+        try {
+            Wini ini = new Wini(new File("src/main/java/pt/iscte/Configuration.ini"));
+
+            String sqlDatabaseConnection = ini.get("MySQLMazeSettings", "sqlDatabaseConnection");
+            String sqlDatabaseUser = ini.get("MySQLMazeSettings", "sqlDatabaseUser");
+            String sqlDatabasePassword = ini.get("MySQLMazeSettings", "sqlDatabasePassword");
+
+            Class.forName("org.mariadb.jdbc.Driver");
+            return DriverManager.getConnection(sqlDatabaseConnection, sqlDatabaseUser, sqlDatabasePassword);
+        } catch (Exception e) {
+            System.err.println("MYSQL Server Maze Destination down, unable to make the connection. " + e);
         }
 
         return null;

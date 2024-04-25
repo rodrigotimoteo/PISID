@@ -1,14 +1,49 @@
 <?php
+/*
 session_start();
 
-// Check if user is not logged in, then redirect to login page
-/*
+ Check if user is not logged in, then redirect to login page
+
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    echo "Please log in to view this page.";
+    header("Location: loginPage.php");
+    exit;
+}
+
+
+
+/ Check if user is not logged in, then redirect to login page
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     echo "Please log in to view this page.";
     header("Location: loginPage.php");
     exit;
 }
 */
+include("config.php");
+
+// Establish database connection
+$sqli = new mysqli(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_DATABASE);
+if($sqli->connect_error) { 
+    die("Connection failed: " . $sqli->connect_error); 
+}
+
+$query = "SELECT email, nome, telefone, tipo FROM utilizador WHERE email = ?";
+$stmt = $sqli->prepare($query);
+
+$stmt->bind_param("s", $_SESSION['email']);
+
+$stmt->execute();
+
+$stmt->bind_result($email, $nome, $telefone, $tipo);
+
+if ($stmt->fetch()) {
+    // Variables $email, $nome, $telefone, $tipo are now filled with values
+} else {
+    echo "0 results";
+}
+
+$stmt->close();
+$sqli->close();
 ?>
 
 <!DOCTYPE html>
@@ -74,7 +109,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
             margin-top: 50px;
             padding: 30px;
             border-radius: 15px;
-            height: 300px;
+            height: 350px;
         }
 
         .login h1 {
@@ -137,13 +172,24 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
         <div id="editUser" class="login">
             <h1>User Profile</h1>
             <br>
-            <br>
-            <br>
+                <br>
+                <!-- Display user information -->
+                <div>
+                    <p>Email: <?php echo htmlspecialchars($email); ?></p>
+                </div>
+                <div>
+                    <p>Name: <?php echo htmlspecialchars($nome); ?></p>
+                </div>
+                <div>
+                    <p>Telefone: <?php echo htmlspecialchars($telefone); ?></p>
+                </div>
+                <div>
+                    <p>Tipo: <?php echo htmlspecialchars($tipo); ?></p>
+                </div>
+                <br>
             <br>
             <div class="button-container">
-                <!-- Button to edit user details -->
                 <a href="editUserPage.php" class="button">Edit User Details</a>
-                <!-- Button to edit password -->
                 <a href="changePassword.php" class="button">Change Password</a>
             </div>
 

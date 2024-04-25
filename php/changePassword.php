@@ -182,7 +182,10 @@
                 <input type="submit" value="Update">
                 <br>
                 <br>
-                <a href="actions/login.php">Go Back</a>
+                <br>
+                <br>
+                <br>
+                <a href="landingPage.php">Go Back</a>
             </form>
         </div>
     </div>

@@ -49,7 +49,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                     if ($stmt->execute()) {
 
-                        echo "Password changed successfully";
+                        #echo "Password changed successfully";
+                        header("Location: ../profileChange.php");
 
                     } else {
 

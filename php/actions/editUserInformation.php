@@ -51,7 +51,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt->bind_param("ssss", $password_db, $name, $phone, $_SESSION['email']);
 
                 if ($stmt->execute()) {
-                    echo "User information changed successfully";
+                    /*echo "User information changed successfully";*/
+                    header("Location: ../profileChange.php");
                 } else {
                     echo "Error: " . $procedure . "<br>" . $sqli->error;
                 }

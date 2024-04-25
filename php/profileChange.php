@@ -173,7 +173,7 @@ $sqli->close();
             <h1>User Profile</h1>
             <br>
                 <br>
-                <!-- Display user information -->
+
                 <div>
                     <p>Email: <?php echo htmlspecialchars($email); ?></p>
                 </div>

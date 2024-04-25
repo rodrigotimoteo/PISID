@@ -113,7 +113,23 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
         .edit:hover, .delete:hover {
             background-color: #A64141;
         }
+        .start-finish {
+            background-color: #c32ce1;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
 
+        .start-finish:hover {
+            background-color: #A64141;
+        }
     </style>
 </head>
 <body>
@@ -137,42 +153,34 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
                     <th>Action 1</th>
                     <th>Action 2</th>
                     <th>Action 3</th>
-                    <th>Action 4</th>
-                    <th>Action 5</th>
                 </tr>
-                <!-- Sample rows for demonstration purposes -->
+
                 <tr>
                     <td>1</td>
                     <td>Finished</td>
                     <td>5</td>
                     <td>Description 1</td>
-                    <td><button class="edit">Start Test</button></td>
+                    <td><button class="start-finish">Delete Test</button></td>
                     <td><button class="delete">Assign Investigator</button></td>
                     <td><button class="delete">Edit Test</button></td>
-                    <td><a href="deleteTest.php?test_id=1"><button class="delete">Delete Test</button></a></td>
-                    <td><a href="finishTest.php?test_id=1"><button class="edit">Finish Test</button></a></td>
                 </tr>
                 <tr>
                     <td>2</td>
                     <td>On Going</td>
                     <td>5</td>
                     <td>Description 2</td>
-                    <td><button class="edit">Start Test</button></td>
+                    <td><button class="start-finish">Finish Test</button></td>
                     <td><button class="delete">Assign Investigator</button></td>
                     <td><button class="delete">Edit Test</button></td>
-                    <td><a href="deleteTest.php?test_id=2"><button class="delete">Delete Test</button></a></td>
-                    <td><a href="finishTest.php?test_id=2"><button class="edit">Finish Test</button></a></td>
                 </tr>
                 <tr>
                     <td>3</td>
                     <td>To Start</td>
                     <td>5</td>
                     <td>Description 3</td>
-                    <td><button class="edit">Start Test</button></td>
+                    <td><button class="start-finish">Start Test</button></td>
                     <td><button class="delete">Assign Investigator</button></td>
                     <td><button class="delete">Edit Test</button></td>
-                    <td><a href="deleteTest.php?test_id=3"><button class="delete">Delete Test</button></a></td>
-                    <td><a href="finishTest.php?test_id=3"><button class="edit">Finish Test</button></a></td>
                 </tr>
             </table>
         </div>

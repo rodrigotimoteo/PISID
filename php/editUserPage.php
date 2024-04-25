@@ -1,3 +1,17 @@
+<?php
+session_start();
+
+/*
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
+    echo "User isn't logged in, redirecting to landing page";
+    header("Location: landingPage.php");
+} else {
+    echo "Welcome " . $_SESSION['name'];
+}
+*/
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

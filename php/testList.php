@@ -1,14 +1,19 @@
 <?php
-session_start();
-/*
+#session_start();
 
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
-    echo "User isn't logged in, redirecting to landing page";
-    header("Location: landingPage.php");
-} else {
-    echo "Welcome " . $_SESSION['name'];
+include("config.php");
+
+$sqli = new mysqli(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_DATABASE);
+if($sqli->connect_error) {
+    die("Connection failed: " . $sqli->connect_error);
 }
-*/
+
+$query = "SELECT id_experiencia, descricao, estado_experiencia, investigador, data_hora_criacao, data_hora_ult_edicao, data_hora_inicio, data_hora_conclusao, numero_ratos, limite_ratos_sala, segundos_sem_movimento, temperatura_ideal, variacao_temperatura_maxima, num_movimentos_ratos FROM experiencia WHERE investigador = ?";
+$stmt = $sqli->prepare($query);
+$stmt->bind_param("s", $_SESSION['email']);
+$stmt->execute();
+$result = $stmt->get_result();
+
 ?>
 
 <!DOCTYPE html>
@@ -155,36 +160,31 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
                     <th>Action 3</th>
                 </tr>
 
-                <tr>
-                    <td>1</td>
-                    <td>Finished</td>
-                    <td>5</td>
-                    <td>Description 1</td>
-                    <td><button class="start-finish">Delete Test</button></td>
-                    <td><button class="delete">Assign Investigator</button></td>
-                    <td><button class="delete">Edit Test</button></td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td>On Going</td>
-                    <td>5</td>
-                    <td>Description 2</td>
-                    <td><button class="start-finish">Finish Test</button></td>
-                    <td><button class="delete">Assign Investigator</button></td>
-                    <td><button class="delete">Edit Test</button></td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td>To Start</td>
-                    <td>5</td>
-                    <td>Description 3</td>
-                    <td><button class="start-finish">Start Test</button></td>
-                    <td><button class="delete">Assign Investigator</button></td>
-                    <td><button class="delete">Edit Test</button></td>
-                </tr>
+                 <?php while ($row = $result->fetch_assoc()) { ?>
+                    <tr>
+                        <td><?php echo htmlspecialchars($row['id_experiencia']); ?></td>
+                        <td><?php echo htmlspecialchars($row['estado_experiencia']); ?></td>
+                        <td><?php echo htmlspecialchars($row['numero_ratos']); ?></td>
+                        <td><?php echo htmlspecialchars($row['descricao']); ?></td>
+                        <td>
+                            <form action="actions/deleteTest.php" method="GET">
+                                <input type="hidden" name="delete_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
+                                <button type="submit" class="start-finish" name="delete">Delete Test</button>
+                            </form>
+                        </td>
+                        <td><button class="delete">Assign Investigator</button></td>
+                        <td><button class="delete">Edit Test</button></td>
+                    </tr>
+                 <?php } ?>
+
             </table>
         </div>
     </div>
 </section>
 </body>
 </html>
+
+<?php
+$stmt->close();
+$sqli->close();
+?>

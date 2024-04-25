@@ -1,5 +1,6 @@
 package pt.iscte.mqtt;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
@@ -11,7 +12,8 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import pt.iscte.CommonUtilities;
 
 import javax.swing.*;
-import java.sql.Connection;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Implements the MqttCallback interface to handle MQTT message events and writes the received data to MongoDB.
@@ -257,9 +259,25 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
         try {
             DBObject document_json = (DBObject) JSON.parse(message);
 
-        } catch (Exception ignored) {
+            if(document_json.containsField("SalaOrigem"))
+                if((Integer) document_json.get("SalaOrigem") == 0) {
+                    DBObject startObject = new BasicDBObject("StartDate", document_json.get("Hora"));
 
+                    solutions.insert(startObject);
+                }
+
+        } catch (Exception ignored) {
+            String endDate = CommonUtilities.formatDate(System.currentTimeMillis());
+
+            DBObject dbObject = new BasicDBObject("EndData", endDate);
+            decodeSolutions(dbObject);
+
+            solutions.insert(dbObject);
         }
+    }
+
+    private void decodeSolutions(DBObject document_json) {
+
     }
 
     /**

@@ -9,6 +9,9 @@ import org.eclipse.paho.client.mqttv3.*;
 import pt.iscte.CommonUtilities;
 
 import javax.swing.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.PrintWriter;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -17,6 +20,9 @@ import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.FileReader;
 
 /**
  * Implements the MqttCallback interface for handling MQTT events and sending data to the broker.
@@ -45,6 +51,11 @@ public class SendToMQTT implements MqttCallback {
      * JTextArea for displaying document labels.
      */
     static JTextArea documentLabel = new JTextArea("\n");
+
+    /**
+     * Stores a static reference to the file dedicated to storing the last ID sent
+     */
+    static File idStorageFile = new File("pt/iscte/mqtt/lastIdValue");
 
     /**
      * Timestamp of the last retrieval operation.
@@ -155,7 +166,8 @@ public class SendToMQTT implements MqttCallback {
      * Fetches sensor data from MongoDB and extracts relevant information.
      */
     private void fetchMongo() {
-        BasicDBObject match = new BasicDBObject("$match", new BasicDBObject("Hora", new BasicDBObject("$gt", formatDate(lastRetrievalTimestamp))));
+        BasicDBObject match = new BasicDBObject("$match", new BasicDBObject("Hora", new BasicDBObject("$gt",
+                CommonUtilities.formatDate(lastRetrievalTimestamp))));
         BasicDBObject sort = new BasicDBObject("$sort", new BasicDBObject("Hora", 1));
 
         // Construct the aggregation pipeline
@@ -176,18 +188,32 @@ public class SendToMQTT implements MqttCallback {
     private void extractSensorData(DBObject[] pipeline, DBCollection collection) {
         //Execute the aggregation pipeline and process the result
         AggregationOutput output = collection.aggregate(Arrays.asList(pipeline));
-        for (DBObject dbObject : output.results()) {
-            String documentId = dbObject.get("_id").toString();
-            if (!processedIds.contains(documentId)) {
-                System.out.println(dbObject);
-                publishSensor(dbObject.toString());
 
-                //Update the last retrieval timestamp
-                lastRetrievalTimestamp = Objects.requireNonNull(parseDate(dbObject.get("Hora").toString())).getTime();
-                processedIds.add(documentId);
+        String idStored = hasStoredId();
+        boolean arrivedToValueStored = true;
+
+        if(!(idStored==null)){
+            arrivedToValueStored=false;
+        }
+
+        System.out.println(idStored);
+        for (DBObject dbObject : output.results()) {
+            if(arrivedToValueStored ||dbObject.get("_id").toString().equals(idStored)) {
+                String documentId = dbObject.get("_id").toString();
+                if (!processedIds.contains(documentId)) {
+                    publishSensor(dbObject.toString());
+
+                    //Update the last retrieval timestamp
+                    lastRetrievalTimestamp = Objects.requireNonNull(CommonUtilities.
+                            parseDate(dbObject.get("Hora").toString())).getTime();
+                    processedIds.add(documentId);
+                }
+                arrivedToValueStored=true;
             }
         }
     }
+
+   
 
     /**
      * Publishes the given sensor data to the MQTT broker.
@@ -205,6 +231,7 @@ public class SendToMQTT implements MqttCallback {
             else
                 treatTempSensorMessage(mqttMessage);
 
+            idMessageStored(((DBObject) JSON.parse(sensorData)).get("_id").toString());
             documentLabel.append(mqttMessage + "\n");
         } catch (MqttException e) {
             e.printStackTrace();
@@ -232,33 +259,6 @@ public class SendToMQTT implements MqttCallback {
     }
 
     /**
-     * Formats the timestamp into the specified date-time format.
-     *
-     * @param timestamp the timestamp to format, represented as milliseconds since the epoch
-     * @return a string representation of the formatted date-time
-     */
-    private String formatDate(long timestamp) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS");
-        return sdf.format(new Date(timestamp));
-    }
-
-    /**
-     * Parses the given date string into a Date object using the specified date-time format.
-     *
-     * @param dateString the string representation of the date to parse
-     * @return the Date object representing the parsed date, or null if parsing fails
-     */
-    private Date parseDate(String dateString) {
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            return sdf.parse(dateString);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
      * Called when the connection to the MQTT broker is lost.
      *
      * @param cause the reason for the connection loss
@@ -275,7 +275,11 @@ public class SendToMQTT implements MqttCallback {
      */
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-
+        try {
+            System.out.println(token.getMessage());
+        } catch (MqttException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -286,7 +290,45 @@ public class SendToMQTT implements MqttCallback {
      */
     @Override
     public void messageArrived(String topic, MqttMessage message){
+    
+    }
 
+    /**
+     * Stores the provided message ID in the designated storage file.
+     *
+     * @param messageID The message ID to be stored.
+     */
+    public void idMessageStored(String messageID) {
+        try {
+            PrintWriter fileWriter = new PrintWriter(idStorageFile);
+
+            fileWriter.write(messageID);
+            fileWriter.flush();
+            fileWriter.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Retrieves the stored ID from the designated storage file.
+     *
+     * @return The stored ID if found, or {@code null} if no ID is found or the file doesn't exist.
+     */
+    public String hasStoredId() {
+        String storedId = null; // Default value if no ID is found or file doesn't exist
+
+        try {
+            if (idStorageFile.exists()) {
+                BufferedReader reader = new BufferedReader(new FileReader(idStorageFile));
+                storedId = reader.readLine();
+                reader.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return storedId;
     }
 
     /**

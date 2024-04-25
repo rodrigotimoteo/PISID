@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `Alerta`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Alerta` (
-  `id_alerta` int(11) NOT NULL,
+  `id_alerta` int(11) NOT NULL AUTO_INCREMENT,
   `id_experiencia` int(11) DEFAULT NULL,
   `hora` timestamp NOT NULL DEFAULT current_timestamp(),
   `sala` int(11) DEFAULT NULL,
@@ -54,7 +54,7 @@ DROP TABLE IF EXISTS `Experiencia`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Experiencia` (
-  `id_experiencia` int(11) NOT NULL,
+  `id_experiencia` int(11) NOT NULL AUTO_INCREMENT,
   `descricao` text DEFAULT NULL,
   `estado_experiencia` enum('Por Iniciar','A decorrer','Terminada') NOT NULL,
   `investigador` varchar(50) NOT NULL,
@@ -71,7 +71,7 @@ CREATE TABLE `Experiencia` (
   PRIMARY KEY (`id_experiencia`),
   KEY `utilizador_id_exp` (`investigador`),
   CONSTRAINT `utilizador_id_exp` FOREIGN KEY (`investigador`) REFERENCES `Utilizador` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -80,6 +80,7 @@ CREATE TABLE `Experiencia` (
 
 LOCK TABLES `Experiencia` WRITE;
 /*!40000 ALTER TABLE `Experiencia` DISABLE KEYS */;
+INSERT INTO `Experiencia` VALUES (1,'TestExp','A decorrer','rmnto@iscte-iul.pt','2024-04-25 17:27:11','0000-00-00 00:00:00','0000-00-00 00:00:00','0000-00-00 00:00:00',5,5,30,10.00,20.00,NULL);
 /*!40000 ALTER TABLE `Experiencia` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -91,7 +92,7 @@ DROP TABLE IF EXISTS `ExperienciaSubstancia`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `ExperienciaSubstancia` (
-  `id_substancia_exp` int(11) NOT NULL,
+  `id_substancia_exp` int(11) NOT NULL AUTO_INCREMENT,
   `id_experiencia` int(11) NOT NULL,
   `substancia` varchar(20) NOT NULL,
   `num_ratos_administrada` int(11) NOT NULL,
@@ -118,7 +119,7 @@ DROP TABLE IF EXISTS `MedicoesPassagens`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `MedicoesPassagens` (
-  `id_medicao` int(11) NOT NULL,
+  `id_medicao` int(11) NOT NULL AUTO_INCREMENT,
   `id_experiencia` int(11) NOT NULL,
   `hora` timestamp NOT NULL DEFAULT current_timestamp(),
   `sala_origem` int(11) NOT NULL,
@@ -126,7 +127,7 @@ CREATE TABLE `MedicoesPassagens` (
   PRIMARY KEY (`id_medicao`) USING BTREE,
   KEY `med_passagem_exp` (`id_experiencia`),
   CONSTRAINT `med_passagem_exp` FOREIGN KEY (`id_experiencia`) REFERENCES `Experiencia` (`id_experiencia`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -135,6 +136,7 @@ CREATE TABLE `MedicoesPassagens` (
 
 LOCK TABLES `MedicoesPassagens` WRITE;
 /*!40000 ALTER TABLE `MedicoesPassagens` DISABLE KEYS */;
+INSERT INTO `MedicoesPassagens` VALUES (1,1,'2024-04-25 17:27:31',2,5),(2,1,'2024-04-25 17:27:40',2,5),(3,1,'2024-04-25 17:27:41',5,6),(4,1,'2024-04-25 17:27:44',5,7),(5,1,'2024-04-25 17:27:49',6,8),(6,1,'2024-04-25 17:28:59',1,3),(7,1,'2024-04-25 17:29:02',1,3),(8,1,'2024-04-25 17:29:02',3,2),(9,1,'2024-04-25 17:29:05',3,2),(10,1,'2024-04-25 17:29:05',1,3),(11,1,'2024-04-25 17:29:05',3,10),(12,1,'2024-04-25 17:29:05',3,10),(13,1,'2024-04-25 17:29:08',3,2),(14,1,'2024-04-25 17:29:11',1,2),(15,1,'2024-04-25 17:29:11',1,3),(16,1,'2024-04-25 17:29:12',2,4),(17,1,'2024-04-25 17:29:14',3,2),(18,1,'2024-04-25 17:29:15',2,4),(19,1,'2024-04-25 17:29:18',2,4),(20,1,'2024-04-25 17:29:21',2,4),(21,1,'2024-04-25 17:29:24',2,4),(22,1,'2024-04-25 17:29:29',4,5),(23,1,'2024-04-25 17:29:32',5,7);
 /*!40000 ALTER TABLE `MedicoesPassagens` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -149,26 +151,26 @@ DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `BeforeInsert_MouseMovement` BEFORE INSERT ON `MedicoesPassagens` FOR EACH ROW BEGIN	
 	DECLARE originalValue INT;
     
-    IF NEW.sala_origem = 0 THEN
-    	SELECT sala_0 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
-    ELSEIF NEW.sala_origem = 1 THEN
-    	SELECT sala_1 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    IF NEW.sala_origem = 1 THEN
+    	SELECT sala_0 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
     ELSEIF NEW.sala_origem = 2 THEN
-    	SELECT sala_2 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
-	ELSEIF NEW.sala_origem = 3 THEN
-    	SELECT sala_3 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_1 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
+    ELSEIF NEW.sala_origem = 3 THEN
+    	SELECT sala_2 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_origem = 4 THEN
-    	SELECT sala_4 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_3 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_origem = 5 THEN
-    	SELECT sala_5 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_4 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_origem = 6 THEN
-    	SELECT sala_6 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_5 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_origem = 7 THEN
-    	SELECT sala_7 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_6 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_origem = 8 THEN
-    	SELECT sala_8 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
-    ELSEIF NEW.sala_origem = 9 THEN
-    	SELECT sala_9 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_7 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
+	ELSEIF NEW.sala_origem = 9 THEN
+    	SELECT sala_8 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
+    ELSEIF NEW.sala_origem = 10 THEN
+    	SELECT sala_9 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSE
     	SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Invalid Room.';
@@ -197,26 +199,26 @@ DELIMITER ;;
 	DECLARE finalMouseValue INT;
     DECLARE maxMouseValue INT;
     
-    IF NEW.sala_destino = 0 THEN
-    	SELECT sala_0 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
-    ELSEIF NEW.sala_destino = 1 THEN
-    	SELECT sala_1 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    IF NEW.sala_destino = 1 THEN
+    	SELECT sala_0 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
     ELSEIF NEW.sala_destino = 2 THEN
-    	SELECT sala_2 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
-	ELSEIF NEW.sala_destino = 3 THEN
-    	SELECT sala_3 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_1 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
+    ELSEIF NEW.sala_destino = 3 THEN
+    	SELECT sala_2 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_destino = 4 THEN
-    	SELECT sala_4 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_3 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_destino = 5 THEN
-    	SELECT sala_5 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_4 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_destino = 6 THEN
-    	SELECT sala_6 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_5 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_destino = 7 THEN
-    	SELECT sala_7 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_6 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_destino = 8 THEN
-    	SELECT sala_8 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
-    ELSEIF NEW.sala_destino = 9 THEN
-    	SELECT sala_9 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_7 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
+	ELSEIF NEW.sala_destino = 9 THEN
+    	SELECT sala_8 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
+    ELSEIF NEW.sala_destino = 10 THEN
+    	SELECT sala_9 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSE
     	SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Invalid Room.';
@@ -276,7 +278,7 @@ DROP TABLE IF EXISTS `MedicoesTemperatura`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `MedicoesTemperatura` (
-  `id_medicao` int(11) NOT NULL,
+  `id_medicao` int(11) NOT NULL AUTO_INCREMENT,
   `id_experiencia` int(11) NOT NULL,
   `hora` timestamp NOT NULL DEFAULT current_timestamp(),
   `leitura` decimal(4,2) NOT NULL,
@@ -349,6 +351,7 @@ CREATE TABLE `Utilizador` (
 
 LOCK TABLES `Utilizador` WRITE;
 /*!40000 ALTER TABLE `Utilizador` DISABLE KEYS */;
+INSERT INTO `Utilizador` VALUES ('rmnto@iscte-iul.pt','rodrigo','Rodrigo Timoteo','123456789','Administrador');
 /*!40000 ALTER TABLE `Utilizador` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -854,4 +857,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-19 17:52:40
+-- Dump completed on 2024-04-25 19:26:01

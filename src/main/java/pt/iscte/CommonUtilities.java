@@ -15,8 +15,10 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.DriverManager;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Random;
 
 public class CommonUtilities {
@@ -187,6 +189,13 @@ public class CommonUtilities {
         return null;
     }
 
+    /**
+     * Establishes a connection to the MySQL database using the configuration provided in the "Configuration.ini" file.
+     * This method reads the database connection details (URL, username, and password) from the configuration file,
+     * then attempts to connect to the database using the MariaDB JDBC driver.
+     *
+     * @return a Connection object representing the established database connection, or null if the connection attempt fails.
+     */
     public static Connection connectMazeSettingDatabase() {
         try {
             Wini ini = new Wini(new File("src/main/java/pt/iscte/Configuration.ini"));
@@ -202,6 +211,33 @@ public class CommonUtilities {
         }
 
         return null;
+    }
+
+    /**
+     * Formats the timestamp into the specified date-time format.
+     *
+     * @param timestamp the timestamp to format, represented as milliseconds since the epoch
+     * @return a string representation of the formatted date-time
+     */
+    public static String formatDate(long timestamp) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS");
+        return sdf.format(new Date(timestamp));
+    }
+
+    /**
+     * Parses the given date string into a Date object using the specified date-time format.
+     *
+     * @param dateString the string representation of the date to parse
+     * @return the Date object representing the parsed date, or null if parsing fails
+     */
+    public static Date parseDate(String dateString) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            return sdf.parse(dateString);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }

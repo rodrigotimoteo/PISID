@@ -9,12 +9,20 @@ import org.eclipse.paho.client.mqttv3.*;
 import pt.iscte.CommonUtilities;
 
 import javax.swing.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.PrintWriter;
+import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.FileReader;
 
 /**
  * Implements the MqttCallback interface for handling MQTT events and sending data to the broker.
@@ -35,6 +43,11 @@ public class SendToMQTT implements MqttCallback {
     static DBCollection doorSensor;
 
     /**
+     * Static reference to the maze configuration hosted in provided mySQL DB
+     */
+    static MultiMap validPositions;
+
+    /**
      * JTextArea for displaying document labels.
      */
     static JTextArea documentLabel = new JTextArea("\n");
@@ -53,8 +66,62 @@ public class SendToMQTT implements MqttCallback {
     public static void main(String[] args) {
         documentLabel = CommonUtilities.createWindow("Send to MQTT");
 
+        new SendToMQTT().connectMazeSettings();
         new SendToMQTT().connectMongo();
         new SendToMQTT().connectCloud();
+    }
+
+    /**
+     * Connects to the MySQL database for maze settings, retrieves corridor information,
+     * and builds the maze map.
+     */
+    private void connectMazeSettings() {
+        Connection mySQLConnection = CommonUtilities.connectMazeSettingDatabase();
+
+        if (mySQLConnection == null) {
+            System.err.println("mySQL Connect Failed");
+            System.exit(1);
+        }
+
+        String sqlCommand = "SELECT * FROM corredor";
+
+        try {
+            PreparedStatement statement = mySQLConnection.prepareStatement(sqlCommand);
+            ResultSet result = statement.executeQuery();
+
+            buildMazeMap(result);
+
+            statement.close();
+
+        } catch (Exception e){
+            System.err.println("Error Inserting in the database. " + e);
+            System.err.println(sqlCommand);
+        }
+    }
+
+    /**
+     * Constructs a maze map from the ResultSet containing room and distance information.
+     *
+     * @param result the ResultSet containing room and distance information
+     */
+    private void buildMazeMap(ResultSet result) {
+        try {
+            validPositions = new MultiMap<Integer, ArrayList<Integer>>();
+
+            while(result.next()) {
+                ArrayList<Integer> arrayWithRoomAndDistance = new ArrayList<>();
+
+                arrayWithRoomAndDistance.add(result.getInt("salab"));
+                arrayWithRoomAndDistance.add(result.getInt("centimetro"));
+
+                validPositions.put(result.getInt("salaa"), arrayWithRoomAndDistance);
+            }
+
+            int i = 0;
+            System.out.println("ola");
+        } catch (SQLException e) {
+            System.err.println("Error reading result information. " + e);
+        }
     }
 
     /**
@@ -115,18 +182,29 @@ public class SendToMQTT implements MqttCallback {
     private void extractSensorData(DBObject[] pipeline, DBCollection collection) {
         //Execute the aggregation pipeline and process the result
         AggregationOutput output = collection.aggregate(Arrays.asList(pipeline));
+        String idStored=hasStoredId();
+        boolean arrivedToValueStored = true;
+        if(!(idStored==null)){
+            arrivedToValueStored=false;
+        }
+        System.out.println(idStored);
         for (DBObject dbObject : output.results()) {
-            String documentId = dbObject.get("_id").toString();
-            if (!processedIds.contains(documentId)) {
-                System.out.println(dbObject);
-                publishSensor(dbObject.toString());
+            if(arrivedToValueStored ||dbObject.get("_id").toString().equals(idStored)) {
+                String documentId = dbObject.get("_id").toString();
+                if (!processedIds.contains(documentId)) {
+                    System.out.println(dbObject);
+                    publishSensor(dbObject.toString());
 
-                //Update the last retrieval timestamp
-                lastRetrievalTimestamp = Objects.requireNonNull(parseDate(dbObject.get("Hora").toString())).getTime();
-                processedIds.add(documentId);
+                    //Update the last retrieval timestamp
+                    lastRetrievalTimestamp = Objects.requireNonNull(parseDate(dbObject.get("Hora").toString())).getTime();
+                    processedIds.add(documentId);
+                }
+                arrivedToValueStored=true;
             }
         }
     }
+
+   
 
     /**
      * Publishes the given sensor data to the MQTT broker.
@@ -144,6 +222,7 @@ public class SendToMQTT implements MqttCallback {
             else
                 treatTempSensorMessage(mqttMessage);
 
+            idMessageStored(((DBObject) JSON.parse(sensorData)).get("_id").toString());
             documentLabel.append(mqttMessage + "\n");
         } catch (MqttException e) {
             e.printStackTrace();
@@ -214,7 +293,7 @@ public class SendToMQTT implements MqttCallback {
      */
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-
+        
     }
 
     /**
@@ -225,7 +304,151 @@ public class SendToMQTT implements MqttCallback {
      */
     @Override
     public void messageArrived(String topic, MqttMessage message){
-
+    
     }
+
+    public void idMessageStored(String messageID) {
+        try {
+            String fileName = (((new File("").getPath()+"src//main//java//pt//iscte//mqtt//")+"lastIdValue.txt"));
+            PrintWriter fileWriter = new PrintWriter(fileName);
+            fileWriter.write(messageID);
+            fileWriter.flush();
+            fileWriter.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String hasStoredId(){
+        String storedId = null; // Default value if no ID is found or file doesn't exist
+
+        try {
+            File file = new File(new File("").getPath()+"src//main//java//pt//iscte//mqtt//lastIdValue.txt");
+            if (file.exists()) {
+                BufferedReader reader = new BufferedReader(new FileReader(file));
+                storedId = reader.readLine();
+                reader.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return storedId;
+    }
+
+    /**
+     * A data structure representing a multimap, which allows multiple values to be associated with a single key.
+     * Used to store the available connections between rooms for error checking
+     *
+     * @param <KeyType>   the type of keys in the multimap
+     * @param <ValueType> the type of values in the multimap
+     */
+    private static class MultiMap<KeyType, ValueType> {
+
+        /** The underlying map storing the key-value pairs. */
+        private final Map<KeyType, List<ValueType>> map;
+
+        /**
+         * Constructs a new empty multimap.
+         */
+        public MultiMap() {
+            this.map = new HashMap<>();
+        }
+
+        /**
+         * Associates the specified value with the specified key in this multimap.
+         *
+         * @param key   the key with which the specified value is to be associated
+         * @param value the value to be associated with the specified key
+         */
+        public void put(KeyType key, ValueType value) {
+            map.computeIfAbsent(key, k -> new ArrayList<>()).add(value);
+        }
+
+        /**
+         * Returns a list of values to which the specified key is mapped, or an empty list if the key is not present.
+         *
+         * @param key the key whose associated values are to be returned
+         * @return a list of values to which the specified key is mapped, or an empty list if the key is not present
+         */
+        public List<ValueType> get(KeyType key) {
+            return map.getOrDefault(key, Collections.emptyList());
+        }
+
+        /**
+         * Returns true if this multimap contains the specified key.
+         *
+         * @param key the key whose presence in this multimap is to be tested
+         * @return true if this multimap contains the specified key
+         */
+        public boolean containsKey(KeyType key) {
+            return map.containsKey(key);
+        }
+
+        /**
+         * Returns true if this multimap contains the specified value associated with the specified key.
+         *
+         * @param key   the key whose associated values are to be searched
+         * @param value the value whose presence in this multimap is to be tested
+         * @return true if this multimap contains the specified value associated with the specified key
+         */
+        public boolean containsValue(KeyType key, ValueType value) {
+            List<ValueType> values = map.get(key);
+            return values != null && values.contains(value);
+        }
+
+        /**
+         * Returns a set view of the keys contained in this multimap.
+         *
+         * @return a set view of the keys contained in this multimap
+         */
+        public Set<KeyType> keySet() {
+            return map.keySet();
+        }
+
+        /**
+         * Returns a collection view of the values contained in this multimap.
+         *
+         * @return a collection view of the values contained in this multimap
+         */
+        public Collection<List<ValueType>> values() {
+            return map.values();
+        }
+
+        /**
+         * Returns a set view of the key-value mappings contained in this multimap.
+         *
+         * @return a set view of the key-value mappings contained in this multimap
+         */
+        public Set<Map.Entry<KeyType, List<ValueType>>> entrySet() {
+            return map.entrySet();
+        }
+
+        /**
+         * Returns the number of key-value mappings in this multimap.
+         *
+         * @return the number of key-value mappings in this multimap
+         */
+        public int size() {
+            return map.size();
+        }
+
+        /**
+         * Returns true if this multimap contains no key-value mappings.
+         *
+         * @return true if this multimap contains no key-value mappings
+         */
+        public boolean isEmpty() {
+            return map.isEmpty();
+        }
+
+        /**
+         * Removes all the key-value mappings from this multimap.
+         */
+        public void clear() {
+            map.clear();
+        }
+    }
+
 
 }

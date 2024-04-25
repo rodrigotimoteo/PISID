@@ -11,6 +11,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import pt.iscte.CommonUtilities;
 
 import javax.swing.*;
+import java.sql.Connection;
 
 /**
  * Implements the MqttCallback interface to handle MQTT message events and writes the received data to MongoDB.
@@ -29,6 +30,7 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
     static DBCollection tempSensor1;
     static DBCollection tempSensor2;
     static DBCollection doorSensor;
+    static DBCollection solutions;
 
     /**
      * JTextArea for displaying document labels.
@@ -47,7 +49,7 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
      *
      * @throws RuntimeException if an error occurs during connection to the MQTT broker
      */
-    public void connectCloud() {
+    private void connectCloud() {
         MqttClient[] mqttClients = CommonUtilities.connectCloud(this, "MQTTCloud");
 
         mqttClientTemp = mqttClients[0];
@@ -57,12 +59,13 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
     /**
      * Connects to the MongoDB server and initializes database collections.
      */
-    public void connectMongo() {
+    private void connectMongo() {
         DBCollection[] dbCollections = CommonUtilities.connectMongo();
 
         tempSensor1 = dbCollections[0];
         tempSensor2 = dbCollections[1];
         doorSensor  = dbCollections[2];
+        solutions   = dbCollections[3];
     }
 
     /**
@@ -75,6 +78,8 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
     @Override
     public void messageArrived(String topic, MqttMessage c) throws Exception {
         try {
+            if(c.toString().startsWith("{Solucao:")) treatSolutionsMessage(c.toString());
+
             DBObject document_json;
 
             String mqttMessageString = fixInvalidJSON(c.toString());
@@ -94,6 +99,7 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
             throw new Exception("Error while JSON parsing");
 
         } catch (Exception e) {
+            e.printStackTrace();
             System.err.println("Error treating message" + c);
         }
     }
@@ -240,6 +246,20 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
      */
     private void treatDoorSensorMessage(DBObject message) {
         doorSensor.insert(message);
+    }
+
+    /**
+     * Inserts a new solution message into the database collection.
+     *
+     * @param message the message representing a solution (beginning or ending of a test)
+     */
+    private void treatSolutionsMessage(String message) {
+        try {
+            DBObject document_json = (DBObject) JSON.parse(message);
+
+        } catch (Exception ignored) {
+
+        }
     }
 
     /**

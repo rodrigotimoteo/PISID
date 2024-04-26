@@ -68,9 +68,10 @@ public class SendToMQTT implements MqttCallback {
     private long lastRetrievalTimestamp = System.currentTimeMillis();
 
     /**
-     * Value of the last temperature reading
+     * Value of the last temperature reading for each sensor
      */
-    private double lastTemperatureReading = Integer.MIN_VALUE;
+    private double lastTemperatureReadingSensor1 = Integer.MIN_VALUE;
+    private double lastTemperatureReadingSensor2 = Integer.MIN_VALUE;
 
     /**
      * Set for storing processed IDs.
@@ -181,7 +182,7 @@ public class SendToMQTT implements MqttCallback {
             try {
                 fetchMongo();
             } catch (Exception e) {
-                System.err.println("There was an error while fetching information from mongoDB database");
+                System.err.println("There was an error while fetching information from mongoDB database " + e);
             }
         }, 5000, 500, TimeUnit.MILLISECONDS);
     }
@@ -223,22 +224,22 @@ public class SendToMQTT implements MqttCallback {
 
         AggregateIterable<Document> output = collection.aggregate(Arrays.asList(pipeline));
 
-        HashSet<String> newProcessedIds = new HashSet<>();
-
         for (Document document : output) {
             String documentId = document.get("_id").toString();
-            if (!filter(document)) continue;
 
             if (!processedIds.contains(documentId)) {
+                if (!filter(document)) {
+                    processedIds.add(documentId);
+                    continue;
+                }
+
                 publishSensor(document.toJson());
 
                 //Update the last retrieval timestamp
                 lastRetrievalTimestamp = Objects.requireNonNull(CommonUtilities.parseDate(document.get("Hora").toString())).getTime();
-                newProcessedIds.add(documentId);
+                processedIds.add(documentId);
             }
         }
-
-        processedIds = newProcessedIds;
     }
 
    
@@ -304,9 +305,9 @@ public class SendToMQTT implements MqttCallback {
      */
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-//        if(token.isComplete()) {
-//            System.out.println(token.getMessageId());
-//        }
+        if(token.isComplete()) {
+            System.out.println(token.getMessageId() + "\n" + token.getResponse());
+        }
     }
 
     /**
@@ -362,12 +363,13 @@ public class SendToMQTT implements MqttCallback {
     private boolean filter(Document document) {
         //Filtering the date if withing 7 days and valid
         try {
-            LocalDateTime documentDateTime = LocalDateTime.parse((CharSequence) document.get("Hora"),DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+            LocalDateTime documentDateTime = LocalDateTime.parse((CharSequence) document.get("Hora"),DateTimeFormatter.
+                    ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
             LocalDateTime currentDateTime  = LocalDateTime.now();
 
             Duration duration = Duration.between(documentDateTime, currentDateTime);
 
-            if (duration.abs().toDays() <= 7) return true;
+            if (duration.abs().toDays() >= 7) return false;
         } catch (DateTimeParseException e) {
             System.err.println("Invalid date: " + document.get("Hora"));
             return false;
@@ -415,6 +417,8 @@ public class SendToMQTT implements MqttCallback {
         for(ArrayList<Integer> destination : possibleDestinations)
             if(destination.getFirst() == destinationRoom) return true;
 
+        System.out.println("Invalid move?");
+
         return false;
     }
 
@@ -440,13 +444,23 @@ public class SendToMQTT implements MqttCallback {
             return false;
         }
 
-        //Check temperature variations for unconformities
-        if(lastTemperatureReading == Integer.MIN_VALUE)
-            lastTemperatureReading = temperature;
-        else
-            return Math.abs(lastRetrievalTimestamp - temperature) < MAX_TEMP_ALLOWED_DEVIATION;
+        int sensor = Integer.parseInt((String) document.get("Sensor"));
 
-        return true;
+        //Check temperature variations for unconformities
+        if(sensor == 1) {
+            if(lastTemperatureReadingSensor1 == Integer.MIN_VALUE)
+                lastTemperatureReadingSensor1 = temperature;
+
+            return Math.abs(lastTemperatureReadingSensor1 - temperature) < MAX_TEMP_ALLOWED_DEVIATION;
+        }
+        else if(sensor == 2) {
+            if(lastTemperatureReadingSensor2 == Integer.MIN_VALUE)
+                lastTemperatureReadingSensor2 = temperature;
+
+            return Math.abs(lastTemperatureReadingSensor2 - temperature) < MAX_TEMP_ALLOWED_DEVIATION;
+        }
+
+        return false;
     }
 
     /**

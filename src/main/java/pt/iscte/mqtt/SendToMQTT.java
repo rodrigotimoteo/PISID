@@ -1,28 +1,20 @@
 package pt.iscte.mqtt;
 
-import com.mongodb.AggregationOutput;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
+import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.MongoCollection;
+import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.eclipse.paho.client.mqttv3.*;
 import pt.iscte.CommonUtilities;
 
 import javax.swing.*;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.PrintWriter;
+import java.io.*;
 import java.sql.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.FileReader;
 
 /**
  * Implements the MqttCallback interface for handling MQTT events and sending data to the broker.
@@ -38,9 +30,9 @@ public class SendToMQTT implements MqttCallback {
     /**
      * Static collections for storing sensor data in MongoDB.
      */
-    static DBCollection tempSensor1;
-    static DBCollection tempSensor2;
-    static DBCollection doorSensor;
+    static MongoCollection<Document> tempSensor1;
+    static MongoCollection<Document> tempSensor2;
+    static MongoCollection<Document> doorSensor;
 
     /**
      * Static reference to the maze configuration hosted in provided mySQL DB
@@ -55,7 +47,12 @@ public class SendToMQTT implements MqttCallback {
     /**
      * Stores a static reference to the file dedicated to storing the last ID sent
      */
-    static File idStorageFile = new File("pt/iscte/mqtt/lastIdValue");
+    static File idStorageFile;
+
+    /**
+     * ID of the last retrieval operation.
+     */
+    private static String lastSentId;
 
     /**
      * Timestamp of the last retrieval operation.
@@ -70,10 +67,26 @@ public class SendToMQTT implements MqttCallback {
 
     public static void main(String[] args) {
         documentLabel = CommonUtilities.createWindow("Send to MQTT");
+        initFile();
+        hasStoredId();
 
         new SendToMQTT().connectMazeSettings();
         new SendToMQTT().connectMongo();
         new SendToMQTT().connectCloud();
+    }
+
+    /**
+     * Initializes the file used for storing the last ID value.
+     * If the file does not exist, it creates a new one.
+     * The file is created relative to the project's source directory.
+     */
+    private static void initFile() {
+        try {
+            idStorageFile = new File(new File("").getPath()+"src/main/java/pt/iscte/mqtt/lastIdValue");
+            idStorageFile.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -122,8 +135,6 @@ public class SendToMQTT implements MqttCallback {
                 validPositions.put(result.getInt("salaa"), arrayWithRoomAndDistance);
             }
 
-            int i = 0;
-            System.out.println("ola");
         } catch (SQLException e) {
             System.err.println("Error reading result information. " + e);
         }
@@ -146,7 +157,7 @@ public class SendToMQTT implements MqttCallback {
      * loop every 500ms
      */
     public void connectMongo() {
-        DBCollection[] dbCollections = CommonUtilities.connectMongo();
+        MongoCollection<Document>[] dbCollections = CommonUtilities.connectMongo();
 
         tempSensor1 = dbCollections[0];
         tempSensor2 = dbCollections[1];
@@ -166,12 +177,21 @@ public class SendToMQTT implements MqttCallback {
      * Fetches sensor data from MongoDB and extracts relevant information.
      */
     private void fetchMongo() {
-        BasicDBObject match = new BasicDBObject("$match", new BasicDBObject("Hora", new BasicDBObject("$gt",
-                CommonUtilities.formatDate(lastRetrievalTimestamp))));
-        BasicDBObject sort = new BasicDBObject("$sort", new BasicDBObject("Hora", 1));
+        Document match, sort;
+
+        if(lastSentId == null || lastSentId.isEmpty()) {
+            match = new Document("$match", new BasicDBObject("Hora", new BasicDBObject("$gt",
+                    CommonUtilities.formatDate(lastRetrievalTimestamp))));
+            sort = new Document("$sort", new BasicDBObject("Hora", 1));
+        } else {
+            ObjectId lastSentObjectId = new ObjectId(lastSentId);
+
+            match = new Document("$match", new BasicDBObject("_id", new BasicDBObject("$gt", lastSentObjectId)));
+            sort = new Document("$sort", new BasicDBObject("_id", 1));
+        }
 
         // Construct the aggregation pipeline
-        DBObject[] pipeline = {match, sort};
+        Document[] pipeline = {match, sort};
 
         extractSensorData(pipeline, tempSensor1);
         extractSensorData(pipeline, tempSensor2);
@@ -185,35 +205,21 @@ public class SendToMQTT implements MqttCallback {
      * @param pipeline the aggregation pipeline to execute
      * @param collection the MongoDB collection to query
      */
-    private void extractSensorData(DBObject[] pipeline, DBCollection collection) {
+    private void extractSensorData(Document[] pipeline, MongoCollection<Document> collection) {
         //Execute the aggregation pipeline and process the result
-        AggregationOutput output = collection.aggregate(Arrays.asList(pipeline));
+        AggregateIterable<Document> output = collection.aggregate(Arrays.asList(pipeline));
 
-        String idStored = hasStoredId();
-        boolean arrivedToValueStored = true;
+        for (Document document : output) {
+            String documentId = document.get("_id").toString();
+            if (!processedIds.contains(documentId)) {
+                publishSensor(document.toJson());
 
-        if(!(idStored==null)){
-            arrivedToValueStored=false;
-        }
-
-        System.out.println(idStored);
-        for (DBObject dbObject : output.results()) {
-            if(arrivedToValueStored ||dbObject.get("_id").toString().equals(idStored)) {
-                String documentId = dbObject.get("_id").toString();
-                if (!processedIds.contains(documentId)) {
-                    publishSensor(dbObject.toString());
-
-                    //Update the last retrieval timestamp
-                    lastRetrievalTimestamp = Objects.requireNonNull(CommonUtilities.
-                            parseDate(dbObject.get("Hora").toString())).getTime();
-                    processedIds.add(documentId);
-                }
-                arrivedToValueStored=true;
+                //Update the last retrieval timestamp
+                lastRetrievalTimestamp = Objects.requireNonNull(CommonUtilities.parseDate(document.get("Hora").toString())).getTime();
+                processedIds.add(documentId);
             }
         }
     }
-
-   
 
     /**
      * Publishes the given sensor data to the MQTT broker.
@@ -226,12 +232,12 @@ public class SendToMQTT implements MqttCallback {
             mqttMessage.setPayload(sensorData.getBytes());
 
             //Check if message is sensor data or not
-            if(((DBObject) JSON.parse(sensorData)).containsField("SalaOrigem"))
+            if((Document.parse(sensorData)).containsKey("SalaOrigem"))
                 treatDoorSensorMessage(mqttMessage);
             else
                 treatTempSensorMessage(mqttMessage);
 
-            idMessageStored(((DBObject) JSON.parse(sensorData)).get("_id").toString());
+            storeMessageId((Document.parse(sensorData)).get("_id").toString());
             documentLabel.append(mqttMessage + "\n");
         } catch (MqttException e) {
             e.printStackTrace();
@@ -290,7 +296,7 @@ public class SendToMQTT implements MqttCallback {
      */
     @Override
     public void messageArrived(String topic, MqttMessage message){
-    
+
     }
 
     /**
@@ -298,37 +304,32 @@ public class SendToMQTT implements MqttCallback {
      *
      * @param messageID The message ID to be stored.
      */
-    public void idMessageStored(String messageID) {
+    public void storeMessageId(String messageID) {
         try {
-            PrintWriter fileWriter = new PrintWriter(idStorageFile);
+            BufferedWriter writer = new BufferedWriter(new FileWriter(idStorageFile));
 
-            fileWriter.write(messageID);
-            fileWriter.flush();
-            fileWriter.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            writer.write(messageID);
+            writer.close();
+        } catch (IOException e) {
+            System.err.println("File could not be created to " + idStorageFile);
+            throw new RuntimeException(e);
         }
     }
 
     /**
      * Retrieves the stored ID from the designated storage file.
-     *
-     * @return The stored ID if found, or {@code null} if no ID is found or the file doesn't exist.
      */
-    public String hasStoredId() {
-        String storedId = null; // Default value if no ID is found or file doesn't exist
-
+    private static void hasStoredId() {
         try {
             if (idStorageFile.exists()) {
                 BufferedReader reader = new BufferedReader(new FileReader(idStorageFile));
-                storedId = reader.readLine();
+                lastSentId = reader.readLine();
                 reader.close();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return storedId;
     }
 
     /**

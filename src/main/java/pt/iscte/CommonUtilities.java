@@ -1,9 +1,10 @@
 package pt.iscte;
 
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -99,7 +100,7 @@ public class CommonUtilities {
      * @return an array of MongoDB collections for temperature sensors 1 and 2, and door sensors
      * @throws RuntimeException if an error occurs while reading or parsing the INI file
      */
-    public static DBCollection[] connectMongo() {
+    public static MongoCollection[] connectMongo() {
         try {
             Wini ini = new Wini(new File("src/main/java/pt/iscte/Configuration.ini"));
 
@@ -122,16 +123,16 @@ public class CommonUtilities {
             else if (ini.get("Mongo", "MongoAuthentication").equals("true"))
                 mongoURI = mongoURI  + "/?authSource=admin";
 
-            MongoClient mongoClient = new MongoClient(new MongoClientURI(mongoURI));
+            MongoClient mongoClient = MongoClients.create(mongoURI);
 
-            DB db = mongoClient.getDB(ini.get("Mongo", "MongoDatabase"));
+            MongoDatabase db = mongoClient.getDatabase(ini.get("Mongo", "MongoDatabase"));
 
-            DBCollection tempSensor1 = db.getCollection(ini.get("Mongo", "MongoTemp1Collection"));
-            DBCollection tempSensor2 = db.getCollection(ini.get("Mongo", "MongoTemp2Collection"));
-            DBCollection doorSensor  = db.getCollection(ini.get("Mongo", "MongoDoorCollection"));
-            DBCollection solutions   = db.getCollection(ini.get("Mongo", "MongoSolutionsCollection"));
+            MongoCollection<Document> tempSensor1 = db.getCollection(ini.get("Mongo", "MongoTemp1Collection"));
+            MongoCollection<Document> tempSensor2 = db.getCollection(ini.get("Mongo", "MongoTemp2Collection"));
+            MongoCollection<Document> doorSensor  = db.getCollection(ini.get("Mongo", "MongoDoorCollection"));
+            MongoCollection<Document> solutions   = db.getCollection(ini.get("Mongo", "MongoSolutionsCollection"));
 
-            return new DBCollection[]{tempSensor1, tempSensor2, doorSensor, solutions};
+            return new MongoCollection[]{tempSensor1, tempSensor2, doorSensor, solutions};
 
         } catch (InvalidFileFormatException e) {
             System.err.println("Invalid File - Not ini File");

@@ -333,23 +333,6 @@ public class SendToMQTT implements MqttCallback {
         }
     }
 
-    public String hasStoredId(){
-        String storedId = null; // Default value if no ID is found or file doesn't exist
-
-        try {
-            File file = new File(new File("").getPath()+"src//main//java//pt//iscte//mqtt//lastIdValue.txt");
-            if (file.exists()) {
-                BufferedReader reader = new BufferedReader(new FileReader(file));
-                storedId = reader.readLine();
-                reader.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return storedId;
-    }
-
     /**
      * Stores the provided message ID in the designated storage file.
      *

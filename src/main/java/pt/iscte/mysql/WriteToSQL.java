@@ -1,6 +1,5 @@
 package pt.iscte.mysql;
 
-import com.mongodb.DBObject;
 import org.bson.Document;
 import org.eclipse.paho.client.mqttv3.*;
 import pt.iscte.CommonUtilities;

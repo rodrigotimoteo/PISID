@@ -172,7 +172,12 @@ $result = $stmt->get_result();
                                 <button type="submit" class="start-finish" name="delete">Delete Test</button>
                             </form>
                         </td>
-                        <td><button class="delete">Assign Investigator</button></td>
+                        <td>
+
+                            <form action="actions/assignInvestigator.php" method="GET">
+                                <input type="hidden" name="assign_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
+                                <button type="submit" class="start-finish" name="assign">Assign investigator</button>
+                            </form>
 
                         <td>
                             <form action="editTestPage.php" method="GET">

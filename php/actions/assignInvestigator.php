@@ -1,4 +1,5 @@
 <?php
+
 include("../config.php");
 
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
@@ -11,13 +12,14 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
     if(isset($_SESSION['email'])) {
 
-        if(isset($_GET['delete_id_exp'])) {
+        if(isset($_GET['assign_id_exp'])) {
 
-            $delete_id_exp = $_GET['delete_id_exp'];
+            $assign_id_exp = $_GET['assign_id_exp'];
+            $investigator_email = $_SESSION['email'];
 
-            $procedure = "CALL DeleteTest(?)";
+            $procedure = "CALL AssignInvestigator(?,?)";
             $stmt = $sqli->prepare($procedure);
-            $stmt->bind_param("i", $delete_id_exp);
+            $stmt->bind_param("is", $assign_id_exp,$investigator_email);
 
             if ($stmt->execute()) {
                 header("Location: ../testList.php");
@@ -26,14 +28,9 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
             }
 
             $stmt->close();
-
-        } else {
-            echo "Delete ID is not set.";
         }
 
     }
-
-    $sqli->close();
 
 }
 ?>

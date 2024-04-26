@@ -88,7 +88,7 @@ public class WriteToSQL implements MqttCallback {
         try {
             documentLabel.append(sqlCommand + "\n");
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Error appending to document label " + e);
         }
 
         try {
@@ -179,15 +179,14 @@ public class WriteToSQL implements MqttCallback {
      *
      * @param s            the topic on which the message was received
      * @param mqttMessage  the MQTT message received
-     * @throws Exception   if an error occurs while processing the message
      */
     @Override
-    public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
+    public void messageArrived(String s, MqttMessage mqttMessage) {
         try {
             writeToMySQL(mqttMessage.toString());
             documentLabel.append(s + "\n");
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Error while treating received message " + e);
         }
     }
 

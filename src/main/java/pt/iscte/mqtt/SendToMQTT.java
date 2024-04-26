@@ -19,7 +19,6 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.FileReader;
 
@@ -99,7 +98,7 @@ public class SendToMQTT implements MqttCallback {
             idStorageFile = new File(new File("").getPath()+"src/main/java/pt/iscte/mqtt/lastIdValue");
             idStorageFile.createNewFile();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Error initializing file " + e);
         }
     }
 
@@ -138,7 +137,7 @@ public class SendToMQTT implements MqttCallback {
      */
     private void buildMazeMap(ResultSet result) {
         try {
-            validPositions = new MultiMap<Integer, ArrayList<Integer>>();
+            validPositions = new MultiMap<>();
 
             while(result.next()) {
                 ArrayList<Integer> arrayWithRoomAndDistance = new ArrayList<>();
@@ -272,7 +271,7 @@ public class SendToMQTT implements MqttCallback {
      * Publishes a new message to the temperature sensors' MQTT topic
      *
      * @param mqttMessage MQTT Message to broadcast to the broker
-     * @throws MqttException What type of error occured in the MQTT connection
+     * @throws MqttException What type of error occurred in the MQTT connection
      */
     private void treatTempSensorMessage(MqttMessage mqttMessage) throws MqttException {
         mqttClientTemp.publish(CommonUtilities.getConfig("MQTT", "MQTTTopicTemp"), mqttMessage);
@@ -282,7 +281,7 @@ public class SendToMQTT implements MqttCallback {
      * Publishes a new message to the door sensor's MQTT topic
      *
      * @param mqttMessage MQTT Message to broadcast to the broker
-     * @throws MqttException What type of error occured in the MQTT connection
+     * @throws MqttException What type of error occurred in the MQTT connection
      */
     private void treatDoorSensorMessage(MqttMessage mqttMessage) throws MqttException {
         mqttClientMaze.publish(CommonUtilities.getConfig("MQTT", "MQTTTopicMaze"), mqttMessage);
@@ -319,18 +318,6 @@ public class SendToMQTT implements MqttCallback {
     @Override
     public void messageArrived(String topic, MqttMessage message){
     
-    }
-
-    public void idMessageStored(String messageID) {
-        try {
-            String fileName = (((new File("").getPath()+"src//main//java//pt//iscte//mqtt//")+"lastIdValue.txt"));
-            PrintWriter fileWriter = new PrintWriter(fileName);
-            fileWriter.write(messageID);
-            fileWriter.flush();
-            fileWriter.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
     }
 
     /**

@@ -236,7 +236,7 @@ public class CommonUtilities {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             return sdf.parse(dateString);
         } catch (ParseException e) {
-            e.printStackTrace();
+            System.out.println("Error while parsing date " + e);
             return null;
         }
     }

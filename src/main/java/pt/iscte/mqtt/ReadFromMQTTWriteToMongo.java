@@ -1,8 +1,6 @@
 package pt.iscte.mqtt;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCollection;
-import com.mongodb.DBObject;
 import org.bson.Document;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
@@ -72,7 +70,6 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
      *
      * @param topic the topic on which the message was received
      * @param c the MQTT message
-     * @throws Exception if an error occurs while processing the message
      */
     @Override
     public void messageArrived(String topic, MqttMessage c) {
@@ -99,7 +96,6 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
 
             documentLabel.append(c + "\n");
         } catch (Exception e) {
-            e.printStackTrace();
             System.err.println("Error treating message" + c);
         }
     }
@@ -186,43 +182,6 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
 
         // Returns the final result
         return result.toString();
-    }
-
-    /**
-     * Adds a backslash before any special characters in the given string.
-     *
-     * @param str The input string.
-     * @return The modified string with backslashes added before special characters.
-     */
-    private String addBackslashSpecialCharacters(String str) {
-        StringBuilder result = new StringBuilder();
-
-        for (int i = 0; i < str.length(); i++) {
-            char ch = str.charAt(i);
-            if (isSpecialCharacter(ch)) {
-                // Append backslash before the special character
-                result.append("\\").append(ch);
-            } else {
-                // Append the character as it is
-                result.append(ch);
-            }
-        }
-
-        return result.toString();
-    }
-
-    /**
-     * Checks whether a given character is a special character.
-     *
-     * @param ch The character to be checked.
-     * @return {@code true} if the character is a special character, {@code false} otherwise.
-     */
-    private boolean isSpecialCharacter(char ch) {
-        //Define the set of special characters
-        String specialCharacters = "!@#$%^&*()_=+[]|;<>?/";
-
-        //Check if the character is a special character
-        return specialCharacters.indexOf(ch) != -1;
     }
 
     /**

@@ -19,6 +19,9 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.FileReader;
 
 /**
  * Implements the MqttCallback interface for handling MQTT events and sending data to the broker.
@@ -218,6 +221,7 @@ public class SendToMQTT implements MqttCallback {
      */
     private void extractSensorData(Document[] pipeline, MongoCollection<Document> collection) {
         //Execute the aggregation pipeline and process the result
+
         AggregateIterable<Document> output = collection.aggregate(Arrays.asList(pipeline));
 
         HashSet<String> newProcessedIds = new HashSet<>();
@@ -238,6 +242,8 @@ public class SendToMQTT implements MqttCallback {
         processedIds = newProcessedIds;
     }
 
+   
+
     /**
      * Publishes the given sensor data to the MQTT broker.
      *
@@ -255,6 +261,7 @@ public class SendToMQTT implements MqttCallback {
                 treatTempSensorMessage(mqttMessage);
 
             storeMessageId((Document.parse(sensorData)).get("_id").toString());
+
             documentLabel.append(mqttMessage + "\n");
         } catch (MqttException e) {
             System.err.println("There was an error reading or sending the MQTT message");
@@ -311,7 +318,36 @@ public class SendToMQTT implements MqttCallback {
      */
     @Override
     public void messageArrived(String topic, MqttMessage message){
+    
+    }
 
+    public void idMessageStored(String messageID) {
+        try {
+            String fileName = (((new File("").getPath()+"src//main//java//pt//iscte//mqtt//")+"lastIdValue.txt"));
+            PrintWriter fileWriter = new PrintWriter(fileName);
+            fileWriter.write(messageID);
+            fileWriter.flush();
+            fileWriter.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String hasStoredId(){
+        String storedId = null; // Default value if no ID is found or file doesn't exist
+
+        try {
+            File file = new File(new File("").getPath()+"src//main//java//pt//iscte//mqtt//lastIdValue.txt");
+            if (file.exists()) {
+                BufferedReader reader = new BufferedReader(new FileReader(file));
+                storedId = reader.readLine();
+                reader.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return storedId;
     }
 
     /**

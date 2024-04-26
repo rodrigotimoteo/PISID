@@ -1,7 +1,7 @@
 package pt.iscte.mysql;
 
 import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
+import org.bson.Document;
 import org.eclipse.paho.client.mqttv3.*;
 import pt.iscte.CommonUtilities;
 
@@ -79,7 +79,7 @@ public class WriteToSQL implements MqttCallback {
     public void writeToMySQL(String c){
         String sqlCommand;
 
-        if(((DBObject) JSON.parse(c)).containsField("SalaOrigem"))
+        if((Document.parse(c)).containsKey("SalaOrigem"))
             sqlCommand = getSQLCommand(c, doorProcedure);
         else
             sqlCommand = getSQLCommand(c, tempProcedure);
@@ -142,16 +142,14 @@ public class WriteToSQL implements MqttCallback {
      *         Returns null if the time string format is invalid.
      */
     private String extractTimestamp(String time) {
+        System.out.println(time);
         StringBuilder stringBuilder = new StringBuilder();
 
-        String[] timeSepareted = time.split(" ");
+        String[] timeSeparated = time.split(" ");
 
-        if(timeSepareted.length == 5) {
-            stringBuilder.append(timeSepareted[3].substring(1)).append(" ");
-
-            timeSepareted = timeSepareted[4].split("\\.");
-
-            stringBuilder.append(timeSepareted[0]).append("'");
+        if(timeSeparated.length == 4) {
+            stringBuilder.append(timeSeparated[2].substring(1)).append(" ");
+            stringBuilder.append(timeSeparated[3], 0, 8).append("'");
 
             return stringBuilder.toString();
         }

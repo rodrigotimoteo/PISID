@@ -1,22 +1,21 @@
 package pt.iscte.mqtt;
 
-import com.mongodb.AggregationOutput;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
+import com.mongodb.client.AggregateIterable;
+import com.mongodb.client.MongoCollection;
+import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.eclipse.paho.client.mqttv3.*;
 import pt.iscte.CommonUtilities;
 
 import javax.swing.*;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.PrintWriter;
+import java.io.*;
 import java.sql.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
-import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -29,6 +28,8 @@ import java.io.FileReader;
  */
 public class SendToMQTT implements MqttCallback {
 
+    public static final int MAX_TEMP_ALLOWED_DEVIATION = 3;
+
     /**
      * Static instances of MQTT clients for temperature and maze sensors.
      */
@@ -38,14 +39,14 @@ public class SendToMQTT implements MqttCallback {
     /**
      * Static collections for storing sensor data in MongoDB.
      */
-    static DBCollection tempSensor1;
-    static DBCollection tempSensor2;
-    static DBCollection doorSensor;
+    static MongoCollection<Document> tempSensor1;
+    static MongoCollection<Document> tempSensor2;
+    static MongoCollection<Document> doorSensor;
 
     /**
      * Static reference to the maze configuration hosted in provided mySQL DB
      */
-    static MultiMap validPositions;
+    static MultiMap<Integer, ArrayList<Integer>> validPositions;
 
     /**
      * JTextArea for displaying document labels.
@@ -53,22 +54,53 @@ public class SendToMQTT implements MqttCallback {
     static JTextArea documentLabel = new JTextArea("\n");
 
     /**
+     * Stores a static reference to the file dedicated to storing the last ID sent
+     */
+    static File idStorageFile;
+
+    /**
+     * ID of the last retrieval operation.
+     */
+    private static String lastSentId;
+
+    /**
      * Timestamp of the last retrieval operation.
      */
     private long lastRetrievalTimestamp = System.currentTimeMillis();
 
     /**
+     * Value of the last temperature reading
+     */
+    private double lastTemperatureReading = Integer.MIN_VALUE;
+
+    /**
      * Set for storing processed IDs.
      */
-    private final Set<String> processedIds = new HashSet<>();
+    private Set<String> processedIds = new HashSet<>();
 
 
     public static void main(String[] args) {
         documentLabel = CommonUtilities.createWindow("Send to MQTT");
+        initFile();
+        hasStoredId();
 
         new SendToMQTT().connectMazeSettings();
         new SendToMQTT().connectMongo();
         new SendToMQTT().connectCloud();
+    }
+
+    /**
+     * Initializes the file used for storing the last ID value.
+     * If the file does not exist, it creates a new one.
+     * The file is created relative to the project's source directory.
+     */
+    private static void initFile() {
+        try {
+            idStorageFile = new File(new File("").getPath()+"src/main/java/pt/iscte/mqtt/lastIdValue");
+            idStorageFile.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -117,8 +149,6 @@ public class SendToMQTT implements MqttCallback {
                 validPositions.put(result.getInt("salaa"), arrayWithRoomAndDistance);
             }
 
-            int i = 0;
-            System.out.println("ola");
         } catch (SQLException e) {
             System.err.println("Error reading result information. " + e);
         }
@@ -141,7 +171,7 @@ public class SendToMQTT implements MqttCallback {
      * loop every 500ms
      */
     public void connectMongo() {
-        DBCollection[] dbCollections = CommonUtilities.connectMongo();
+        MongoCollection<Document>[] dbCollections = CommonUtilities.connectMongo();
 
         tempSensor1 = dbCollections[0];
         tempSensor2 = dbCollections[1];
@@ -152,7 +182,7 @@ public class SendToMQTT implements MqttCallback {
             try {
                 fetchMongo();
             } catch (Exception e) {
-                e.printStackTrace();
+                System.err.println("There was an error while fetching information from mongoDB database");
             }
         }, 5000, 500, TimeUnit.MILLISECONDS);
     }
@@ -161,11 +191,21 @@ public class SendToMQTT implements MqttCallback {
      * Fetches sensor data from MongoDB and extracts relevant information.
      */
     private void fetchMongo() {
-        BasicDBObject match = new BasicDBObject("$match", new BasicDBObject("Hora", new BasicDBObject("$gt", formatDate(lastRetrievalTimestamp))));
-        BasicDBObject sort = new BasicDBObject("$sort", new BasicDBObject("Hora", 1));
+        Document match, sort;
+
+        if(lastSentId == null || lastSentId.isEmpty()) {
+            match = new Document("$match", new BasicDBObject("Hora", new BasicDBObject("$gt",
+                    CommonUtilities.formatDate(lastRetrievalTimestamp))));
+            sort = new Document("$sort", new BasicDBObject("Hora", 1));
+        } else {
+            ObjectId lastSentObjectId = new ObjectId(lastSentId);
+
+            match = new Document("$match", new BasicDBObject("_id", new BasicDBObject("$gt", lastSentObjectId)));
+            sort = new Document("$sort", new BasicDBObject("_id", 1));
+        }
 
         // Construct the aggregation pipeline
-        DBObject[] pipeline = {match, sort};
+        Document[] pipeline = {match, sort};
 
         extractSensorData(pipeline, tempSensor1);
         extractSensorData(pipeline, tempSensor2);
@@ -179,29 +219,27 @@ public class SendToMQTT implements MqttCallback {
      * @param pipeline the aggregation pipeline to execute
      * @param collection the MongoDB collection to query
      */
-    private void extractSensorData(DBObject[] pipeline, DBCollection collection) {
+    private void extractSensorData(Document[] pipeline, MongoCollection<Document> collection) {
         //Execute the aggregation pipeline and process the result
-        AggregationOutput output = collection.aggregate(Arrays.asList(pipeline));
-        String idStored=hasStoredId();
-        boolean arrivedToValueStored = true;
-        if(!(idStored==null)){
-            arrivedToValueStored=false;
-        }
-        System.out.println(idStored);
-        for (DBObject dbObject : output.results()) {
-            if(arrivedToValueStored ||dbObject.get("_id").toString().equals(idStored)) {
-                String documentId = dbObject.get("_id").toString();
-                if (!processedIds.contains(documentId)) {
-                    System.out.println(dbObject);
-                    publishSensor(dbObject.toString());
 
-                    //Update the last retrieval timestamp
-                    lastRetrievalTimestamp = Objects.requireNonNull(parseDate(dbObject.get("Hora").toString())).getTime();
-                    processedIds.add(documentId);
-                }
-                arrivedToValueStored=true;
+        AggregateIterable<Document> output = collection.aggregate(Arrays.asList(pipeline));
+
+        HashSet<String> newProcessedIds = new HashSet<>();
+
+        for (Document document : output) {
+            String documentId = document.get("_id").toString();
+            if (!filter(document)) continue;
+
+            if (!processedIds.contains(documentId)) {
+                publishSensor(document.toJson());
+
+                //Update the last retrieval timestamp
+                lastRetrievalTimestamp = Objects.requireNonNull(CommonUtilities.parseDate(document.get("Hora").toString())).getTime();
+                newProcessedIds.add(documentId);
             }
         }
+
+        processedIds = newProcessedIds;
     }
 
    
@@ -217,15 +255,16 @@ public class SendToMQTT implements MqttCallback {
             mqttMessage.setPayload(sensorData.getBytes());
 
             //Check if message is sensor data or not
-            if(((DBObject) JSON.parse(sensorData)).containsField("SalaOrigem"))
+            if((Document.parse(sensorData)).containsKey("SalaOrigem"))
                 treatDoorSensorMessage(mqttMessage);
             else
                 treatTempSensorMessage(mqttMessage);
 
-            idMessageStored(((DBObject) JSON.parse(sensorData)).get("_id").toString());
+            storeMessageId((Document.parse(sensorData)).get("_id").toString());
+
             documentLabel.append(mqttMessage + "\n");
         } catch (MqttException e) {
-            e.printStackTrace();
+            System.err.println("There was an error reading or sending the MQTT message");
         }
     }
 
@@ -250,33 +289,6 @@ public class SendToMQTT implements MqttCallback {
     }
 
     /**
-     * Formats the timestamp into the specified date-time format.
-     *
-     * @param timestamp the timestamp to format, represented as milliseconds since the epoch
-     * @return a string representation of the formatted date-time
-     */
-    private String formatDate(long timestamp) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSSSSS");
-        return sdf.format(new Date(timestamp));
-    }
-
-    /**
-     * Parses the given date string into a Date object using the specified date-time format.
-     *
-     * @param dateString the string representation of the date to parse
-     * @return the Date object representing the parsed date, or null if parsing fails
-     */
-    private Date parseDate(String dateString) {
-        try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            return sdf.parse(dateString);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
      * Called when the connection to the MQTT broker is lost.
      *
      * @param cause the reason for the connection loss
@@ -293,7 +305,9 @@ public class SendToMQTT implements MqttCallback {
      */
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-        
+//        if(token.isComplete()) {
+//            System.out.println(token.getMessageId());
+//        }
     }
 
     /**
@@ -334,6 +348,135 @@ public class SendToMQTT implements MqttCallback {
         }
 
         return storedId;
+    }
+
+    /**
+     * Stores the provided message ID in the designated storage file.
+     *
+     * @param messageID The message ID to be stored.
+     */
+    public void storeMessageId(String messageID) {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(idStorageFile));
+
+            writer.write(messageID);
+            writer.close();
+        } catch (IOException e) {
+            System.err.println("File could not be created to " + idStorageFile);
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Retrieves the stored ID from the designated storage file.
+     */
+    private static void hasStoredId() {
+        try {
+            if (idStorageFile.exists()) {
+                BufferedReader reader = new BufferedReader(new FileReader(idStorageFile));
+                lastSentId = reader.readLine();
+                reader.close();
+            }
+        } catch (IOException e) {
+            System.err.println("File could not be read");
+        }
+
+    }
+
+    /**
+     * Filters the document based on its timestamp and content.
+     *
+     * @param document The document to filter.
+     * @return {@code true} if the document meets the filtering criteria, {@code false} otherwise.
+     */
+    private boolean filter(Document document) {
+        //Filtering the date if withing 7 days and valid
+        try {
+            LocalDateTime documentDateTime = LocalDateTime.parse((CharSequence) document.get("Hora"),DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+            LocalDateTime currentDateTime  = LocalDateTime.now();
+
+            Duration duration = Duration.between(documentDateTime, currentDateTime);
+
+            if (duration.abs().toDays() <= 7) return true;
+        } catch (DateTimeParseException e) {
+            System.err.println("Invalid date: " + document.get("Hora"));
+            return false;
+        }
+
+        if      (document.containsKey("SalaOrigem")) return filterDoorSensor(document);
+        else if (document.containsKey("Leitura")) return filterTemperatureSensor(document);
+
+        return false;
+    }
+
+    /**
+     * Filters the document from a door sensor based on its content mainly validity of movement
+     *
+     * @param document The document from the door sensor
+     * @return {@code true} if the document meets the filtering criteria {@code false} otherwise
+     */
+    private boolean filterDoorSensor(Document document) {
+        //Check if number of rooms is correct
+        int originRoom, destinationRoom;
+
+        originRoom = Integer.parseInt((String) document.get("SalaOrigem"));
+        destinationRoom = Integer.parseInt((String) document.get("SalaDestino"));
+
+        if(originRoom < 0 || originRoom > 10 || destinationRoom < 0 || destinationRoom > 10) return false;
+
+        return checkMovement(originRoom, destinationRoom);
+    }
+
+    /**
+     * Checks if the movement from one room to another is valid.
+     *
+     * @param originRoom The room from which the movement originates.
+     * @param destinationRoom The room to which the movement is intended.
+     * @return {@code true} if the movement is valid, {@code false} otherwise.
+     */
+    private boolean checkMovement(int originRoom, int destinationRoom) {
+        //Check if movement is valid
+        List<ArrayList<Integer>> possibleDestinations;
+
+        if(!validPositions.containsKey(originRoom)) return false;
+
+        possibleDestinations = validPositions.get(originRoom);
+
+        for(ArrayList<Integer> destination : possibleDestinations)
+            if(destination.getFirst() == destinationRoom) return true;
+
+        return false;
+    }
+
+    /**
+     * Filters temperature sensor data to ensure validity.
+     *
+     * @param document The document containing temperature sensor data.
+     * @return {@code true} if the temperature data is valid; {@code false} otherwise.
+     */
+    private boolean filterTemperatureSensor(Document document) {
+        //Check if values are valid
+        double temperature;
+
+        try {
+            temperature = Double.parseDouble((String) document.get("Leitura"));
+        } catch (NumberFormatException e) {
+            System.err.println("Invalid value for temperature, error parsing " + document.get("Leitura"));
+
+            return false;
+        } catch (NullPointerException e) {
+            System.err.println("No value given");
+
+            return false;
+        }
+
+        //Check temperature variations for unconformities
+        if(lastTemperatureReading == Integer.MIN_VALUE)
+            lastTemperatureReading = temperature;
+        else
+            return Math.abs(lastRetrievalTimestamp - temperature) < MAX_TEMP_ALLOWED_DEVIATION;
+
+        return true;
     }
 
     /**

@@ -173,7 +173,13 @@ $result = $stmt->get_result();
                             </form>
                         </td>
                         <td><button class="delete">Assign Investigator</button></td>
-                        <td><button class="delete">Edit Test</button></td>
+
+                        <td>
+                            <form action="editTestPage.php" method="GET">
+                                <input type="hidden" name="edit_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
+                                <button type="submit" class="start-finish" name="edit">Edit Test</button>
+                            </form>
+                        </td>
                     </tr>
                  <?php } ?>
 

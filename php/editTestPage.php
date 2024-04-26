@@ -1,5 +1,5 @@
 <?php
-session_start();
+#session_start();
 /*
 
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
@@ -13,30 +13,36 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
 
 
 <?php
-/*
-if(isset($_GET['test_id'])) {
-    $test_id = $_GET['test_id'];
-} else {
-    echo "Test ID is not set.";
-    exit();
 
+include("config.php");
+
+if ($_SERVER["REQUEST_METHOD"] == "GET") {
+
+    $sqli = new mysqli(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_DATABASE);
+
+    if ($sqli->connect_error) {
+        die("Connection failed: " . $sqli->connect_error);
+    }
+
+    $edit_id_exp = $_GET['edit_id_exp'];
+
+    if(isset($_SESSION['email'])) {
+
+        if(isset($_GET['edit_id_exp'])) {
+
+            $stmt = $sqli->prepare("SELECT descricao, limite_ratos_sala, numero_ratos, segundos_sem_movimento, temperatura_ideal, variacao_temperatura_maxima FROM Experiencia WHERE id_experiencia = ?");
+            $stmt->bind_param("i", $edit_id_exp);
+            $stmt->execute();
+
+            $stmt->bind_result($descricao, $limite_ratos_sala, $numero_ratos, $segundos_sem_movimento, $temperatura_ideal, $variacao_temperatura);
+
+            $stmt->fetch();
+            $stmt->close();
+
+        }
+    }
+    $sqli->close();
 }
-*/
-
-include("../php/config.php");
-$sqli = new mysqli(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_DATABASE);
-
-if ($sqli->connect_error) {
-    die("Connection failed: " . $sqli->connect_error);
-}
-
-$stmt = $sqli->prepare("SELECT descricao, limite_ratos_sala, numero_ratos, segundos_sem_movimento, temperatura_ideal, variacao_temperatura FROM Experiencia WHERE id_experiencia = ?");
-$stmt->bind_param("i", $test_id);
-$stmt->execute();
-$stmt->bind_result($descricao, $limite_ratos_sala, $numero_ratos, $segundos_sem_movimento, $temperatura_ideal, $variacao_temperatura);
-$stmt->fetch();
-$stmt->close();
-
 ?>
 
 <!DOCTYPE html>
@@ -61,7 +67,7 @@ $stmt->close();
             text-align: center;
             margin-top: 50px;
             font-size: 36px;
-            color: #000;
+            color: #ffffff;
         }
 
         body {
@@ -84,7 +90,7 @@ $stmt->close();
 
         label {
             display: block;
-            color: #ffff;
+            color: #000000;
             font-size: 18px;
             margin-top: 20px;
         }
@@ -144,7 +150,7 @@ $stmt->close();
 <h2>Edit Test</h2>
 
 <form action="actions/editTest.php" method="post">
-    <input type="hidden" name="test_id" value="<?php echo $test_id; ?>">
+    <input type="hidden" name="test_id" value="<?php echo $edit_id_exp; ?>">
 
     <label for="test_description">Test Description:</label>
     <input type="text" id="test_description" name="test_description" value="<?php echo $descricao; ?>" required>

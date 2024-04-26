@@ -26,17 +26,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $test_ideal_temperature = $_POST['test_ideal_temperature'];
                 $test_max_temp_deviation = $_POST['test_max_temp_deviation'];
 
-                $procedure = "CALL EditTest(?,?,?,?,?,?,?,?)";
+                $procedure = "CALL EditTest(?,?,?,?,?,?,?)";
                 $stmt = $sqli->prepare($procedure);
-                $stmt->bind_param("ssiiiiid", $test_description, $test_limit_per_room, $test_number_of_rats, $test_seconds_without_movement, $test_ideal_temperature, $test_max_temp_deviation, $test_id);
+                $stmt->bind_param("siiiiii", $test_description, $test_number_of_rats, $test_limit_per_room, $test_id, $test_seconds_without_movement, $test_ideal_temperature, $test_max_temp_deviation);
 
                 if ($stmt->execute()) {
-                    $response['success'] = true;
-                    $response['message'] = "Test updated successfully.";
+                    header("Location: ../testList.php");
                 } else {
-                    $response['message'] = "Error: " . $procedure . "<br>" . $sqli->error;
+                    echo "Error: " . $procedure . "<br>" . $sqli->error;
                 }
-
                 $stmt->close();
 
             } else {
@@ -49,5 +47,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-echo json_encode($response);
 ?>

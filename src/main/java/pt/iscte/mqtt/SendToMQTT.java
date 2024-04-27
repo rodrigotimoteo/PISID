@@ -21,6 +21,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.io.IOException;
 import java.io.FileReader;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Implements the MqttCallback interface for handling MQTT events and sending data to the broker.
@@ -74,9 +75,16 @@ public class SendToMQTT implements MqttCallback {
     private double lastTemperatureReadingSensor2 = Integer.MIN_VALUE;
 
     /**
+     * Timestamp of the last sent sensors
+     */
+    private final AtomicReference<LocalDateTime> lastSentTimestampDoorSensor  = new AtomicReference<>();
+    private final AtomicReference<LocalDateTime> lastSentTimestampTempSensor1 = new AtomicReference<>();
+    private final AtomicReference<LocalDateTime> lastSentTimestampTempSensor2 = new AtomicReference<>();
+
+    /**
      * Set for storing processed IDs.
      */
-    private Set<String> processedIds = new HashSet<>();
+    private final Set<String> processedIds = new HashSet<>();
 
 
     public static void main(String[] args) {
@@ -183,6 +191,7 @@ public class SendToMQTT implements MqttCallback {
                 fetchMongo();
             } catch (Exception e) {
                 System.err.println("There was an error while fetching information from mongoDB database " + e);
+                e.printStackTrace();
             }
         }, 5000, 500, TimeUnit.MILLISECONDS);
     }
@@ -382,12 +391,17 @@ public class SendToMQTT implements MqttCallback {
     }
 
     /**
-     * Filters the document from a door sensor based on its content mainly validity of movement
+     * Filters the document from a door sensor based on its content mainly validity of movement and duplicate verification
+     * based on document's timestamp
      *
      * @param document The document from the door sensor
      * @return {@code true} if the document meets the filtering criteria {@code false} otherwise
      */
     private boolean filterDoorSensor(Document document) {
+        //Filter duplicates based on dates
+        if(filterDuplicatesBasedOnDate(document, lastSentTimestampDoorSensor))
+            return false;
+
         //Check if number of rooms is correct
         int originRoom, destinationRoom;
 
@@ -446,18 +460,49 @@ public class SendToMQTT implements MqttCallback {
 
         int sensor = Integer.parseInt((String) document.get("Sensor"));
 
-        //Check temperature variations for unconformities
+        //Check temperature variations for unconformities and duplicates based on dates
         if(sensor == 1) {
+            if(filterDuplicatesBasedOnDate(document, lastSentTimestampTempSensor1)) return false;
+
             if(lastTemperatureReadingSensor1 == Integer.MIN_VALUE)
                 lastTemperatureReadingSensor1 = temperature;
 
             return Math.abs(lastTemperatureReadingSensor1 - temperature) < MAX_TEMP_ALLOWED_DEVIATION;
         }
         else if(sensor == 2) {
+            if(filterDuplicatesBasedOnDate(document, lastSentTimestampTempSensor2)) return false;
+
             if(lastTemperatureReadingSensor2 == Integer.MIN_VALUE)
                 lastTemperatureReadingSensor2 = temperature;
 
             return Math.abs(lastTemperatureReadingSensor2 - temperature) < MAX_TEMP_ALLOWED_DEVIATION;
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Filters duplicate documents based on date.
+     *
+     * @param document The document to check for duplicates.
+     * @param lastSentDateTime The timestamp of the last sent document.
+     * @return {@code true} if the document is not a duplicate based on date, {@code false} otherwise.
+     * @throws DateTimeParseException If the date in the document cannot be parsed.
+     */
+    private boolean filterDuplicatesBasedOnDate(Document document, AtomicReference<LocalDateTime> lastSentDateTime) {
+        if(lastSentDateTime.get() == null) return false;
+
+        try {
+            LocalDateTime documentDateTime = LocalDateTime.parse((CharSequence) document.get("Hora"),DateTimeFormatter.
+                    ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+
+            if(lastSentDateTime.get().equals(documentDateTime)) return true;
+
+            lastSentDateTime.set(documentDateTime);
+        } catch (DateTimeParseException e) {
+            System.err.println("Invalid date: " + document.get("Hora"));
+            return true;
         }
 
         return false;

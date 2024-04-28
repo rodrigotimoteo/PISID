@@ -28,7 +28,6 @@ public class WriteToSQL implements MqttCallback {
      * Represents the name of the SQL table.
      */
     static String doorProcedure;
-
     static String tempProcedure;
 
     /**

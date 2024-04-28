@@ -193,7 +193,7 @@ public class SendToMQTT implements MqttCallback {
                 System.err.println("There was an error while fetching information from mongoDB database " + e);
                 e.printStackTrace();
             }
-        }, 5000, 500, TimeUnit.MILLISECONDS);
+        }, 5000, 1, TimeUnit.SECONDS);
     }
 
     /**
@@ -251,8 +251,6 @@ public class SendToMQTT implements MqttCallback {
         }
     }
 
-   
-
     /**
      * Publishes the given sensor data to the MQTT broker.
      *
@@ -284,16 +282,18 @@ public class SendToMQTT implements MqttCallback {
      * @throws MqttException What type of error occurred in the MQTT connection
      */
     private void treatTempSensorMessage(MqttMessage mqttMessage) throws MqttException {
+        mqttMessage.setQos(0);
         mqttClientTemp.publish(CommonUtilities.getConfig("MQTT", "MQTTTopicTemp"), mqttMessage);
     }
 
     /**
-     * Publishes a new message to the door sensor's MQTT topic
+     * Publishes a new message to the door sensor's MQTT topic using QOS 2
      *
      * @param mqttMessage MQTT Message to broadcast to the broker
      * @throws MqttException What type of error occurred in the MQTT connection
      */
     private void treatDoorSensorMessage(MqttMessage mqttMessage) throws MqttException {
+        mqttMessage.setQos(2);
         mqttClientMaze.publish(CommonUtilities.getConfig("MQTT", "MQTTTopicMaze"), mqttMessage);
     }
 
@@ -314,6 +314,7 @@ public class SendToMQTT implements MqttCallback {
      */
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
+        //TODO SAO ENVIADOS DUPLICADOS?? OU ESTE METODO APENAS GARANTE O ENVIO??
         if(token.isComplete()) {
             System.out.println(token.getMessageId() + "\n" + token.getResponse());
         }
@@ -621,6 +622,4 @@ public class SendToMQTT implements MqttCallback {
             map.clear();
         }
     }
-
-
 }

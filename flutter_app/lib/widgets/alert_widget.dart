@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import '../screens/screens.dart';
 
 class Alerts extends StatelessWidget {
-//class Alerts extends StatefulWidget {
   const Alerts({Key? key}) : super(key: key);
+
+  /// Builds the [Alerts] Widget's User Interface
   @override
   Widget build(BuildContext context) {
     const appTitle = 'Alertas';

@@ -15,6 +15,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.text.ParseException;
@@ -23,7 +25,11 @@ import java.util.Date;
 import java.util.Random;
 
 public class CommonUtilities {
-
+    
+    private static InputStream getStream() {
+        return Thread.currentThread().getContextClassLoader().getResourceAsStream("Configuration.ini");
+    }
+    
     public static JTextArea createWindow(String title) {
         //Create JTextArea for displaying data
         JTextArea documentLabel = new JTextArea("\n");
@@ -63,7 +69,7 @@ public class CommonUtilities {
             MqttClient mqttClientTemp;
             MqttClient mqttClientMaze;
 
-            Wini ini = new Wini(new File("src/main/java/pt/iscte/Configuration.ini"));
+            Wini ini = new Wini(getStream());
 
             int i = new Random().nextInt(100000);
             mqttClientTemp = new MqttClient(ini.get(section, "MQTTServer"), "CloudToMongo " + i + "_"
@@ -102,7 +108,7 @@ public class CommonUtilities {
      */
     public static MongoCollection[] connectMongo() {
         try {
-            Wini ini = new Wini(new File("src/main/java/pt/iscte/Configuration.ini"));
+            Wini ini = new Wini(getStream());
 
             String mongoURI = "";
 
@@ -154,7 +160,7 @@ public class CommonUtilities {
      */
     public static String getConfig(String section, String option) {
         try {
-            Wini ini = new Wini(new File("src/main/java/pt/iscte/Configuration.ini"));
+            Wini ini = new Wini(getStream());
 
             return ini.get(section, option);
 
@@ -175,7 +181,7 @@ public class CommonUtilities {
      */
     public static Connection connectLocalDatabase() {
         try {
-            Wini ini = new Wini(new File("src/main/java/pt/iscte/Configuration.ini"));
+            Wini ini = new Wini(getStream());
 
             String sqlDatabaseConnection = ini.get("MySQL", "sqlDatabaseConnection");
             String sqlDatabaseUser = ini.get("MySQL", "sqlDatabaseUser");
@@ -199,7 +205,7 @@ public class CommonUtilities {
      */
     public static Connection connectMazeSettingDatabase() {
         try {
-            Wini ini = new Wini(new File("src/main/java/pt/iscte/Configuration.ini"));
+            Wini ini = new Wini(getStream());
 
             String sqlDatabaseConnection = ini.get("MySQLMazeSettings", "sqlDatabaseConnection");
             String sqlDatabaseUser = ini.get("MySQLMazeSettings", "sqlDatabaseUser");

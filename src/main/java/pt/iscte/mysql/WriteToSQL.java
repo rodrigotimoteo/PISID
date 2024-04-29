@@ -3,6 +3,7 @@ package pt.iscte.mysql;
 import org.bson.Document;
 import org.eclipse.paho.client.mqttv3.*;
 import pt.iscte.CommonUtilities;
+import pt.iscte.mqtt.ReadFromMQTTWriteToMongo;
 
 import javax.swing.*;
 import java.sql.CallableStatement;
@@ -43,6 +44,18 @@ public class WriteToSQL implements MqttCallback {
     }
 
     /**
+     * Sets the JTextArea used for displaying document information.
+     * This method allows injecting a JTextArea instance into the
+     * ReadFromMQTTWriteToMongo class for displaying document information.
+     *
+     * @param documentLabel the JTextArea instance to be injected
+     */
+    public static void injectDocumentLabel(JTextArea documentLabel) {
+        WriteToSQL.documentLabel = documentLabel;
+    }
+
+
+    /**
      * Connects to the MySQL database and displays connection information.
      */
     public void connectDatabase() {
@@ -53,7 +66,8 @@ public class WriteToSQL implements MqttCallback {
         if(mySQLConnection == null)
             System.exit(1);
 
-        documentLabel.append("Connection To MariaDB Succeeded" + "\n");
+        if(documentLabel != null) documentLabel.append("Connection To MariaDB Succeeded" + "\n");
+        else System.out.println("Connection To MariaDB Succeeded");
     }
 
 
@@ -85,7 +99,8 @@ public class WriteToSQL implements MqttCallback {
         System.out.println(sqlCommand);
 
         try {
-            documentLabel.append(sqlCommand + "\n");
+            if(documentLabel != null) documentLabel.append(sqlCommand + "\n");
+            else System.out.println(sqlCommand);
         } catch (Exception e) {
             System.err.println("Error appending to document label " + e);
         }
@@ -183,7 +198,8 @@ public class WriteToSQL implements MqttCallback {
     public void messageArrived(String s, MqttMessage mqttMessage) {
         try {
             writeToMySQL(mqttMessage.toString());
-            documentLabel.append(s + "\n");
+            if(documentLabel != null) documentLabel.append(s + "\n");
+            else System.out.println(s);
         } catch (Exception e) {
             System.err.println("Error while treating received message " + e);
         }

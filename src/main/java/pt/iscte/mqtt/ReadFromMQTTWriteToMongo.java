@@ -2,6 +2,7 @@ package pt.iscte.mqtt;
 
 import com.mongodb.client.MongoCollection;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
@@ -14,6 +15,8 @@ import javax.swing.*;
  * Implements the MqttCallback interface to handle MQTT message events and writes the received data to MongoDB.
  */
 public class ReadFromMQTTWriteToMongo implements MqttCallback {
+
+    //TODO MANEIRA BOA DE LIMITAR O SENDS TO MQTT E MANUALMENTE CRIAR O ID DO MONGO DB PARA UM NUMERO SEQUENCIAL!
 
     /**
      * Static instances of MQTT clients for temperature and maze sensors.
@@ -30,6 +33,15 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
     static MongoCollection<Document> solutions;
 
     /**
+     * Static variables representing the last known IDs for different types of sensors and solutions.
+     * These variables are used to keep track of the last received ID for each sensor type.
+     */
+    static int tempSensor1LastId = 0;
+    static int tempSensor2LastId = 0;
+    static int doorSensorLastId  = 0;
+    static int solutionsLastId   = 0;
+
+    /**
      * JTextArea for displaying document labels.
      */
     static JTextArea documentLabel = new JTextArea("\n");
@@ -42,11 +54,22 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
     }
 
     /**
+     * Sets the JTextArea used for displaying document information.
+     * This method allows injecting a JTextArea instance into the
+     * ReadFromMQTTWriteToMongo class for displaying document information.
+     *
+     * @param documentLabel the JTextArea instance to be injected
+     */
+    public static void injectDocumentLabel(JTextArea documentLabel) {
+        ReadFromMQTTWriteToMongo.documentLabel = documentLabel;
+    }
+
+    /**
      * Connects to the MQTT broker using the configuration from the Configuration.ini file.
      *
      * @throws RuntimeException if an error occurs during connection to the MQTT broker
      */
-    private void connectCloud() {
+    public void connectCloud() {
         MqttClient[] mqttClients = CommonUtilities.connectCloud(this, "MQTTCloud");
 
         mqttClientTemp = mqttClients[0];
@@ -56,13 +79,48 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
     /**
      * Connects to the MongoDB server and initializes database collections.
      */
-    private void connectMongo() {
+    public void connectMongo() {
         MongoCollection<Document>[] dbCollections = CommonUtilities.connectMongo();
 
         tempSensor1 = dbCollections[0];
         tempSensor2 = dbCollections[1];
         doorSensor  = dbCollections[2];
         solutions   = dbCollections[3];
+
+        checkIfExistsId();
+    }
+
+    /**
+     * Checks if the IDs exist in the database collections and updates the last known IDs accordingly.
+     * This method queries the database collections for each sensor type and solutions,
+     * sorts the documents by ID in descending order, and retrieves the first document.
+     * If a document is found, it updates the corresponding last known ID by converting
+     * the hexadecimal string ID to an integer and incrementing it by one.
+     */
+    private void checkIfExistsId() {
+        Document document = tempSensor1.find().sort(new Document("_id", -1)).first();
+        if(document != null) {
+            tempSensor1LastId = Integer.parseInt(document.get("_id").toString(), 16);
+            tempSensor1LastId++;
+        }
+
+        document = tempSensor2.find().sort(new Document("_id", -1)).first();
+        if(document != null) {
+            tempSensor2LastId = Integer.parseInt(document.get("_id").toString(), 16);
+            tempSensor2LastId++;
+        }
+
+        document = doorSensor.find().sort(new Document("_id", -1)).first();
+        if(document != null) {
+            doorSensorLastId = Integer.parseInt(document.get("_id").toString(), 16);
+            doorSensorLastId++;
+        }
+
+        document = solutions.find().sort(new Document("_id", -1)).first();
+        if(document != null) {
+            solutionsLastId = Integer.parseInt(document.get("_id").toString(), 16);
+            solutionsLastId++;
+        }
     }
 
     /**
@@ -74,8 +132,6 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
     @Override
     public void messageArrived(String topic, MqttMessage c) {
         try {
-            System.out.println(c.toString());
-
             if (c.toString().startsWith("{Solucao"))
                 treatSolutionsMessage(c.toString(), false);
             else {
@@ -94,7 +150,7 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
                     treatTempSensorMessage(document_json, (String) document_json.get("Sensor"));
             }
 
-            documentLabel.append(c + "\n");
+            if(documentLabel != null) documentLabel.append(c + "\n");
         } catch (Exception e) {
             System.err.println("Error treating message" + c);
         }
@@ -185,6 +241,26 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
     }
 
     /**
+     * Converts an integer into a valid 24-character hexadecimal string and returns it as an ObjectId.
+     * If the resulting hexadecimal string is longer than 24 characters, it truncates it to 24 characters.
+     * If the resulting hexadecimal string is shorter than 24 characters, it pads it with leading zeros.
+     *
+     * @param integer The integer value to be converted into a hexadecimal string.
+     * @return An ObjectId constructed from the 24-character hexadecimal string representation of the integer.
+     */
+    private ObjectId getValidObjectId(int integer) {
+        String hexString = String.format("%024x", integer);
+
+        if (hexString.length() > 24) {
+            hexString = hexString.substring(0, 24);
+        } else if (hexString.length() < 24) {
+            hexString = String.format("%0" + (24 - hexString.length()) + "d%s", 0, hexString);
+        }
+
+        return new ObjectId(hexString);
+    }
+
+    /**
      * Inserts a temperature sensor message into the appropriate database collection.
      *
      * @param message the temperature sensor message to insert
@@ -192,8 +268,10 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
      */
     private void treatTempSensorMessage(Document message, String sensor) {
         if(sensor.equals("1")) {
+            message.append("_id", getValidObjectId(tempSensor1LastId++));
             tempSensor1.insertOne(message);
-        } else { //Currently the sensor 2 takes wrong inputs (invalid inputs from mqtt)
+        } else {
+            message.append("_id", getValidObjectId(tempSensor2LastId++));
             tempSensor2.insertOne(message);
         }
     }
@@ -204,6 +282,7 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
      * @param message the door sensor message to insert
      */
     private void treatDoorSensorMessage(Document message) {
+        message.append("_id", getValidObjectId(doorSensorLastId++));
         doorSensor.insertOne(message);
     }
 
@@ -217,14 +296,13 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
 
         if(parsed) {
             object = new Document("StartDate", CommonUtilities.formatDate(System.currentTimeMillis()));
-
-            solutions.insertOne(object);
         } else {
             object = new Document("EndDate", CommonUtilities.formatDate(System.currentTimeMillis()));
             decodeSolutions(message, object);
-
-            solutions.insertOne(object);
         }
+
+        object.append("_id", getValidObjectId(solutionsLastId++));
+        solutions.insertOne(object);
     }
 
     /**

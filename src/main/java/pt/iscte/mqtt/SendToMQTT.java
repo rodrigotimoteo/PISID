@@ -6,6 +6,8 @@ import com.mongodb.client.MongoCollection;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.eclipse.paho.client.mqttv3.*;
+import org.json.JSONException;
+import org.json.JSONObject;
 import pt.iscte.CommonUtilities;
 
 import javax.swing.*;
@@ -82,10 +84,12 @@ public class SendToMQTT implements MqttCallback {
     private final AtomicReference<LocalDateTime> lastSentTimestampTempSensor2 = new AtomicReference<>();
 
     /**
-     * Set for storing processed IDs.
+     * Static variables representing the last known IDs for different types of sensors.
+     * These variables are used to keep track of the last received ID for each sensor type.
      */
-    private final Set<String> processedIds = new HashSet<>();
-
+    static int tempSensor1LastId = 0;
+    static int tempSensor2LastId = 0;
+    static int doorSensorLastId  = 0;
 
     public static void main(String[] args) {
         documentLabel = CommonUtilities.createWindow("Send to MQTT");
@@ -98,13 +102,25 @@ public class SendToMQTT implements MqttCallback {
     }
 
     /**
+     * Sets the JTextArea used for displaying document information.
+     * This method allows injecting a JTextArea instance into the
+     * ReadFromMQTTWriteToMongo class for displaying document information.
+     *
+     * @param documentLabel the JTextArea instance to be injected
+     */
+    public static void injectDocumentLabel(JTextArea documentLabel) {
+        SendToMQTT.documentLabel = documentLabel;
+    }
+
+
+    /**
      * Initializes the file used for storing the last ID value.
      * If the file does not exist, it creates a new one.
      * The file is created relative to the project's source directory.
      */
-    private static void initFile() {
+    public static void initFile() {
         try {
-            idStorageFile = new File(new File("").getPath()+"src/main/java/pt/iscte/mqtt/lastIdValue");
+            idStorageFile = new File(new File("").getPath() + "src/main/java/pt/iscte/mqtt/lastIdValue");
             idStorageFile.createNewFile();
         } catch (IOException e) {
             System.err.println("Error initializing file " + e);
@@ -115,7 +131,7 @@ public class SendToMQTT implements MqttCallback {
      * Connects to the MySQL database for maze settings, retrieves corridor information,
      * and builds the maze map.
      */
-    private void connectMazeSettings() {
+    public void connectMazeSettings() {
         Connection mySQLConnection = CommonUtilities.connectMazeSettingDatabase();
 
         if (mySQLConnection == null) {
@@ -185,6 +201,8 @@ public class SendToMQTT implements MqttCallback {
         tempSensor2 = dbCollections[1];
         doorSensor  = dbCollections[2];
 
+        checkIfExistsId();
+
         ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
         executorService.scheduleAtFixedRate(() -> {
             try {
@@ -193,7 +211,34 @@ public class SendToMQTT implements MqttCallback {
                 System.err.println("There was an error while fetching information from mongoDB database " + e);
                 e.printStackTrace();
             }
-        }, 5000, 1, TimeUnit.SECONDS);
+        }, 5000, 500, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     * Checks if the IDs exist in the database collections and updates the last known IDs accordingly.
+     * This method queries the database collections for each sensor type and solutions,
+     * sorts the documents by ID in descending order, and retrieves the first document.
+     * If a document is found, it updates the corresponding last known ID by converting
+     * the hexadecimal string ID to an integer and incrementing it by one.
+     */
+    private void checkIfExistsId() {
+        Document document = tempSensor1.find().sort(new Document("_id", -1)).first();
+        if(document != null) {
+            tempSensor1LastId = Integer.parseInt(document.get("_id").toString(), 16);
+            tempSensor1LastId++;
+        }
+
+        document = tempSensor2.find().sort(new Document("_id", -1)).first();
+        if(document != null) {
+            tempSensor2LastId = Integer.parseInt(document.get("_id").toString(), 16);
+            tempSensor2LastId++;
+        }
+
+        document = doorSensor.find().sort(new Document("_id", -1)).first();
+        if(document != null) {
+            doorSensorLastId = Integer.parseInt(document.get("_id").toString(), 16);
+            doorSensorLastId++;
+        }
     }
 
     /**
@@ -236,9 +281,16 @@ public class SendToMQTT implements MqttCallback {
         for (Document document : output) {
             String documentId = document.get("_id").toString();
 
-            if (!processedIds.contains(documentId)) {
+            if (isIdProcessed(documentId, document)) {
                 if (!filter(document)) {
-                    processedIds.add(documentId);
+                    if(document.containsKey("SalaOrigem"))
+                        doorSensorLastId++;
+                    else
+                        if(Integer.parseInt((String) document.get("Sensor")) == 1)
+                            tempSensor1LastId++;
+                        else
+                            tempSensor2LastId++;
+
                     continue;
                 }
 
@@ -246,9 +298,31 @@ public class SendToMQTT implements MqttCallback {
 
                 //Update the last retrieval timestamp
                 lastRetrievalTimestamp = Objects.requireNonNull(CommonUtilities.parseDate(document.get("Hora").toString())).getTime();
-                processedIds.add(documentId);
+                addToId(document);
             }
         }
+    }
+
+    private boolean isIdProcessed(String id, Document document) {
+        if(document.containsKey("SalaOrigem"))
+            return Integer.parseInt(id, 16) > doorSensorLastId;
+        else
+            if(Integer.parseInt((String) document.get("Sensor")) == 1)
+                return Integer.parseInt(id, 16) > tempSensor1LastId;
+            if(Integer.parseInt((String) document.get("Sensor")) == 2)
+                return Integer.parseInt(id, 16) > tempSensor2LastId;
+
+        return false;
+    }
+
+    private void addToId(Document document) {
+        if(document.containsKey("SalaOrigem"))
+            doorSensorLastId++;
+        else
+        if(Integer.parseInt((String) document.get("Sensor")) == 1)
+            tempSensor1LastId++;
+        else
+            tempSensor2LastId++;
     }
 
     /**
@@ -267,9 +341,9 @@ public class SendToMQTT implements MqttCallback {
             else
                 treatTempSensorMessage(mqttMessage);
 
-            storeMessageId((Document.parse(sensorData)).get("_id").toString());
+            storeMessageId();
 
-            documentLabel.append(mqttMessage + "\n");
+            if(documentLabel != null) documentLabel.append(mqttMessage + "\n");
         } catch (MqttException e) {
             System.err.println("There was an error reading or sending the MQTT message");
         }
@@ -282,18 +356,16 @@ public class SendToMQTT implements MqttCallback {
      * @throws MqttException What type of error occurred in the MQTT connection
      */
     private void treatTempSensorMessage(MqttMessage mqttMessage) throws MqttException {
-        mqttMessage.setQos(0);
         mqttClientTemp.publish(CommonUtilities.getConfig("MQTT", "MQTTTopicTemp"), mqttMessage);
     }
 
     /**
-     * Publishes a new message to the door sensor's MQTT topic using QOS 2
+     * Publishes a new message to the door sensor's MQTT topic
      *
      * @param mqttMessage MQTT Message to broadcast to the broker
      * @throws MqttException What type of error occurred in the MQTT connection
      */
     private void treatDoorSensorMessage(MqttMessage mqttMessage) throws MqttException {
-        mqttMessage.setQos(2);
         mqttClientMaze.publish(CommonUtilities.getConfig("MQTT", "MQTTTopicMaze"), mqttMessage);
     }
 
@@ -314,7 +386,6 @@ public class SendToMQTT implements MqttCallback {
      */
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-        //TODO SAO ENVIADOS DUPLICADOS?? OU ESTE METODO APENAS GARANTE O ENVIO??
         if(token.isComplete()) {
             System.out.println(token.getMessageId() + "\n" + token.getResponse());
         }
@@ -328,19 +399,24 @@ public class SendToMQTT implements MqttCallback {
      */
     @Override
     public void messageArrived(String topic, MqttMessage message){
-    
+
     }
 
     /**
      * Stores the provided message ID in the designated storage file.
      *
-     * @param messageID The message ID to be stored.
      */
-    public void storeMessageId(String messageID) {
+    public void storeMessageId() {
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("tempSensor1LastId", Integer.toHexString(tempSensor1LastId));
+        jsonObject.put("tempSensor2LastId", Integer.toHexString(tempSensor2LastId));
+        jsonObject.put("doorSensorLastId", Integer.toHexString(doorSensorLastId));
+
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(idStorageFile));
 
-            writer.write(messageID);
+            writer.write(jsonObject.toString());
             writer.close();
         } catch (IOException e) {
             System.err.println("File could not be created to " + idStorageFile);
@@ -351,15 +427,23 @@ public class SendToMQTT implements MqttCallback {
     /**
      * Retrieves the stored ID from the designated storage file.
      */
-    private static void hasStoredId() {
+    public static void hasStoredId() {
         try {
             if (idStorageFile.exists()) {
                 BufferedReader reader = new BufferedReader(new FileReader(idStorageFile));
-                lastSentId = reader.readLine();
+
+                JSONObject jsonObject = new JSONObject(reader);
+
+                tempSensor1LastId = Integer.parseInt(jsonObject.getString("tempSensor1LastId"), 16);
+                tempSensor2LastId = Integer.parseInt(jsonObject.getString("tempSensor2LastId"), 16);
+                doorSensorLastId  = Integer.parseInt(jsonObject.getString("doorSensorLastId"), 16);
+
                 reader.close();
             }
         } catch (IOException e) {
             System.err.println("File could not be read");
+        } catch (JSONException e) {
+            System.err.println("File could not be parsed");
         }
 
     }
@@ -431,8 +515,6 @@ public class SendToMQTT implements MqttCallback {
 
         for(ArrayList<Integer> destination : possibleDestinations)
             if(destination.getFirst() == destinationRoom) return true;
-
-        System.out.println("Invalid move?");
 
         return false;
     }
@@ -622,4 +704,5 @@ public class SendToMQTT implements MqttCallback {
             map.clear();
         }
     }
+
 }

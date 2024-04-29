@@ -34,10 +34,10 @@ class LoginFormState extends State<LoginForm> {
 
   /// Creates TextEditingControllers for each input label necessary for the login
   /// form
-  final usernameController = TextEditingController(text: "root");
+  final usernameController = TextEditingController(text: "PessoaTeste");
   final passwordController = TextEditingController();
   final ipController = TextEditingController(text: "127.0.0.1");
-  final portController = TextEditingController(text: "3306");
+  final portController = TextEditingController(text: "80");
 
   /// Clean up the controller when the widget is disposed.
   @override
@@ -118,11 +118,10 @@ class LoginFormState extends State<LoginForm> {
     );
   }
 
-  validateLogin() async {
-    String loginURL = "http://" + ipController.text.trim() + ":" +
-        portController.text.trim() + "/actions/validateLogin.php";
+  Future<void> validateLogin() async {
+    String loginURL = "http://${ipController.text.trim()}:"
+        "${portController.text.trim()}/php/actions/validateLoginFlutter.php";
 
-    // String loginURL = "http://192.168.1.184:80/scripts/validateLogin.php";
     late http.Response response;
 
     try {
@@ -140,10 +139,9 @@ class LoginFormState extends State<LoginForm> {
         },
       );
     }
+
     if (response.statusCode == 200) {
       var jsonData = json.decode(response.body);
-
-      print(jsonData);
 
       if (jsonData["success"]) {
         final prefs = await SharedPreferences.getInstance();

@@ -21,7 +21,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
         <nav>
             <ul>
                 <li>
-                    <a href="../landingPage.php">Home</a>
+                    <a href="landingPage.php">Home</a>
                 </li>
                 <li>
                     <a href="#" id="loginBtn">Login</a>

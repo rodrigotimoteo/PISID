@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `Alerta`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Alerta` (
-  `id_alerta` int(11) NOT NULL,
+  `id_alerta` int(11) NOT NULL AUTO_INCREMENT,
   `id_experiencia` int(11) DEFAULT NULL,
   `hora` timestamp NOT NULL DEFAULT current_timestamp(),
   `sala` int(11) DEFAULT NULL,
@@ -54,7 +54,7 @@ DROP TABLE IF EXISTS `Experiencia`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Experiencia` (
-  `id_experiencia` int(11) NOT NULL,
+  `id_experiencia` int(11) NOT NULL AUTO_INCREMENT,
   `descricao` text DEFAULT NULL,
   `estado_experiencia` enum('Por Iniciar','A decorrer','Terminada') NOT NULL,
   `investigador` varchar(50) NOT NULL,
@@ -71,7 +71,7 @@ CREATE TABLE `Experiencia` (
   PRIMARY KEY (`id_experiencia`),
   KEY `utilizador_id_exp` (`investigador`),
   CONSTRAINT `utilizador_id_exp` FOREIGN KEY (`investigador`) REFERENCES `Utilizador` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -80,6 +80,7 @@ CREATE TABLE `Experiencia` (
 
 LOCK TABLES `Experiencia` WRITE;
 /*!40000 ALTER TABLE `Experiencia` DISABLE KEYS */;
+INSERT INTO `Experiencia` VALUES (1,'TestExp','A decorrer','rmnto@iscte-iul.pt','2024-04-25 17:27:11','0000-00-00 00:00:00','0000-00-00 00:00:00','0000-00-00 00:00:00',5,5,30,10.00,20.00,NULL);
 /*!40000 ALTER TABLE `Experiencia` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -91,7 +92,7 @@ DROP TABLE IF EXISTS `ExperienciaSubstancia`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `ExperienciaSubstancia` (
-  `id_substancia_exp` int(11) NOT NULL,
+  `id_substancia_exp` int(11) NOT NULL AUTO_INCREMENT,
   `id_experiencia` int(11) NOT NULL,
   `substancia` varchar(20) NOT NULL,
   `num_ratos_administrada` int(11) NOT NULL,
@@ -118,7 +119,7 @@ DROP TABLE IF EXISTS `MedicoesPassagens`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `MedicoesPassagens` (
-  `id_medicao` int(11) NOT NULL,
+  `id_medicao` int(11) NOT NULL AUTO_INCREMENT,
   `id_experiencia` int(11) NOT NULL,
   `hora` timestamp NOT NULL DEFAULT current_timestamp(),
   `sala_origem` int(11) NOT NULL,
@@ -126,7 +127,7 @@ CREATE TABLE `MedicoesPassagens` (
   PRIMARY KEY (`id_medicao`) USING BTREE,
   KEY `med_passagem_exp` (`id_experiencia`),
   CONSTRAINT `med_passagem_exp` FOREIGN KEY (`id_experiencia`) REFERENCES `Experiencia` (`id_experiencia`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=55 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -135,6 +136,7 @@ CREATE TABLE `MedicoesPassagens` (
 
 LOCK TABLES `MedicoesPassagens` WRITE;
 /*!40000 ALTER TABLE `MedicoesPassagens` DISABLE KEYS */;
+INSERT INTO `MedicoesPassagens` VALUES (1,1,'2024-04-25 17:27:31',2,5),(2,1,'2024-04-25 17:27:40',2,5),(3,1,'2024-04-25 17:27:41',5,6),(4,1,'2024-04-25 17:27:44',5,7),(5,1,'2024-04-25 17:27:49',6,8),(6,1,'2024-04-25 17:28:59',1,3),(7,1,'2024-04-25 17:29:02',1,3),(8,1,'2024-04-25 17:29:02',3,2),(9,1,'2024-04-25 17:29:05',3,2),(10,1,'2024-04-25 17:29:05',1,3),(11,1,'2024-04-25 17:29:05',3,10),(12,1,'2024-04-25 17:29:05',3,10),(13,1,'2024-04-25 17:29:08',3,2),(14,1,'2024-04-25 17:29:11',1,2),(15,1,'2024-04-25 17:29:11',1,3),(16,1,'2024-04-25 17:29:12',2,4),(17,1,'2024-04-25 17:29:14',3,2),(18,1,'2024-04-25 17:29:15',2,4),(19,1,'2024-04-25 17:29:18',2,4),(20,1,'2024-04-25 17:29:21',2,4),(21,1,'2024-04-25 17:29:24',2,4),(22,1,'2024-04-25 17:29:29',4,5),(23,1,'2024-04-25 17:29:32',5,7),(24,1,'2024-04-26 10:48:16',7,5),(25,1,'2024-04-26 10:48:26',5,6),(26,1,'2024-04-26 10:48:33',6,8),(27,1,'2024-04-26 10:48:46',1,3),(28,1,'2024-04-26 10:48:49',3,2),(29,1,'2024-04-26 10:48:52',1,2),(30,1,'2024-04-26 10:48:52',1,3),(31,1,'2024-04-26 10:48:55',3,2),(32,1,'2024-04-26 10:48:55',1,3),(33,1,'2024-04-26 10:48:58',3,2),(34,1,'2024-04-26 10:48:59',1,3),(35,1,'2024-04-26 10:49:02',3,2),(36,1,'2024-04-26 10:49:03',2,5),(37,1,'2024-04-26 10:49:03',2,4),(38,1,'2024-04-26 12:37:35',8,10),(39,1,'2024-04-26 12:37:36',8,10),(40,1,'2024-04-26 12:37:36',6,8),(41,1,'2024-04-26 12:37:37',5,6),(42,1,'2024-04-26 12:37:39',8,9),(43,1,'2024-04-26 12:47:31',5,7),(44,1,'2024-04-26 12:54:01',1,2),(45,1,'2024-04-26 12:54:01',3,10),(46,1,'2024-04-26 12:54:01',1,3),(47,1,'2024-04-26 12:54:04',3,2),(48,1,'2024-04-26 12:54:05',2,4),(49,1,'2024-04-26 12:54:07',1,2),(50,1,'2024-04-26 12:54:08',2,4),(51,1,'2024-04-26 18:01:32',8,10),(52,1,'2024-04-26 18:01:37',8,10),(53,1,'2024-04-26 18:01:53',1,2),(54,1,'2024-04-26 18:01:53',1,3);
 /*!40000 ALTER TABLE `MedicoesPassagens` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -149,26 +151,26 @@ DELIMITER ;;
 /*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `BeforeInsert_MouseMovement` BEFORE INSERT ON `MedicoesPassagens` FOR EACH ROW BEGIN	
 	DECLARE originalValue INT;
     
-    IF NEW.sala_origem = 0 THEN
-    	SELECT sala_0 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
-    ELSEIF NEW.sala_origem = 1 THEN
-    	SELECT sala_1 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    IF NEW.sala_origem = 1 THEN
+    	SELECT sala_0 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
     ELSEIF NEW.sala_origem = 2 THEN
-    	SELECT sala_2 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
-	ELSEIF NEW.sala_origem = 3 THEN
-    	SELECT sala_3 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_1 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
+    ELSEIF NEW.sala_origem = 3 THEN
+    	SELECT sala_2 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_origem = 4 THEN
-    	SELECT sala_4 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_3 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_origem = 5 THEN
-    	SELECT sala_5 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_4 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_origem = 6 THEN
-    	SELECT sala_6 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_5 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_origem = 7 THEN
-    	SELECT sala_7 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_6 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_origem = 8 THEN
-    	SELECT sala_8 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
-    ELSEIF NEW.sala_origem = 9 THEN
-    	SELECT sala_9 into originalValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_7 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
+	ELSEIF NEW.sala_origem = 9 THEN
+    	SELECT sala_8 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
+    ELSEIF NEW.sala_origem = 10 THEN
+    	SELECT sala_9 into originalValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSE
     	SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Invalid Room.';
@@ -197,26 +199,26 @@ DELIMITER ;;
 	DECLARE finalMouseValue INT;
     DECLARE maxMouseValue INT;
     
-    IF NEW.sala_destino = 0 THEN
-    	SELECT sala_0 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
-    ELSEIF NEW.sala_destino = 1 THEN
-    	SELECT sala_1 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    IF NEW.sala_destino = 1 THEN
+    	SELECT sala_0 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
     ELSEIF NEW.sala_destino = 2 THEN
-    	SELECT sala_2 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
-	ELSEIF NEW.sala_destino = 3 THEN
-    	SELECT sala_3 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_1 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
+    ELSEIF NEW.sala_destino = 3 THEN
+    	SELECT sala_2 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_destino = 4 THEN
-    	SELECT sala_4 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_3 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_destino = 5 THEN
-    	SELECT sala_5 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_4 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_destino = 6 THEN
-    	SELECT sala_6 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_5 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_destino = 7 THEN
-    	SELECT sala_7 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_6 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSEIF NEW.sala_destino = 8 THEN
-    	SELECT sala_8 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
-    ELSEIF NEW.sala_destino = 9 THEN
-    	SELECT sala_9 into finalMouseValue FROM MedicoesPassagens WHERE id_experiencia = NEW.id_experiencia;
+    	SELECT sala_7 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
+	ELSEIF NEW.sala_destino = 9 THEN
+    	SELECT sala_8 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
+    ELSEIF NEW.sala_destino = 10 THEN
+    	SELECT sala_9 into finalMouseValue FROM MedicoesSalas WHERE id_experiencia = NEW.id_experiencia;
 	ELSE
     	SIGNAL SQLSTATE '45000'
         SET MESSAGE_TEXT = 'Invalid Room.';
@@ -276,7 +278,7 @@ DROP TABLE IF EXISTS `MedicoesTemperatura`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `MedicoesTemperatura` (
-  `id_medicao` int(11) NOT NULL,
+  `id_medicao` int(11) NOT NULL AUTO_INCREMENT,
   `id_experiencia` int(11) NOT NULL,
   `hora` timestamp NOT NULL DEFAULT current_timestamp(),
   `leitura` decimal(4,2) NOT NULL,
@@ -284,7 +286,7 @@ CREATE TABLE `MedicoesTemperatura` (
   PRIMARY KEY (`id_medicao`),
   KEY `med_temperatura_exp` (`id_experiencia`),
   CONSTRAINT `med_temperatura_exp` FOREIGN KEY (`id_experiencia`) REFERENCES `Experiencia` (`id_experiencia`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=242 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -293,6 +295,7 @@ CREATE TABLE `MedicoesTemperatura` (
 
 LOCK TABLES `MedicoesTemperatura` WRITE;
 /*!40000 ALTER TABLE `MedicoesTemperatura` DISABLE KEYS */;
+INSERT INTO `MedicoesTemperatura` VALUES (92,1,'2024-04-26 12:37:35',14.00,1),(93,1,'2024-04-26 12:37:36',14.00,1),(94,1,'2024-04-26 12:37:37',14.00,1),(95,1,'2024-04-26 12:37:38',13.70,1),(96,1,'2024-04-26 12:37:39',13.40,1),(97,1,'2024-04-26 12:37:40',13.10,1),(98,1,'2024-04-26 12:37:35',12.20,2),(99,1,'2024-04-26 12:37:36',12.20,2),(100,1,'2024-04-26 12:37:38',12.20,2),(101,1,'2024-04-26 12:37:39',12.20,2),(102,1,'2024-04-26 12:37:41',12.20,2),(103,1,'2024-04-26 12:37:41',12.80,1),(104,1,'2024-04-26 12:37:42',12.50,1),(105,1,'2024-04-26 12:37:43',12.20,1),(106,1,'2024-04-26 12:37:43',12.20,2),(107,1,'2024-04-26 12:47:29',11.00,1),(108,1,'2024-04-26 12:47:29',11.60,2),(109,1,'2024-04-26 12:47:30',11.00,1),(110,1,'2024-04-26 12:47:30',11.60,2),(111,1,'2024-04-26 12:47:31',11.00,1),(112,1,'2024-04-26 12:47:31',11.60,2),(113,1,'2024-04-26 12:47:32',11.00,1),(114,1,'2024-04-26 12:47:33',11.00,1),(115,1,'2024-04-26 12:47:33',11.60,2),(116,1,'2024-04-26 12:47:34',11.00,1),(117,1,'2024-04-26 12:53:27',5.00,1),(118,1,'2024-04-26 12:54:00',5.30,1),(119,1,'2024-04-26 12:54:01',5.60,1),(120,1,'2024-04-26 12:54:02',5.90,1),(121,1,'2024-04-26 12:54:03',6.20,1),(122,1,'2024-04-26 12:54:04',6.50,1),(123,1,'2024-04-26 12:54:05',6.80,1),(124,1,'2024-04-26 12:54:06',7.10,1),(125,1,'2024-04-26 12:53:27',14.00,2),(126,1,'2024-04-26 12:54:00',14.00,2),(127,1,'2024-04-26 12:54:01',14.00,2),(128,1,'2024-04-26 12:54:03',14.00,2),(129,1,'2024-04-26 12:54:05',14.00,2),(130,1,'2024-04-26 12:54:06',14.00,2),(131,1,'2024-04-26 12:54:07',14.00,2),(132,1,'2024-04-26 12:54:07',7.40,1),(133,1,'2024-04-26 12:54:08',7.70,1),(134,1,'2024-04-26 12:54:09',8.00,1),(135,1,'2024-04-26 12:54:08',14.00,2),(136,1,'2024-04-26 12:54:09',14.00,2),(137,1,'2024-04-26 12:54:10',8.00,1),(138,1,'2024-04-26 12:54:11',8.00,1),(139,1,'2024-04-26 17:46:50',14.00,2),(140,1,'2024-04-26 17:46:50',14.00,2),(141,1,'2024-04-26 17:46:50',14.00,2),(142,1,'2024-04-26 17:46:50',14.00,2),(143,1,'2024-04-26 17:46:50',14.00,2),(144,1,'2024-04-26 17:46:50',14.00,2),(145,1,'2024-04-26 17:46:50',14.00,2),(146,1,'2024-04-26 17:46:50',14.00,2),(147,1,'2024-04-26 17:46:50',14.00,2),(148,1,'2024-04-26 17:46:50',14.00,2),(149,1,'2024-04-26 17:46:50',14.00,2),(150,1,'2024-04-26 17:46:50',14.00,2),(151,1,'2024-04-26 17:46:50',14.00,2),(152,1,'2024-04-26 17:46:50',14.00,2),(153,1,'2024-04-26 17:46:50',14.00,2),(154,1,'2024-04-26 17:46:50',14.00,2),(155,1,'2024-04-26 17:46:50',14.00,2),(156,1,'2024-04-26 17:46:50',14.00,2),(157,1,'2024-04-26 17:46:50',14.00,2),(158,1,'2024-04-26 17:46:50',14.00,2),(159,1,'2024-04-26 17:46:50',14.00,2),(160,1,'2024-04-26 17:46:50',14.00,2),(161,1,'2024-04-26 17:46:50',14.00,2),(162,1,'2024-04-26 17:46:50',14.00,2),(163,1,'2024-04-26 17:46:50',14.00,2),(164,1,'2024-04-26 17:46:50',14.00,2),(165,1,'2024-04-26 17:46:50',14.00,2),(166,1,'2024-04-26 17:46:50',14.00,2),(167,1,'2024-04-26 17:46:50',14.00,2),(168,1,'2024-04-26 17:46:50',14.00,2),(169,1,'2024-04-26 17:46:50',14.00,2),(170,1,'2024-04-26 17:46:50',14.00,2),(171,1,'2024-04-26 17:46:50',14.00,2),(172,1,'2024-04-26 17:46:50',14.00,2),(173,1,'2024-04-26 17:46:50',14.00,2),(174,1,'2024-04-26 17:46:50',14.00,2),(175,1,'2024-04-26 17:46:50',14.00,2),(176,1,'2024-04-26 17:46:50',14.00,2),(177,1,'2024-04-26 17:46:50',14.00,2),(178,1,'2024-04-26 17:46:50',14.00,2),(179,1,'2024-04-26 17:46:50',14.00,2),(180,1,'2024-04-26 17:46:50',14.00,2),(181,1,'2024-04-26 17:46:50',14.00,2),(182,1,'2024-04-26 17:46:50',14.00,2),(183,1,'2024-04-26 17:46:50',14.00,2),(184,1,'2024-04-26 17:46:50',14.00,2),(185,1,'2024-04-26 17:46:50',14.00,2),(186,1,'2024-04-26 17:46:50',14.00,2),(187,1,'2024-04-26 17:46:50',14.00,2),(188,1,'2024-04-26 17:46:50',14.00,2),(189,1,'2024-04-26 17:46:50',14.00,2),(190,1,'2024-04-26 17:46:50',14.00,2),(191,1,'2024-04-26 17:46:50',14.00,2),(192,1,'2024-04-26 17:46:50',14.00,2),(193,1,'2024-04-26 17:46:50',14.00,2),(194,1,'2024-04-26 17:46:50',14.00,2),(195,1,'2024-04-26 17:46:50',14.00,2),(196,1,'2024-04-26 18:01:27',11.60,1),(197,1,'2024-04-26 18:01:27',14.00,2),(198,1,'2024-04-26 18:01:28',11.30,1),(199,1,'2024-04-26 18:01:28',14.00,2),(200,1,'2024-04-26 18:01:29',11.00,1),(201,1,'2024-04-26 18:01:30',11.00,1),(202,1,'2024-04-26 18:01:30',14.00,2),(203,1,'2024-04-26 18:01:31',11.00,1),(204,1,'2024-04-26 18:01:32',11.00,1),(205,1,'2024-04-26 18:01:32',14.00,2),(206,1,'2024-04-26 18:01:33',11.00,1),(207,1,'2024-04-26 18:01:33',14.00,2),(208,1,'2024-04-26 18:01:34',11.00,1),(209,1,'2024-04-26 18:01:34',14.00,2),(210,1,'2024-04-26 18:01:35',11.00,1),(211,1,'2024-04-26 18:01:36',11.00,1),(212,1,'2024-04-26 18:01:36',14.00,2),(213,1,'2024-04-26 18:01:37',11.00,1),(214,1,'2024-04-26 18:01:38',11.00,1),(215,1,'2024-04-26 18:01:39',11.00,1),(216,1,'2024-04-26 18:01:40',11.30,1),(217,1,'2024-04-26 18:01:40',14.00,2),(218,1,'2024-04-26 18:01:41',11.60,1),(219,1,'2024-04-26 18:01:41',14.00,2),(220,1,'2024-04-26 18:01:42',11.90,1),(221,1,'2024-04-26 18:01:42',14.00,2),(222,1,'2024-04-26 18:01:43',12.20,1),(223,1,'2024-04-26 18:01:44',12.50,1),(224,1,'2024-04-26 18:01:44',14.00,2),(225,1,'2024-04-26 18:01:45',12.80,1),(226,1,'2024-04-26 18:01:46',13.10,1),(227,1,'2024-04-26 18:01:47',13.40,1),(228,1,'2024-04-26 18:01:47',14.00,2),(229,1,'2024-04-26 18:01:48',13.70,1),(230,1,'2024-04-26 18:01:48',14.00,2),(231,1,'2024-04-26 18:01:49',14.00,1),(232,1,'2024-04-26 18:01:49',14.00,2),(233,1,'2024-04-26 18:01:50',14.00,1),(234,1,'2024-04-26 18:01:50',14.00,2),(235,1,'2024-04-26 18:01:51',14.00,1),(236,1,'2024-04-26 18:01:51',14.00,2),(237,1,'2024-04-26 18:01:52',14.00,1),(238,1,'2024-04-26 18:01:52',14.00,2),(239,1,'2024-04-26 18:01:53',14.00,1),(240,1,'2024-04-26 18:01:54',14.00,1),(241,1,'2024-04-26 18:01:55',14.00,1);
 /*!40000 ALTER TABLE `MedicoesTemperatura` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -314,7 +317,7 @@ DELIMITER ;;
     
     SELECT GetAverageTemperature() INTO average_temp;
     SELECT temperatura_ideal INTO base_temp FROM Experiencia WHERE id_experiencia = NEW.id_experiencia;
-    SELECT variacao_temperatura_maximo INTO max_deviation FROM Experiencia WHERE id_experiencia = NEW.id_experiencia;
+    SELECT variacao_temperatura_maxima INTO max_deviation FROM Experiencia WHERE id_experiencia = NEW.id_experiencia;
     
     SELECT GetRunningTime() INTO running_time;
     
@@ -335,7 +338,6 @@ DROP TABLE IF EXISTS `Utilizador`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Utilizador` (
   `email` varchar(50) NOT NULL,
-  `password` varchar(255) NOT NULL,
   `nome` varchar(100) NOT NULL,
   `telefone` varchar(12) NOT NULL,
   `tipo` enum('Investigador','Administrador') NOT NULL,
@@ -349,6 +351,7 @@ CREATE TABLE `Utilizador` (
 
 LOCK TABLES `Utilizador` WRITE;
 /*!40000 ALTER TABLE `Utilizador` DISABLE KEYS */;
+INSERT INTO `Utilizador` VALUES ('rmnto@iscte-iul.pt','Rodrigo Timoteo','123456789','Investigador');
 /*!40000 ALTER TABLE `Utilizador` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -516,8 +519,10 @@ DELIMITER ;
 DELIMITER ;;
 CREATE DEFINER=`root`@`localhost` PROCEDURE `CreateNewUser`(IN `user_email` VARCHAR(50), IN `user_password` VARCHAR(255), IN `user_nome` VARCHAR(100), IN `user_telemovel` VARCHAR(12))
 BEGIN
-	INSERT INTO Utilizador (email, password, nome, telefone, tipo)
-    VALUES (user_email, user_password, user_nome, user_telemovel, "Investigador");
+	INSERT INTO Utilizador (email, nome, telefone, tipo)
+    VALUES (user_email, user_nome, user_telemovel, "Investigador");
+    
+    CALL mysql.CreateNewUser(user_email, user_password);
 END ;;
 DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
@@ -854,4 +859,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-04-19 17:52:40
+-- Dump completed on 2024-04-29 14:49:15

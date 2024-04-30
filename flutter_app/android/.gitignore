@@ -11,9 +11,3 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
-/app/local.properties
-/app/.idea/.gitignore
-/app/.idea/gradle.xml
-/app/.idea/misc.xml
-/app/.idea/
-/app/src/.idea/

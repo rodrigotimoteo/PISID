@@ -6,9 +6,13 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
-//import './alerts.dart';
 
-// Create a Form widget.
+/// A stateful widget representing a login form.
+///
+/// This widget provides a form for users to input their login credentials.
+/// It is used to collect username and password information for authentication.
+/// The [LoginForm] widget manages its state internally and rebuilds when
+/// necessary.
 class LoginForm extends StatefulWidget {
   const LoginForm({Key? key}) : super(key: key);
 
@@ -18,25 +22,26 @@ class LoginForm extends StatefulWidget {
   }
 }
 
-// Create a corresponding State class.
-// This class holds data related to the form.
+/// The state for the [LoginForm] widget.
+///
+/// This class manages the state of the [LoginForm] widget. It handles the
+/// internal state of the login form, such as user input validation,
+/// error handling, and updating the UI accordingly.
 class LoginFormState extends State<LoginForm> {
-  // Create a global key that uniquely identifies the Form widget
-  // and allows validation of the form.
-  //
-  // Note: This is a GlobalKey<FormState>,
-  // not a GlobalKey<MyCustomFormState>.
-  final _formKey = GlobalKey<FormState>();
-  final usernameController = TextEditingController(text: "root");
-  final passwordController = TextEditingController();
-  final ipController = TextEditingController(text: "192.168.1.141");
 
-  //final ipController = TextEditingController(text:"194.210.86.10");
+  /// Create a global key that uniquely identifies the Form widget and allows validation of the form.
+  final _formKey = GlobalKey<FormState>();
+
+  /// Creates TextEditingControllers for each input label necessary for the login
+  /// form
+  final usernameController = TextEditingController(text: "PessoaTeste");
+  final passwordController = TextEditingController();
+  final ipController = TextEditingController(text: "127.0.0.1");
   final portController = TextEditingController(text: "80");
 
+  /// Clean up the controller when the widget is disposed.
   @override
   void dispose() {
-    // Clean up the controller when the widget is disposed.
     usernameController.dispose();
     passwordController.dispose();
     ipController.dispose();
@@ -44,9 +49,9 @@ class LoginFormState extends State<LoginForm> {
     super.dispose();
   }
 
+  /// Builds the [LoginForm] User Interface
   @override
   Widget build(BuildContext context) {
-    // Build a Form widget using the _formKey created above.
     return Form(
       key: _formKey,
       child: Column(
@@ -63,6 +68,7 @@ class LoginFormState extends State<LoginForm> {
               if (value == null || value.isEmpty) {
                 return 'Please insert a valid username';
               }
+
               return null;
             },
           ),
@@ -84,6 +90,7 @@ class LoginFormState extends State<LoginForm> {
               if (value == null || value.isEmpty) {
                 return 'Please insert a valid IP';
               }
+
               return null;
             },
           ),
@@ -111,16 +118,16 @@ class LoginFormState extends State<LoginForm> {
     );
   }
 
-  validateLogin() async {
-    String loginURL = "http://" + ipController.text.trim() + ":" +
-        portController.text.trim() + "/scripts/validateLogin.php";
-    // String loginURL = "http://192.168.1.184:80/scripts/validateLogin.php";
-    var response;
-    print(loginURL);
+  Future<void> validateLogin() async {
+    String loginURL = "http://${ipController.text.trim()}:"
+        "${portController.text.trim()}/php/actions/validateLoginFlutter.php";
+
+    late http.Response response;
+
     try {
       response = await http.post(Uri.parse(loginURL), body: {
         'username': usernameController.text.trim(), //get the username text
-        'password': passwordController.text.trim() //get password text
+        'password': passwordController.text.trim()  //get password text
       });
     } catch (e) {
       showDialog(
@@ -132,15 +139,17 @@ class LoginFormState extends State<LoginForm> {
         },
       );
     }
+
     if (response.statusCode == 200) {
       var jsonData = json.decode(response.body);
-      print(jsonData);
+
       if (jsonData["success"]) {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('username', usernameController.text.trim());
         await prefs.setString('password', passwordController.text.trim());
         await prefs.setString('ip', ipController.text.trim());
         await prefs.setString('port', portController.text.trim());
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const Alerts()),

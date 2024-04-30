@@ -1,9 +1,9 @@
 package pt.iscte.mysql;
 
-import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
+import org.bson.Document;
 import org.eclipse.paho.client.mqttv3.*;
 import pt.iscte.CommonUtilities;
+import pt.iscte.mqtt.ReadFromMQTTWriteToMongo;
 
 import javax.swing.*;
 import java.sql.CallableStatement;
@@ -29,7 +29,6 @@ public class WriteToSQL implements MqttCallback {
      * Represents the name of the SQL table.
      */
     static String doorProcedure;
-
     static String tempProcedure;
 
     /**
@@ -45,6 +44,18 @@ public class WriteToSQL implements MqttCallback {
     }
 
     /**
+     * Sets the JTextArea used for displaying document information.
+     * This method allows injecting a JTextArea instance into the
+     * ReadFromMQTTWriteToMongo class for displaying document information.
+     *
+     * @param documentLabel the JTextArea instance to be injected
+     */
+    public static void injectDocumentLabel(JTextArea documentLabel) {
+        WriteToSQL.documentLabel = documentLabel;
+    }
+
+
+    /**
      * Connects to the MySQL database and displays connection information.
      */
     public void connectDatabase() {
@@ -55,7 +66,8 @@ public class WriteToSQL implements MqttCallback {
         if(mySQLConnection == null)
             System.exit(1);
 
-        documentLabel.append("Connection To MariaDB Succeeded" + "\n");
+        if(documentLabel != null) documentLabel.append("Connection To MariaDB Succeeded" + "\n");
+        else System.out.println("Connection To MariaDB Succeeded");
     }
 
 
@@ -79,7 +91,7 @@ public class WriteToSQL implements MqttCallback {
     public void writeToMySQL(String c){
         String sqlCommand;
 
-        if(((DBObject) JSON.parse(c)).containsField("SalaOrigem"))
+        if((Document.parse(c)).containsKey("SalaOrigem"))
             sqlCommand = getSQLCommand(c, doorProcedure);
         else
             sqlCommand = getSQLCommand(c, tempProcedure);
@@ -87,9 +99,10 @@ public class WriteToSQL implements MqttCallback {
         System.out.println(sqlCommand);
 
         try {
-            documentLabel.append(sqlCommand + "\n");
+            if(documentLabel != null) documentLabel.append(sqlCommand + "\n");
+            else System.out.println(sqlCommand);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Error appending to document label " + e);
         }
 
         try {
@@ -142,16 +155,14 @@ public class WriteToSQL implements MqttCallback {
      *         Returns null if the time string format is invalid.
      */
     private String extractTimestamp(String time) {
+        System.out.println(time);
         StringBuilder stringBuilder = new StringBuilder();
 
-        String[] timeSepareted = time.split(" ");
+        String[] timeSeparated = time.split(" ");
 
-        if(timeSepareted.length == 5) {
-            stringBuilder.append(timeSepareted[3].substring(1)).append(" ");
-
-            timeSepareted = timeSepareted[4].split("\\.");
-
-            stringBuilder.append(timeSepareted[0]).append("'");
+        if(timeSeparated.length == 4) {
+            stringBuilder.append(timeSeparated[2].substring(1)).append(" ");
+            stringBuilder.append(timeSeparated[3], 0, 8).append("'");
 
             return stringBuilder.toString();
         }
@@ -182,15 +193,15 @@ public class WriteToSQL implements MqttCallback {
      *
      * @param s            the topic on which the message was received
      * @param mqttMessage  the MQTT message received
-     * @throws Exception   if an error occurs while processing the message
      */
     @Override
-    public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
+    public void messageArrived(String s, MqttMessage mqttMessage) {
         try {
             writeToMySQL(mqttMessage.toString());
-            documentLabel.append(s + "\n");
+            if(documentLabel != null) documentLabel.append(s + "\n");
+            else System.out.println(s);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("Error while treating received message " + e);
         }
     }
 

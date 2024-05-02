@@ -4,6 +4,7 @@ import 'package:pisid/screens/screens.dart';
 class Readings2 extends StatelessWidget {
   const Readings2({Key? key}) : super(key: key);
 
+  /// Builds the [Readings2] Widget's User Interface
   @override
   Widget build(BuildContext context) {
     const appTitle = 'Readings T2';
@@ -13,7 +14,7 @@ class Readings2 extends StatelessWidget {
         centerTitle: true,
         title: const Text(appTitle),
       ),
-      body: const ReadingsScreen(),
+      body: const ReadingsScreen(tempSensor1: false),
     );
   }
 }

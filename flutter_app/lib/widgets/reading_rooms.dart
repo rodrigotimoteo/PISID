@@ -23,9 +23,10 @@ class ReadingRooms extends StatelessWidget {
   /// optimizations, such as widget rebuilding.
   const ReadingRooms({Key? key}) : super(key: key);
 
+  /// Builds the [ReadingRooms] Widget's User Interface
   @override
   Widget build(BuildContext context) {
-    const appTitle = 'Mice  / Room';
+    const appTitle = 'Mice / Room';
 
     return Scaffold(
       appBar: AppBar(

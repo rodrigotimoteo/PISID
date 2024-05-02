@@ -8,7 +8,9 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ReadingsScreen extends StatefulWidget {
-  const ReadingsScreen({Key? key}) : super(key: key);
+  const ReadingsScreen({Key? key, required this.tempSensor1}) : super(key: key);
+
+  final bool tempSensor1;
 
   @override
   ReadingsScreenState createState() {
@@ -108,7 +110,14 @@ class ReadingsScreenState extends State<ReadingsScreen> {
     String? ip = prefs.getString('ip');
     String? port = prefs.getString('port');
 
-    String readingsURL = "http://" + ip! + ":" + port! + "/scripts/getTemp1.php";
+    String phpRequestFile;
+    if(widget.tempSensor1) {
+      phpRequestFile = "/php/actions/getTempsSensor1.php";
+    } else {
+      phpRequestFile = "/php/actions/getTempsSensor2.php";
+    }
+
+    String readingsURL = "http://" + ip! + ":" + port! + phpRequestFile;
     var response = await http
         .post(Uri.parse(readingsURL), body: {'username': username, 'password': password});
 

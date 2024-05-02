@@ -140,34 +140,34 @@ class AlertsScreenState extends State<AlertsScreen> {
 
   dynamic getAlerts() async {
     final prefs = await SharedPreferences.getInstance();
+
     String? username = prefs.getString('username');
     String? ip = prefs.getString('ip');
     String? port = prefs.getString('port');
     String? password = prefs.getString('password');
-    String date =
-        "${selectedDate.year}-${selectedDate.month}-${selectedDate.day}";
+    String date = "${selectedDate.year}-${selectedDate.month}-${selectedDate.day}";
 
-    String alertsURL = "http://" + ip! + ":" + port! + "/scripts/getAlerts.php";
+    String alertsURL = "http://" + ip! + ":" + port! + "/php/actions/fetchAlerts.php";
     var response = await http
         .post(Uri.parse(alertsURL), body: {'username': username, 'password': password});
 
     if (response.statusCode == 200) {
       var jsonData = json.decode(response.body);
 
-      var alerts = jsonData["alerts"];
+      var alerts = jsonData["data"];
       if (alerts != null && alerts.length > 0) {
         setState(() {
           tableAlerts.clear();
           for (var i = 0; i < alerts.length; i++) {
             Map<String, dynamic> alert = alerts[i];
             int timeKey = int.parse(
-                alert["Hora"].toString().split(" ")[1].replaceAll(":", ""));
+                alert["hora"].toString().split(" ")[1].replaceAll(":", ""));
             var alertValues = <String>[];
             for (var key in alert.keys) {
               if (alert[key] == null) {
                 alertValues.add("");
               } else {
-                alertValues.add(alert[key]);
+                alertValues.add(alert[key].toString());
               }
             }
             tableAlerts[timeKey] = alertValues;

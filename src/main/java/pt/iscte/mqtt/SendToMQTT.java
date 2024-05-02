@@ -493,7 +493,7 @@ public class SendToMQTT implements MqttCallback {
         originRoom = Integer.parseInt((String) document.get("SalaOrigem"));
         destinationRoom = Integer.parseInt((String) document.get("SalaDestino"));
 
-        if(originRoom < 0 || originRoom > 10 || destinationRoom < 0 || destinationRoom > 10) return false;
+        if(originRoom < 1 || originRoom > 10 || destinationRoom < 1 || destinationRoom > 10) return false;
 
         return checkMovement(originRoom, destinationRoom);
     }
@@ -550,7 +550,10 @@ public class SendToMQTT implements MqttCallback {
             if(lastTemperatureReadingSensor1 == Integer.MIN_VALUE)
                 lastTemperatureReadingSensor1 = temperature;
 
-            return Math.abs(lastTemperatureReadingSensor1 - temperature) < MAX_TEMP_ALLOWED_DEVIATION;
+            if(Math.abs(lastTemperatureReadingSensor1 - temperature) < MAX_TEMP_ALLOWED_DEVIATION) {
+                lastTemperatureReadingSensor1 = temperature;
+                return true;
+            } else return false;
         }
         else if(sensor == 2) {
             if(filterDuplicatesBasedOnDate(document, lastSentTimestampTempSensor2)) return false;
@@ -558,7 +561,10 @@ public class SendToMQTT implements MqttCallback {
             if(lastTemperatureReadingSensor2 == Integer.MIN_VALUE)
                 lastTemperatureReadingSensor2 = temperature;
 
-            return Math.abs(lastTemperatureReadingSensor2 - temperature) < MAX_TEMP_ALLOWED_DEVIATION;
+            if(Math.abs(lastTemperatureReadingSensor2 - temperature) < MAX_TEMP_ALLOWED_DEVIATION) {
+                lastTemperatureReadingSensor1 = temperature;
+                return true;
+            } else return false;
         }
 
         return false;

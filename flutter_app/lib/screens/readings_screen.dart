@@ -123,40 +123,39 @@ class ReadingsScreenState extends State<ReadingsScreen> {
 
     if (response.statusCode == 200) {
       var jsonData = json.decode(response.body);
-      var data = jsonData["readings"];
+      var data = jsonData["data"];
       setState(() {
         readingsValues.clear();
         readingsTimes.clear();
+
         minY = 10.0;
         maxY = 30.0;
+
         if (data != null && data.length > 0) {
           for (var reading in data) {
-            DateTime readingTime = DateTime.parse(reading["Hora"].toString());
+            DateTime readingTime = DateTime.parse(reading["hora"].toString());
             DateTime currentTime = DateTime.now();
-            double timeDiff = double.parse((currentTime.difference(readingTime).inSeconds/60).toStringAsFixed(2));
-            print("CURRENT: " + currentTime.toString());
-            print("READING: " + readingTime.toString());
-            print("DIFF: " + timeDiff.toString());
-            if (timeDiff>0.0 && timeDiff<timeLimit && !readingsTimes.contains(timeDiff)) {
-              var value = double.parse(reading["Leitura"].toString());
-              print("VALUE: " + value.toString());
+            double timeDiff = double.parse((currentTime.difference(readingTime)
+                .inSeconds / 60).toStringAsFixed(2));
+
+            if (timeDiff > 0.0 && timeDiff < timeLimit && !readingsTimes.contains(timeDiff)) {
+              var value = double.parse(reading["leitura"].toString());
               readingsTimes.add(timeDiff);
               readingsValues.add(value);
             }
           }
           if (readingsValues.isNotEmpty) {
-            minY = readingsValues.reduce(min)-1;
-            maxY = readingsValues.reduce(max)+1;
+            minY = readingsValues.reduce(min) - 1;
+            maxY = readingsValues.reduce(max) + 1;
           }
         }
       });
     }
-    print(" ");
   }
 
   listReadings() {
     var spots = <FlSpot>[];
-    for (var i=0; i<readingsValues.length;i++) {
+    for (var i = 0; i < readingsValues.length; i++) {
       spots.add(FlSpot(readingsTimes.elementAt(i), readingsValues.elementAt(i)));
     }
     return spots;

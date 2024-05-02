@@ -117,7 +117,7 @@ class _MyHomePageState extends State<ReadingRoomsScreen> {
     String? password = prefs.getString('password');
     String? ip = prefs.getString('ip');
     String? port = prefs.getString('port');
-    String readingsURL = "http://" + ip! + ":" + port! + "/scripts/getMouseRoom.php";
+    String readingsURL = "http://" + ip! + ":" + port! + "/php/actions/getMousesRoom.php";
     var response = await http
         .post(Uri.parse(readingsURL), body: {'username': username, 'password': password});
 

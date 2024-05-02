@@ -15,7 +15,6 @@ class ReadingsRoomScreen2 extends StatefulWidget {
   ReadingsRoomScreen2State createState() {
     return ReadingsRoomScreen2State();
   }
-
 }
 
 class ReadingsRoomScreen2State extends State<ReadingsRoomScreen2> {
@@ -111,7 +110,7 @@ class ReadingsRoomScreen2State extends State<ReadingsRoomScreen2> {
     String? ip = prefs.getString('ip');
     String? port = prefs.getString('port');
 
-    String readingsURL = "http://" + ip! + ":" + port! + "/scripts/getMousesRoom.php";
+    String readingsURL = "http://" + ip! + ":" + port! + "/php/actions/getMousesRoom.php";
     var response = await http
         .post(Uri.parse(readingsURL), body: {'username': username, 'password': password});
 

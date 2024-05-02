@@ -14,7 +14,7 @@ class Readings2 extends StatelessWidget {
         centerTitle: true,
         title: const Text(appTitle),
       ),
-      body: const ReadingsScreen(),
+      body: const ReadingsScreen(tempSensor1: false),
     );
   }
 }

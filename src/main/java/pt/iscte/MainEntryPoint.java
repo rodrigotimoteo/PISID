@@ -42,6 +42,7 @@ public class MainEntryPoint {
                     new WriteToSQL().connectCloud();
                 }
                 case "ALL" -> {
+                    documentLabel = CommonUtilities.createWindow("Cloud to Mongo");;
                     ReadFromMQTTWriteToMongo.injectDocumentLabel(documentLabel);
 
                     new ReadFromMQTTWriteToMongo().connectMongo();
@@ -49,10 +50,10 @@ public class MainEntryPoint {
 
                     Thread.sleep(2000);
 
-                    JTextArea documentLabelExtra1 = new JTextArea("\n");
+                    JTextArea documentLabelExtra1 = CommonUtilities.createWindow("Send to MQTT");
+                    SendToMQTT.injectDocumentLabel(documentLabelExtra1);
                     SendToMQTT.initFile();
                     SendToMQTT.hasStoredId();
-                    SendToMQTT.injectDocumentLabel(documentLabelExtra1);
 
                     new SendToMQTT().connectMazeSettings();
                     new SendToMQTT().connectMongo();
@@ -60,7 +61,7 @@ public class MainEntryPoint {
 
                     Thread.sleep(5000);
 
-                    JTextArea documentLabelExtra2 = new JTextArea("\n");
+                    JTextArea documentLabelExtra2 = CommonUtilities.createWindow("Data Bridge");
                     SendToMQTT.injectDocumentLabel(documentLabelExtra2);
 
                     new WriteToSQL().connectDatabase();

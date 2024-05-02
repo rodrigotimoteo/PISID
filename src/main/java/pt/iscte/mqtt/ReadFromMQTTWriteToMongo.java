@@ -16,8 +16,6 @@ import javax.swing.*;
  */
 public class ReadFromMQTTWriteToMongo implements MqttCallback {
 
-    //TODO MANEIRA BOA DE LIMITAR O SENDS TO MQTT E MANUALMENTE CRIAR O ID DO MONGO DB PARA UM NUMERO SEQUENCIAL!
-
     /**
      * Static instances of MQTT clients for temperature and maze sensors.
      */

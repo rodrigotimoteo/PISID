@@ -30,6 +30,8 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class SendToMQTT implements MqttCallback {
 
+    private static final String FILE_LOCATION = System.getProperty("user.dir") + "/lastIdValue";
+
     public static final int MAX_TEMP_ALLOWED_DEVIATION = 3;
 
     /**
@@ -120,8 +122,10 @@ public class SendToMQTT implements MqttCallback {
      */
     public static void initFile() {
         try {
-            idStorageFile = new File(new File("").getPath() + "src/main/java/pt/iscte/mqtt/lastIdValue");
-            idStorageFile.createNewFile();
+            idStorageFile = new File(FILE_LOCATION);
+            boolean fileCreated = idStorageFile.createNewFile();
+            if(fileCreated) System.out.println("File created!");
+            else System.out.println("File already exists!");
         } catch (IOException e) {
             System.err.println("Error initializing file " + e);
         }
@@ -432,8 +436,15 @@ public class SendToMQTT implements MqttCallback {
             if (idStorageFile.exists()) {
                 BufferedReader reader = new BufferedReader(new FileReader(idStorageFile));
 
-                JSONObject jsonObject = new JSONObject(reader);
+                StringBuilder jsonString = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    jsonString.append(line);
+                }
 
+                JSONObject jsonObject = new JSONObject(jsonString.toString());
+
+                reader.close();
                 tempSensor1LastId = Integer.parseInt(jsonObject.getString("tempSensor1LastId"), 16);
                 tempSensor2LastId = Integer.parseInt(jsonObject.getString("tempSensor2LastId"), 16);
                 doorSensorLastId  = Integer.parseInt(jsonObject.getString("doorSensorLastId"), 16);
@@ -444,8 +455,8 @@ public class SendToMQTT implements MqttCallback {
             System.err.println("File could not be read");
         } catch (JSONException e) {
             System.err.println("File could not be parsed");
+            e.printStackTrace();
         }
-
     }
 
     /**

@@ -13,10 +13,8 @@ import org.ini4j.Wini;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.text.ParseException;

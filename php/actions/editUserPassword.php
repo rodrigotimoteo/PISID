@@ -18,7 +18,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $new_password = $_POST['new_password'];
             $email = $_SESSION['email'];
 
-            // Verify if current password is correct
             $stmt_check_password = $sqli->prepare("SELECT password FROM utilizador WHERE email = ?");
             $stmt_check_password->bind_param("s", $email);
             $stmt_check_password->execute();
@@ -28,9 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt_check_password->bind_result($hashed_password);
                 $stmt_check_password->fetch();
 
-                // Verify if current password matches the stored password
                 if($current_password==$hashed_password) {
-                    // Passwords match, proceed with updating the password
                     $procedure = "CALL EditUser(?,?,?,?)";
                     $stmt = $sqli->prepare($procedure);
 
@@ -48,8 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
                     if ($stmt->execute()) {
-
-                        #echo "Password changed successfully";
+                        
                         header("Location: ../profileChange.php");
 
                     } else {

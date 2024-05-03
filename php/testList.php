@@ -3,7 +3,10 @@
 
 include("config.php");
 
-$sqli = new mysqli(DB_SERVER, $_SESSION['name'], $_SESSION['password'], DB_DATABASE);
+$email = $_SESSION['email'];
+$password = $_SESSION['password'];
+
+$sqli = new mysqli(DB_SERVER, $_SESSION['email'], $_SESSION['password'], DB_DATABASE);
 if($sqli->connect_error) {
     die("Connection failed: " . $sqli->connect_error);
 }

@@ -3,7 +3,7 @@ include("../config.php");
 
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
-    $sqli = new mysqli(DB_SERVER, $_SESSION['name'], $_SESSION['password'], DB_DATABASE);
+    $sqli = new mysqli(DB_SERVER, $_SESSION['email'], $_SESSION['password'], DB_DATABASE);
 
     if ($sqli->connect_error) {
         die("Connection failed: " . $sqli->connect_error);

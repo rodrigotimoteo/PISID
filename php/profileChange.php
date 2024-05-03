@@ -21,9 +21,8 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
 */
 include("config.php");
 
-// Establish database connection
-$sqli = new mysqli(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_DATABASE);
-if($sqli->connect_error) { 
+$sqli = new mysqli(DB_SERVER, $_SESSION['name'], $_SESSION['password'], DB_DATABASE);
+if($sqli->connect_error) {
     die("Connection failed: " . $sqli->connect_error); 
 }
 

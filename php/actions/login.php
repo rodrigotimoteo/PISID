@@ -60,7 +60,7 @@ if (isset($_POST['login'])) {
             $_SESSION['loggedin'] = true;
             $_SESSION['email'] = $email;
             $_SESSION['name'] = $name;
-
+            $_SESSION['password'] = $password;
             header("Location: ../testList.php");
             exit;
         }

@@ -161,6 +161,7 @@ $result = $stmt->get_result();
                     <th>Action 1</th>
                     <th>Action 2</th>
                     <th>Action 3</th>
+                    <th>Start Test</th>
                 </tr>
 
                  <?php while ($row = $result->fetch_assoc()) { ?>
@@ -188,6 +189,14 @@ $result = $stmt->get_result();
                                 <button type="submit" class="start-finish" name="edit">Edit Test</button>
                             </form>
                         </td>
+
+                        <td>
+                            <form action="actions/startTest.php" method="GET">
+                                <input type="hidden" name="start_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
+                                <button type="submit" class="start-finish" name="start">Start Test</button>
+                            </form>
+                        </td>
+
                     </tr>
                  <?php } ?>
 

@@ -82,7 +82,7 @@ $result = $stmt->get_result();
 
         .test-list h1 {
             font-size: 36px;
-            padding: 10px 0;
+            padding: 10px 0; 
             color: #000;
         }
 

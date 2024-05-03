@@ -33,7 +33,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
         h2 {
             font-size: 3em;
             margin-bottom: 10px;
-            color: #000000; /* Pink color for Lab Rats */
+            color: #000000;
         }
 
         p {
@@ -45,7 +45,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
         .button {
             display: inline-block;
             padding: 10px 20px;
-            background-color: #007bff;
+            background-color: #c32ce1;
             color: #fff;
             text-decoration: none;
             border-radius: 5px;
@@ -56,8 +56,6 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
         .button:hover {
             background-color: #0056b3;
         }
-
-        /* Container styles */
         .container {
             text-align: center;
             padding: 20px;
@@ -67,8 +65,8 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
             width: 80%;
             max-width: 500px;
             display: flex;
-            flex-direction: column; /* Align children in a column */
-            align-items: center; /* Center children horizontally */
+            flex-direction: column;
+            align-items: center;
         }
         .menu {
             text-align: center;
@@ -99,11 +97,8 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
     </div>
     <br>
     <div class="menu">
-        <a href="landingPage.php">Home</a>
-        <a href="testList.php">Test List</a>
-        <a href="createTest.php">Create Test</a>
-        <a href="profileChange.php">Profile</a>
-        <a href="actions/logout.php">Logout</a>
+    <a href="registerPage.php" class="button">Register</a>
+    <a href="loginPage.php" class="button">Login</a>
     </div>
     <br>
     <div>
@@ -114,7 +109,5 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
         ?>
     </div>
 </div>
-
-</body>
 
 </html>

@@ -1,19 +1,8 @@
-<?php
-/*
-session_start();
-
-if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
-    echo "User already logged in, redirecting to test list";
-    header("Location: testList.php");
-}
-*/
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>LoginPagePISID</title>
+    <title>RegisterPagePISID</title>
     <style>
         @import url(https://fonts.googleapis.com/css?family=Rokkitt);
         @import url(https://fonts.googleapis.com/css?family=Open+Sans:400italic,400,700);
@@ -63,17 +52,18 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
             text-decoration: underline;
         }
 
-        .login {
+        .register {
             background-color: #ffff;
             text-align: center;
             box-shadow: 0 0 20px #000;
             margin-top: 50px;
-            padding: 30px;
+            width: 100%;
+            padding: 40px;
             border-radius: 15px;
-            height: 450px;
+            height: 525px;
         }
 
-        .login h1 {
+        .register h1 {
             font-size: 36px;
             padding: 10px 0;
             color: #000;
@@ -118,7 +108,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
             transition: all .5s ease;
             cursor: pointer;
             display: block;
-            margin: 0 auto; 
+            margin: 0 auto;
             border-radius: 5px;
         }
 
@@ -163,28 +153,31 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 </style>
 </head>
 <body>
-
 <section class="container">
     <div class="menu">
         <a href="../landingPage.php">Home</a>
     </div>
-    <div class="login">
-        <h1>Login</h1>
-        <form action="actions/login.php" method="post">
+    <div class="register">
+        <h1>Register</h1>
+        <form action="actions/CreateNewUser.php" method="post">
+            <label id="nameLabel" for="name">Name:</label>
+            <input type="text" required="" id="name" name="name" placeholder="Write your name">
+            <label id="phoneLabel" for="telefone">Phone Number:</label>
+            <input type="text" required="" id="phone" name="phone" placeholder="Write your phone number">
             <label id="emailLabel" for="email">Email:</label>
             <input type="text" required="" id="email" name="email" placeholder="Write your email">
             <label id="passwordLabel" for="password">Password:</label>
             <input type="password" required="" id="password" name="password" placeholder="Write your password">
             <div style="text-align:center;">
-                <input type="submit" value="login" name="login">
+                <input type="submit" value="register" name="register">
                 <br>
                 <br>
                 <br>
                 <br>
-                <a href="#"> Forgot Password</a>
             </div>
         </form>
     </div>
 </section>
+
 </body>
 </html>

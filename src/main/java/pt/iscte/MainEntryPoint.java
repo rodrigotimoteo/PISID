@@ -42,7 +42,7 @@ public class MainEntryPoint {
                     new WriteToSQL().connectCloud();
                 }
                 case "ALL" -> {
-                    documentLabel = CommonUtilities.createWindow("Cloud to Mongo");;
+                    documentLabel = CommonUtilities.createWindow("Cloud to Mongo");
                     ReadFromMQTTWriteToMongo.injectDocumentLabel(documentLabel);
 
                     new ReadFromMQTTWriteToMongo().connectMongo();
@@ -62,7 +62,7 @@ public class MainEntryPoint {
                     Thread.sleep(5000);
 
                     JTextArea documentLabelExtra2 = CommonUtilities.createWindow("Data Bridge");
-                    SendToMQTT.injectDocumentLabel(documentLabelExtra2);
+                    WriteToSQL.injectDocumentLabel(documentLabelExtra2);
 
                     new WriteToSQL().connectDatabase();
                     new WriteToSQL().connectCloud();

@@ -68,7 +68,7 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
      * @throws RuntimeException if an error occurs during connection to the MQTT broker
      */
     public void connectCloud() {
-        MqttClient[] mqttClients = CommonUtilities.connectCloud(this, "MQTTCloud");
+        MqttClient[] mqttClients = CommonUtilities.connectCloud(this, "MQTTCloud", false, "");
 
         mqttClientTemp = mqttClients[0];
         mqttClientMaze = mqttClients[1];

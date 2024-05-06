@@ -161,7 +161,7 @@ $result = $stmt->get_result();
                     <th>Action 1</th>
                     <th>Action 2</th>
                     <th>Action 3</th>
-                    <th>Start Test</th>
+                    <th>Action 4</th>
                 </tr>
 
                  <?php while ($row = $result->fetch_assoc()) { ?>
@@ -184,17 +184,30 @@ $result = $stmt->get_result();
                             </form>
 
                         <td>
-                            <form action="editTestPage.php" method="GET">
-                                <input type="hidden" name="edit_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
-                                <button type="submit" class="start-finish" name="edit">Edit Test</button>
-                            </form>
+                            <?php if ($row['estado_experiencia'] == 'Por Iniciar') { ?>
+                                <form action="editTestPage.php" method="GET">
+                                    <input type="hidden" name="edit_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
+                                    <button type="submit" class="start-finish" name="edit">Edit Test</button>
+                                </form>
+                            <?php } else { ?>
+                                <button class="start-finish" disabled>Edit Test</button>
+                            <?php } ?>
                         </td>
 
                         <td>
-                            <form action="actions/startTest.php" method="GET">
-                                <input type="hidden" name="start_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
-                                <button type="submit" class="start-finish" name="start">Start Test</button>
-                            </form>
+                            <?php if ($row['estado_experiencia'] == 'A decorrer') { ?>
+                                <form action="actions/finishTest.php" method="GET">
+                                    <input type="hidden" name="stop_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
+                                    <button type="submit" class="start-finish" name="stop">Stop Test</button>
+                                </form>
+                            <?php } elseif ($row['estado_experiencia'] == 'Terminada') { ?>
+                                <button class="start-finish" disabled>Test Finished</button>
+                            <?php } else { ?>
+                                <form action="actions/startTest.php" method="GET">
+                                    <input type="hidden" name="start_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
+                                    <button type="submit" class="start-finish" name="start">Start Test</button>
+                                </form>
+                            <?php } ?>
                         </td>
 
                     </tr>

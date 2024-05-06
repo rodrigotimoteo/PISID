@@ -11,9 +11,9 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
     if(isset($_SESSION['email'])) {
 
-        if(isset($_GET['test_id'])) {
+        if(isset($_GET['stop_id_exp'])) {
 
-            $test_id = $_GET['test_id'];
+            $test_id = $_GET['stop_id_exp'];
 
             $procedure = "CALL FinishTest(?)";
             $stmt = $sqli->prepare($procedure);

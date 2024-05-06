@@ -3,11 +3,11 @@ package pt.iscte.mysql;
 import org.bson.Document;
 import org.eclipse.paho.client.mqttv3.*;
 import pt.iscte.CommonUtilities;
-import pt.iscte.mqtt.ReadFromMQTTWriteToMongo;
 
 import javax.swing.*;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.Types;
 
 /**
  * Implements the MqttCallback interface for handling MQTT events and writing data to SQL.
@@ -24,17 +24,38 @@ public class WriteToSQL implements MqttCallback {
      */
     MqttClient mqttClientTemp;
     MqttClient mqttClientMaze;
+    MqttClient mqttSolutions;
 
     /**
      * Represents the name of the SQL table.
      */
     static String doorProcedure;
     static String tempProcedure;
+    static String initTestProcedure;
+    static String createTestProcedure;
+    static String endTestProcedure;
+
+    /**
+     * Represents the email to be used to create tests
+     */
+    final String EMAIL = CommonUtilities.getConfig("MySQL", "sqlDatabaseUser");
+    int TEST_NUMBER = 0;
+    int NUMBER_OF_RATS = 5;
+    int LIMIT_MOUSE_PER_ROOM = 5;
+    int TIME_WITHOUT_MOVEMENT = 15;
+    int IDEAL_TEMP = 10;
+    int MAX_TEMP_DEVIATION = 20;
 
     /**
      * JTextArea for displaying document labels.
      */
     static JTextArea documentLabel = new JTextArea("\n");
+
+    /**
+     * Defines whether to use automatic testing
+     */
+    private static final boolean ACTIVE_AUTOMATIC_TESTS = false;
+
 
     public  static void main(String[] args) {
         documentLabel = CommonUtilities.createWindow("Data Bridge");
@@ -54,7 +75,6 @@ public class WriteToSQL implements MqttCallback {
         WriteToSQL.documentLabel = documentLabel;
     }
 
-
     /**
      * Connects to the MySQL database and displays connection information.
      */
@@ -62,12 +82,51 @@ public class WriteToSQL implements MqttCallback {
         mySQLConnection = CommonUtilities.connectLocalDatabase();
         doorProcedure = CommonUtilities.getConfig("MySQL", "sqlDoorProcedure");
         tempProcedure = CommonUtilities.getConfig("MySQL", "sqlTempProcedure");
+        createTestProcedure = CommonUtilities.getConfig("MySQL", "sqlCreateTestProcedure");
+        initTestProcedure = CommonUtilities.getConfig("MySQL", "sqlInitTestProcedure");
+        endTestProcedure = CommonUtilities.getConfig("MySQL", "sqlFinishTestProcedure");
+
+        TEST_NUMBER = getRunningTest();
 
         if(mySQLConnection == null)
             System.exit(1);
 
         if(documentLabel != null) documentLabel.append("Connection To MariaDB Succeeded" + "\n");
         else System.out.println("Connection To MariaDB Succeeded");
+    }
+
+    /**
+     * Retrieves the ID of the currently running test from the database.
+     * If the running test ID is null, retrieves the ID of the latest test instead.
+     *
+     * @return The ID of the currently running test, or the ID of the latest test if the running test ID is null.
+     *         Returns 0 if an error occurs or if no test ID is found.
+     */
+    private int getRunningTest() {
+        try {
+            CallableStatement statement = mySQLConnection.prepareCall("{? = CALL GetRunningTest()}");
+            statement.registerOutParameter(1, Types.INTEGER);
+
+            statement.execute();
+
+            int result = statement.getInt(1);
+
+            if(statement.wasNull()) {
+                statement = mySQLConnection.prepareCall("{? = Call GetLatestTest()}");
+                statement.registerOutParameter(1, Types.INTEGER);
+
+                statement.execute();
+
+                result = statement.getInt(1);
+            }
+
+            return result;
+        } catch (Exception e) {
+            System.err.println("Error getting running test!");
+            e.printStackTrace();
+        }
+
+        return 0;
     }
 
 
@@ -77,10 +136,11 @@ public class WriteToSQL implements MqttCallback {
      * @throws RuntimeException if an error occurs during connection to the MQTT broker
      */
     public void connectCloud() {
-        MqttClient[] mqttClients = CommonUtilities.connectCloud(this, "MQTT");
+        MqttClient[] mqttClients = CommonUtilities.connectCloud(this, "MQTT", true, "MQTT");
 
         mqttClientTemp = mqttClients[0];
         mqttClientMaze = mqttClients[1];
+        mqttSolutions  = mqttClients[2];
     }
 
     /**
@@ -89,15 +149,32 @@ public class WriteToSQL implements MqttCallback {
      * @param c a JSON string representing the data to be inserted
      */
     public void writeToMySQL(String c){
-        String sqlCommand;
-
         if((Document.parse(c)).containsKey("SalaOrigem"))
-            sqlCommand = getSQLCommand(c, doorProcedure);
-        else
-            sqlCommand = getSQLCommand(c, tempProcedure);
+            executeCommand(getSQLCommand(c, doorProcedure));
+        else if((Document.parse(c)).containsKey("Leitura"))
+            executeCommand(getSQLCommand(c, tempProcedure));
+        else if(ACTIVE_AUTOMATIC_TESTS)
+            if((Document.parse(c)).containsKey("StartDate")) {
+                TEST_NUMBER = getRunningTest();
+                executeCommand(getSQLCommandCreateTest(createTestProcedure));
 
-        System.out.println(sqlCommand);
+                int new_test_number = getRunningTest();
+                if(TEST_NUMBER != new_test_number) TEST_NUMBER = new_test_number;
 
+                executeCommand(setTestStatus(initTestProcedure, false));
+            } else
+                executeCommand(setTestStatus(endTestProcedure, true));
+    }
+
+    /**
+     * Executes the given SQL command.
+     * Appends the command to the document label if available, or prints it to the console otherwise.
+     * Prepares and executes a CallableStatement with the given SQL command.
+     * Prints the result of execution to the console.
+     *
+     * @param sqlCommand The SQL command to execute.
+     */
+    private void executeCommand(String sqlCommand) {
         try {
             if(documentLabel != null) documentLabel.append(sqlCommand + "\n");
             else System.out.println(sqlCommand);
@@ -105,14 +182,10 @@ public class WriteToSQL implements MqttCallback {
             System.err.println("Error appending to document label " + e);
         }
 
-        try {
-            CallableStatement statement = mySQLConnection.prepareCall(sqlCommand);
-            boolean result = statement.execute();
+        try(CallableStatement statement = mySQLConnection.prepareCall(sqlCommand)) {
+            boolean operation = statement.execute();
 
-            System.out.println(result);
-
-            statement.close();
-
+            System.out.println(operation);
         } catch (Exception e){
             System.err.println("Error Inserting in the database. " + e);
             System.err.println(sqlCommand);
@@ -145,6 +218,30 @@ public class WriteToSQL implements MqttCallback {
         sqlCommand.append(values).append(")}");
 
         return sqlCommand.toString();
+    }
+
+    /**
+     * Constructs and returns the SQL string to call a stored procedure with the specified procedure name and parameters for creating a test.
+     * Each parameter is concatenated with the corresponding test parameter value.
+     *
+     * @param procedure The name of the stored procedure to call.
+     * @return The SQL string to call the stored procedure for creating a test.
+     */
+    private String getSQLCommandCreateTest(String procedure) {
+        return "{CALL " + procedure + "(" +
+                "\"Experiencia " + TEST_NUMBER + "\", " + NUMBER_OF_RATS + ", " + LIMIT_MOUSE_PER_ROOM + ", " + TIME_WITHOUT_MOVEMENT
+                + ", " + IDEAL_TEMP + ", " + MAX_TEMP_DEVIATION + ", \"" + EMAIL + "\")}";
+    }
+
+    /**
+     * Constructs and returns the SQL string to call a stored procedure with the specified procedure name and test number.
+     *
+     * @param procedure The name of the stored procedure to call.
+     * @return The SQL string to call the stored procedure.
+     */
+    private String setTestStatus(String procedure, boolean finish) {
+        if(finish) return "{CALL " + procedure + "()}";
+        else return "{CALL " + procedure + "(" + TEST_NUMBER + ")}";
     }
 
     /**

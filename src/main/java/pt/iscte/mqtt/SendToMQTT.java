@@ -30,22 +30,38 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class SendToMQTT implements MqttCallback {
 
+    /**
+     * Static definition of the file location where the file containing the last sent ids will be stored
+     */
     private static final String FILE_LOCATION = System.getProperty("user.dir") + "/lastIdValue";
 
+    /**
+     * Static definition of the maximum temperature deviation allowed between messages (1 second apart)
+     */
     public static final int MAX_TEMP_ALLOWED_DEVIATION = 3;
 
     /**
-     * Static instances of MQTT clients for temperature and maze sensors.
+     * Static definition of sensores to facilitate mongo fetching
+     */
+    private static final int TEMP_SENSOR_1 = 0;
+    private static final int TEMP_SENSOR_2 = 1;
+    private static final int DOOR_SENSOR   = 2;
+    private static final int SOLUTIONS     = 3;
+
+    /**
+     * Static instances of MQTT clients for temperature and maze sensors and solutions.
      */
     static MqttClient mqttClientTemp;
     static MqttClient mqttClientMaze;
+    static MqttClient mqttSolutions;
 
     /**
-     * Static collections for storing sensor data in MongoDB.
+     * Static collections for storing sensor data in MongoDB and solutions.
      */
     static MongoCollection<Document> tempSensor1;
     static MongoCollection<Document> tempSensor2;
     static MongoCollection<Document> doorSensor;
+    static MongoCollection<Document> solutions;
 
     /**
      * Static reference to the maze configuration hosted in provided mySQL DB
@@ -61,11 +77,6 @@ public class SendToMQTT implements MqttCallback {
      * Stores a static reference to the file dedicated to storing the last ID sent
      */
     static File idStorageFile;
-
-    /**
-     * ID of the last retrieval operation.
-     */
-    private static String lastSentId;
 
     /**
      * Timestamp of the last retrieval operation.
@@ -92,6 +103,8 @@ public class SendToMQTT implements MqttCallback {
     static int tempSensor1LastId = 0;
     static int tempSensor2LastId = 0;
     static int doorSensorLastId  = 0;
+    static int solutionsLastId   = 0;
+
 
     public static void main(String[] args) {
         documentLabel = CommonUtilities.createWindow("Send to MQTT");
@@ -188,10 +201,11 @@ public class SendToMQTT implements MqttCallback {
      * @throws RuntimeException if an error occurs during connection to the MQTT broker
      */
     public void connectCloud() {
-        MqttClient[] mqttClients = CommonUtilities.connectCloud(this, "MQTT");
+        MqttClient[] mqttClients = CommonUtilities.connectCloud(this, "MQTT", true, "MQTT");
 
         mqttClientTemp = mqttClients[0];
         mqttClientMaze = mqttClients[1];
+        mqttSolutions  = mqttClients[2];
     }
 
     /**
@@ -204,13 +218,15 @@ public class SendToMQTT implements MqttCallback {
         tempSensor1 = dbCollections[0];
         tempSensor2 = dbCollections[1];
         doorSensor  = dbCollections[2];
-
-        checkIfExistsId();
+        solutions   = dbCollections[3];
 
         ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
         executorService.scheduleAtFixedRate(() -> {
             try {
-                fetchMongo();
+                fetchMongo(String.format("%024X", doorSensorLastId), DOOR_SENSOR);
+                fetchMongo(String.format("%024X", tempSensor1LastId), TEMP_SENSOR_1);
+                fetchMongo(String.format("%024X", tempSensor2LastId), TEMP_SENSOR_2);
+                fetchMongo(String.format("%024X", solutionsLastId), SOLUTIONS);
             } catch (Exception e) {
                 System.err.println("There was an error while fetching information from mongoDB database " + e);
                 e.printStackTrace();
@@ -219,39 +235,12 @@ public class SendToMQTT implements MqttCallback {
     }
 
     /**
-     * Checks if the IDs exist in the database collections and updates the last known IDs accordingly.
-     * This method queries the database collections for each sensor type and solutions,
-     * sorts the documents by ID in descending order, and retrieves the first document.
-     * If a document is found, it updates the corresponding last known ID by converting
-     * the hexadecimal string ID to an integer and incrementing it by one.
-     */
-    private void checkIfExistsId() {
-        Document document = tempSensor1.find().sort(new Document("_id", -1)).first();
-        if(document != null) {
-            tempSensor1LastId = Integer.parseInt(document.get("_id").toString(), 16);
-            tempSensor1LastId++;
-        }
-
-        document = tempSensor2.find().sort(new Document("_id", -1)).first();
-        if(document != null) {
-            tempSensor2LastId = Integer.parseInt(document.get("_id").toString(), 16);
-            tempSensor2LastId++;
-        }
-
-        document = doorSensor.find().sort(new Document("_id", -1)).first();
-        if(document != null) {
-            doorSensorLastId = Integer.parseInt(document.get("_id").toString(), 16);
-            doorSensorLastId++;
-        }
-    }
-
-    /**
      * Fetches sensor data from MongoDB and extracts relevant information.
      */
-    private void fetchMongo() {
+    private void fetchMongo(String lastSentId, int sensor) {
         Document match, sort;
 
-        if(lastSentId == null || lastSentId.isEmpty()) {
+        if(lastSentId == null || lastSentId.isEmpty() || lastSentId.equals("0")) {
             match = new Document("$match", new BasicDBObject("Hora", new BasicDBObject("$gt",
                     CommonUtilities.formatDate(lastRetrievalTimestamp))));
             sort = new Document("$sort", new BasicDBObject("Hora", 1));
@@ -265,9 +254,40 @@ public class SendToMQTT implements MqttCallback {
         // Construct the aggregation pipeline
         Document[] pipeline = {match, sort};
 
-        extractSensorData(pipeline, tempSensor1);
-        extractSensorData(pipeline, tempSensor2);
-        extractSensorData(pipeline, doorSensor);
+        switch(sensor) {
+            case DOOR_SENSOR   -> extractSensorData(pipeline, doorSensor);
+            case TEMP_SENSOR_1 -> extractSensorData(pipeline, tempSensor1);
+            case TEMP_SENSOR_2 -> extractSensorData(pipeline, tempSensor2);
+            case SOLUTIONS     -> extractSolutions (pipeline, solutions);
+        }
+    }
+
+    /**
+     * Extracts solutions from a MongoDB collection using the specified pipeline.
+     *
+     * @param pipeline   The aggregation pipeline to apply to the solutions' collection.
+     * @param solutions  The MongoDB collection containing solutions.
+     */
+    private void extractSolutions(Document[] pipeline, MongoCollection<Document> solutions) {
+        AggregateIterable<Document> output = solutions.aggregate(Arrays.asList(pipeline));
+
+        for (Document solution : output) {
+            String documentId = solution.get("_id").toString();
+
+            if (isIdProcessed(documentId, solution)) {
+                if (!filter(solution)) {
+                    solutionsLastId++;
+
+                    continue;
+                }
+
+                solutionsLastId++;
+
+                publishSensor(solution.toJson());
+
+                addToId(solution);
+            }
+        }
     }
 
     /**
@@ -278,8 +298,6 @@ public class SendToMQTT implements MqttCallback {
      * @param collection the MongoDB collection to query
      */
     private void extractSensorData(Document[] pipeline, MongoCollection<Document> collection) {
-        //Execute the aggregation pipeline and process the result
-
         AggregateIterable<Document> output = collection.aggregate(Arrays.asList(pipeline));
 
         for (Document document : output) {
@@ -307,26 +325,45 @@ public class SendToMQTT implements MqttCallback {
         }
     }
 
+    /**
+     * Checks if the given ID has been processed based on the type of document and the last processed ID values.
+     *
+     * @param id       The ID to be checked, represented as a hexadecimal string.
+     * @param document The document containing information about the data source.
+     * @return {@code true} if the given ID has been processed; {@code false} otherwise.
+     * @throws NumberFormatException If the ID cannot be parsed as a hexadecimal integer.
+     * @throws IllegalArgumentException If the document does not contain valid information.
+     */
     private boolean isIdProcessed(String id, Document document) {
         if(document.containsKey("SalaOrigem"))
             return Integer.parseInt(id, 16) > doorSensorLastId;
-        else
+        else if(document.containsKey("Sensor"))
             if(Integer.parseInt((String) document.get("Sensor")) == 1)
                 return Integer.parseInt(id, 16) > tempSensor1LastId;
-            if(Integer.parseInt((String) document.get("Sensor")) == 2)
+            else
                 return Integer.parseInt(id, 16) > tempSensor2LastId;
-
-        return false;
+        else
+            return Integer.parseInt(id, 16) > solutionsLastId;
     }
 
+    /**
+     * Adds to the last ID based on the information provided in the document.
+     * If the document contains a key "SalaOrigem", increments the doorSensorLastId.
+     * If the document contains a key "Sensor" and its value is 1, increments the tempSensor1LastId.
+     * If the document contains a key "Sensor" and its value is not 1, increments the tempSensor2LastId.
+     * If none of the above conditions are met, increments the solutionsLastId.
+     *
+     * @param document The document containing information related to the ID.
+     */
     private void addToId(Document document) {
         if(document.containsKey("SalaOrigem"))
             doorSensorLastId++;
-        else
-        if(Integer.parseInt((String) document.get("Sensor")) == 1)
+        else if(Integer.parseInt((String) document.get("Sensor")) == 1)
             tempSensor1LastId++;
-        else
+        else if(document.containsKey("Sensor"))
             tempSensor2LastId++;
+        else
+            solutionsLastId++;
     }
 
     /**
@@ -342,15 +379,28 @@ public class SendToMQTT implements MqttCallback {
             //Check if message is sensor data or not
             if((Document.parse(sensorData)).containsKey("SalaOrigem"))
                 treatDoorSensorMessage(mqttMessage);
-            else
+            else if((Document.parse(sensorData)).containsKey("Leitura"))
                 treatTempSensorMessage(mqttMessage);
+            else
+                treatSolutionsMessage(mqttMessage);
 
             storeMessageId();
 
             if(documentLabel != null) documentLabel.append(mqttMessage + "\n");
         } catch (MqttException e) {
             System.err.println("There was an error reading or sending the MQTT message");
+            e.printStackTrace();
         }
+    }
+
+    /**
+     * Publishes a new message to the solutions MQTT topic
+     *
+     * @param mqttMessage MQTT Message to broadcast to the broker
+     * @throws MqttException What type of error occurred in the MQTT connection
+     */
+    private void treatSolutionsMessage(MqttMessage mqttMessage) throws MqttException {
+        mqttSolutions.publish(CommonUtilities.getConfig("MQTT", "MQTTTopicSolutions"), mqttMessage);
     }
 
     /**
@@ -416,6 +466,7 @@ public class SendToMQTT implements MqttCallback {
         jsonObject.put("tempSensor1LastId", Integer.toHexString(tempSensor1LastId));
         jsonObject.put("tempSensor2LastId", Integer.toHexString(tempSensor2LastId));
         jsonObject.put("doorSensorLastId", Integer.toHexString(doorSensorLastId));
+        jsonObject.put("solutionsLastId", Integer.toHexString(solutionsLastId));
 
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(idStorageFile));
@@ -441,14 +492,15 @@ public class SendToMQTT implements MqttCallback {
                 while ((line = reader.readLine()) != null) {
                     jsonString.append(line);
                 }
-                if(!jsonString.toString().isEmpty()) {
-                    JSONObject jsonObject = new JSONObject(jsonString.toString());
+
+                JSONObject jsonObject = new JSONObject(jsonString.toString());
 
                 reader.close();
                 tempSensor1LastId = Integer.parseInt(jsonObject.getString("tempSensor1LastId"), 16);
                 tempSensor2LastId = Integer.parseInt(jsonObject.getString("tempSensor2LastId"), 16);
                 doorSensorLastId  = Integer.parseInt(jsonObject.getString("doorSensorLastId"), 16);
-                }
+                solutionsLastId   = Integer.parseInt(jsonObject.getString("solutionsLastId"), 16);
+
                 reader.close();
             }
         } catch (IOException e) {
@@ -468,8 +520,17 @@ public class SendToMQTT implements MqttCallback {
     private boolean filter(Document document) {
         //Filtering the date if withing 7 days and valid
         try {
-            LocalDateTime documentDateTime = LocalDateTime.parse((CharSequence) document.get("Hora"),DateTimeFormatter.
-                    ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+            LocalDateTime documentDateTime;
+
+            if(document.containsKey("StartDate"))
+                documentDateTime = LocalDateTime.parse((CharSequence) document.get("StartDate"),DateTimeFormatter.
+                        ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+            else if(document.containsKey("EndDate"))
+                documentDateTime = LocalDateTime.parse((CharSequence) document.get("EndDate"),DateTimeFormatter.
+                        ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+            else
+                documentDateTime = LocalDateTime.parse((CharSequence) document.get("Hora"),DateTimeFormatter.
+                        ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
             LocalDateTime currentDateTime  = LocalDateTime.now();
 
             Duration duration = Duration.between(documentDateTime, currentDateTime);
@@ -483,7 +544,7 @@ public class SendToMQTT implements MqttCallback {
         if      (document.containsKey("SalaOrigem")) return filterDoorSensor(document);
         else if (document.containsKey("Leitura")) return filterTemperatureSensor(document);
 
-        return false;
+        return true;
     }
 
     /**

@@ -1,3 +1,4 @@
+import 'package:pisid/screens/reading_rooms_screen2.dart';
 import 'package:pisid/screens/screens.dart';
 
 import 'package:flutter/material.dart';
@@ -33,7 +34,7 @@ class ReadingRooms extends StatelessWidget {
         centerTitle: true,
         title: const Text(appTitle),
       ),
-      body: const ReadingRoomsScreen(),
+      body: const ReadingsRoomScreen2(),
     );
   }
 }

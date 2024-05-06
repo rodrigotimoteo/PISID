@@ -493,20 +493,21 @@ public class SendToMQTT implements MqttCallback {
                     jsonString.append(line);
                 }
 
-                JSONObject jsonObject = new JSONObject(jsonString.toString());
+                if (jsonString.length() > 0) {
+                    JSONObject jsonObject = new JSONObject(jsonString.toString());
 
-                reader.close();
-                tempSensor1LastId = Integer.parseInt(jsonObject.getString("tempSensor1LastId"), 16);
-                tempSensor2LastId = Integer.parseInt(jsonObject.getString("tempSensor2LastId"), 16);
-                doorSensorLastId  = Integer.parseInt(jsonObject.getString("doorSensorLastId"), 16);
-                solutionsLastId   = Integer.parseInt(jsonObject.getString("solutionsLastId"), 16);
+                    tempSensor1LastId = Integer.parseInt(jsonObject.optString("tempSensor1LastId", "0"), 16);
+                    tempSensor2LastId = Integer.parseInt(jsonObject.optString("tempSensor2LastId", "0"), 16);
+                    doorSensorLastId  = Integer.parseInt(jsonObject.optString("doorSensorLastId", "0"), 16);
+                    solutionsLastId   = Integer.parseInt(jsonObject.optString("solutionsLastId", "0"), 16);
+                }
 
                 reader.close();
             }
         } catch (IOException e) {
             System.err.println("File could not be read");
         } catch (JSONException e) {
-            System.err.println("File could not be parsed");
+            System.err.println("Error parsing JSON: " + e.getMessage());
             e.printStackTrace();
         }
     }

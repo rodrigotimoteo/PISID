@@ -2,11 +2,11 @@
 include("../config.php");
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $sqli = new mysqli(DB_SERVER, $_SESSION['name'], $_SESSION['password'], DB_DATABASE);
+    $sqli = new mysqli(DB_SERVER, 'root', '', DB_DATABASE);
 
     if($sqli->connect_error) { die("Connection failed: " . $sqli->connect_error); }
 
-    $procedure = "CALL InsertNewUser(?, ?, ?, ?)";
+    $procedure = "CALL CreateNewUSer(?, ?, ?, ?)";
 
     $stmt = $sqli->prepare($procedure);
     $stmt->bind_param("ssss",$email, $password, $name, $phone);

@@ -493,35 +493,21 @@ public class SendToMQTT implements MqttCallback {
                     jsonString.append(line);
                 }
 
-<<<<<<< HEAD
-                JSONObject jsonObject = new JSONObject(jsonString.toString());
-=======
-                if(!jsonString.toString().isEmpty()) {
+                if (jsonString.length() > 0) {
                     JSONObject jsonObject = new JSONObject(jsonString.toString());
->>>>>>> 5b56fe88dd3772faaf5f12031f41cae1a3e266ed
 
-
-                JSONObject jsonObject = new JSONObject(jsonString.toString());
-
-                reader.close();
-                tempSensor1LastId = Integer.parseInt(jsonObject.getString("tempSensor1LastId"), 16);
-                tempSensor2LastId = Integer.parseInt(jsonObject.getString("tempSensor2LastId"), 16);
-                doorSensorLastId  = Integer.parseInt(jsonObject.getString("doorSensorLastId"), 16);
-<<<<<<< HEAD
-                solutionsLastId   = Integer.parseInt(jsonObject.getString("solutionsLastId"), 16);
-
-                reader.close();
-=======
-
+                    tempSensor1LastId = Integer.parseInt(jsonObject.optString("tempSensor1LastId", "0"), 16);
+                    tempSensor2LastId = Integer.parseInt(jsonObject.optString("tempSensor2LastId", "0"), 16);
+                    doorSensorLastId  = Integer.parseInt(jsonObject.optString("doorSensorLastId", "0"), 16);
+                    solutionsLastId   = Integer.parseInt(jsonObject.optString("solutionsLastId", "0"), 16);
                 }
 
-             reader.close();
->>>>>>> 5b56fe88dd3772faaf5f12031f41cae1a3e266ed
+                reader.close();
             }
         } catch (IOException e) {
             System.err.println("File could not be read");
         } catch (JSONException e) {
-            System.err.println("File could not be parsed");
+            System.err.println("Error parsing JSON: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -574,7 +560,6 @@ public class SendToMQTT implements MqttCallback {
         if(filterDuplicatesBasedOnDate(document, lastSentTimestampDoorSensor))
             return false;
 
-
         //Check if number of rooms is correct
         int originRoom, destinationRoom;
 
@@ -681,116 +666,6 @@ public class SendToMQTT implements MqttCallback {
             System.err.println("Invalid date: " + document.get("Hora"));
             return true;
         }
-
-
-
-        //Check if number of rooms is correct
-        int originRoom, destinationRoom;
-
-        originRoom = Integer.parseInt((String) document.get("SalaOrigem"));
-        destinationRoom = Integer.parseInt((String) document.get("SalaDestino"));
-
-        if(originRoom < 1 || originRoom > 10 || destinationRoom < 1 || destinationRoom > 10) return false;
-
-        return checkMovement(originRoom, destinationRoom);
-    }
-
-    /**
-     * Checks if the movement from one room to another is valid.
-     *
-     * @param originRoom The room from which the movement originates.
-     * @param destinationRoom The room to which the movement is intended.
-     * @return {@code true} if the movement is valid, {@code false} otherwise.
-     */
-    private boolean checkMovement(int originRoom, int destinationRoom) {
-        //Check if movement is valid
-        List<ArrayList<Integer>> possibleDestinations;
-
-        if(!validPositions.containsKey(originRoom)) return false;
-
-        possibleDestinations = validPositions.get(originRoom);
-
-        for(ArrayList<Integer> destination : possibleDestinations)
-            if(destination.getFirst() == destinationRoom) return true;
-
-        return false;
-    }
-
-    /**
-     * Filters temperature sensor data to ensure validity.
-     *
-     * @param document The document containing temperature sensor data.
-     * @return {@code true} if the temperature data is valid; {@code false} otherwise.
-     */
-    private boolean filterTemperatureSensor(Document document) {
-        //Check if values are valid
-        double temperature;
-
-        try {
-            temperature = Double.parseDouble((String) document.get("Leitura"));
-        } catch (NumberFormatException e) {
-            System.err.println("Invalid value for temperature, error parsing " + document.get("Leitura"));
-
-            return false;
-        } catch (NullPointerException e) {
-            System.err.println("No value given");
-
-            return false;
-        }
-
-        int sensor = Integer.parseInt((String) document.get("Sensor"));
-
-        //Check temperature variations for unconformities and duplicates based on dates
-        if(sensor == 1) {
-            if(filterDuplicatesBasedOnDate(document, lastSentTimestampTempSensor1)) return false;
-
-            if(lastTemperatureReadingSensor1 == Integer.MIN_VALUE)
-                lastTemperatureReadingSensor1 = temperature;
-
-            if(Math.abs(lastTemperatureReadingSensor1 - temperature) < MAX_TEMP_ALLOWED_DEVIATION) {
-                lastTemperatureReadingSensor1 = temperature;
-                return true;
-            } else return false;
-        }
-        else if(sensor == 2) {
-            if(filterDuplicatesBasedOnDate(document, lastSentTimestampTempSensor2)) return false;
-
-            if(lastTemperatureReadingSensor2 == Integer.MIN_VALUE)
-                lastTemperatureReadingSensor2 = temperature;
-
-            if(Math.abs(lastTemperatureReadingSensor2 - temperature) < MAX_TEMP_ALLOWED_DEVIATION) {
-                lastTemperatureReadingSensor1 = temperature;
-                return true;
-            } else return false;
-        }
-
-        return false;
-    }
-
-
-    /**
-     * Filters duplicate documents based on date.
-     *
-     * @param document The document to check for duplicates.
-     * @param lastSentDateTime The timestamp of the last sent document.
-     * @return {@code true} if the document is not a duplicate based on date, {@code false} otherwise.
-     * @throws DateTimeParseException If the date in the document cannot be parsed.
-     */
-    private boolean filterDuplicatesBasedOnDate(Document document, AtomicReference<LocalDateTime> lastSentDateTime) {
-        if(lastSentDateTime.get() == null) return false;
-
-        try {
-            LocalDateTime documentDateTime = LocalDateTime.parse((CharSequence) document.get("Hora"),DateTimeFormatter.
-                    ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS"));
-
-            if(lastSentDateTime.get().equals(documentDateTime)) return true;
-
-            lastSentDateTime.set(documentDateTime);
-        } catch (DateTimeParseException e) {
-            System.err.println("Invalid date: " + document.get("Hora"));
-            return true;
-        }
-
 
         return false;
     }

@@ -1,6 +1,4 @@
-import 'package:pisid/screens/reading_rooms_screen2.dart';
-import 'package:pisid/screens/screens.dart';
-
+import 'package:pisid_group_6/screens/screens.dart';
 import 'package:flutter/material.dart';
 
 /// A stateless widget representing a collection of reading rooms.
@@ -34,7 +32,7 @@ class ReadingRooms extends StatelessWidget {
         centerTitle: true,
         title: const Text(appTitle),
       ),
-      body: const ReadingsRoomScreen2(),
+      body: const ReadingRoomsScreen(),
     );
   }
 }

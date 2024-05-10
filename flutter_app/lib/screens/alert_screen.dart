@@ -1,4 +1,4 @@
-import 'package:pisid/widgets/widgets.dart';
+import 'package:pisid_group_6/widgets/widgets.dart';
 
 import 'dart:async';
 import 'dart:convert';

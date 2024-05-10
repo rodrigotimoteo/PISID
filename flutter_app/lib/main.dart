@@ -21,10 +21,20 @@ class Login extends StatelessWidget {
       title: appTitle,
       home: Scaffold(
         appBar: AppBar(
-          centerTitle: true,
-          title: const Text(appTitle),
         ),
-        body: const LoginForm(),
+        body: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  appTitle,
+                  style: TextStyle(fontSize: 30),
+                ),
+            ),
+            LoginForm(),
+          ],
+        ),
       ),
     );
   }

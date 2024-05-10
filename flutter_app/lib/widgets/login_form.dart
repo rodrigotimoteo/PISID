@@ -1,4 +1,4 @@
-import 'package:pisid/widgets/widgets.dart';
+import 'package:pisid_group_6/widgets/widgets.dart';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -52,68 +52,89 @@ class LoginFormState extends State<LoginForm> {
   /// Builds the [LoginForm] User Interface
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          TextFormField(
-            controller: usernameController,
-            textAlign: TextAlign.center,
-            decoration: const InputDecoration(
-              labelText: 'Username',
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: TextFormField(
+                controller: usernameController,
+                textAlign: TextAlign.center,
+                decoration: const InputDecoration(
+                  labelText: 'Username',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a valid username';
+                  }
+                  return null;
+                },
+              ),
             ),
-            // The validator receives the text that the user has entered.
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please insert a valid username';
-              }
-
-              return null;
-            },
-          ),
-          TextFormField(
-            controller: passwordController,
-            textAlign: TextAlign.center,
-            decoration: const InputDecoration(
-              labelText: 'Password',
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: TextFormField(
+                controller: passwordController,
+                textAlign: TextAlign.center,
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                ),
+              ),
             ),
-          ),
-          TextFormField(
-            controller: ipController,
-            textAlign: TextAlign.center,
-            decoration: const InputDecoration(
-              labelText: 'IP (xxx.xxx...)',
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: TextFormField(
+                controller: ipController,
+                textAlign: TextAlign.center,
+                decoration: const InputDecoration(
+                  labelText: 'IP (xxx.xxx...)',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a valid IP';
+                  }
+                  return null;
+                },
+              ),
             ),
-            // The validator receives the text that the user has entered.
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please insert a valid IP';
-              }
-
-              return null;
-            },
-          ),
-          TextFormField(
-            controller: portController,
-            textAlign: TextAlign.center,
-            decoration: const InputDecoration(
-              labelText: 'Port Xamp',
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: TextFormField(
+                controller: portController,
+                textAlign: TextAlign.center,
+                decoration: const InputDecoration(
+                  labelText: 'Port XAMPP',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+                ),
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: ElevatedButton(
-              onPressed: () {
-                // Validate returns true if the form is valid, or false otherwise.
-                if (_formKey.currentState!.validate()) {
-                  validateLogin();
-                }
-              },
-              child: const Text('Login'),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 50),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (_formKey.currentState!.validate()) {
+                      validateLogin();
+                    }
+                  },
+                  child: const Text('Login'),
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

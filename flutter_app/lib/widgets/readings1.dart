@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pisid/screens/screens.dart';
+import 'package:pisid_group_6/screens/screens.dart';
 
 class Readings1 extends StatelessWidget {
   const Readings1({Key? key}) : super(key: key);
@@ -14,7 +14,7 @@ class Readings1 extends StatelessWidget {
         centerTitle: true,
         title: const Text(appTitle),
       ),
-      body: const ReadingsScreen(),
+      body: const ReadingsScreen(tempSensor1: true),
     );
   }
 }

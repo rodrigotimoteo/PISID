@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:math';
 
+/// NO USAGE FOR NOW!
 
 class ReadingsRoomScreen2 extends StatefulWidget {
   const ReadingsRoomScreen2({Key? key}) : super(key: key);
@@ -15,7 +16,6 @@ class ReadingsRoomScreen2 extends StatefulWidget {
   ReadingsRoomScreen2State createState() {
     return ReadingsRoomScreen2State();
   }
-
 }
 
 class ReadingsRoomScreen2State extends State<ReadingsRoomScreen2> {
@@ -101,7 +101,8 @@ class ReadingsRoomScreen2State extends State<ReadingsRoomScreen2> {
             },
             child: const Text('Alerts'),
           ),
-        ));
+        )
+    );
   }
 
   getReadings() async {
@@ -111,7 +112,7 @@ class ReadingsRoomScreen2State extends State<ReadingsRoomScreen2> {
     String? ip = prefs.getString('ip');
     String? port = prefs.getString('port');
 
-    String readingsURL = "http://" + ip! + ":" + port! + "/scripts/getMousesRoom.php";
+    String readingsURL = "http://" + ip! + ":" + port! + "/php/actions/getMousesRoom.php";
     var response = await http
         .post(Uri.parse(readingsURL), body: {'username': username, 'password': password});
 

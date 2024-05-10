@@ -41,31 +41,32 @@ public class MainEntryPoint {
                     new WriteToSQL().connectDatabase();
                     new WriteToSQL().connectCloud();
                 }
-//                case "ALL" -> {
-//                    ReadFromMQTTWriteToMongo.injectDocumentLabel(documentLabel);
-//
-//                    new ReadFromMQTTWriteToMongo().connectMongo();
-//                    new ReadFromMQTTWriteToMongo().connectCloud();
-//
-//                    Thread.sleep(2000);
-//
-//                    JTextArea documentLabelExtra1 = new JTextArea("\n");
-//                    SendToMQTT.initFile();
-//                    SendToMQTT.hasStoredId();
-//                    SendToMQTT.injectDocumentLabel(documentLabelExtra1);
-//
-//                    new SendToMQTT().connectMazeSettings();
-//                    new SendToMQTT().connectMongo();
-//                    new SendToMQTT().connectCloud();
-//
-//                    Thread.sleep(5000);
-//
-//                    JTextArea documentLabelExtra2 = new JTextArea("\n");
-//                    SendToMQTT.injectDocumentLabel(documentLabelExtra2);
-//
-//                    new WriteToSQL().connectDatabase();
-//                    new WriteToSQL().connectCloud();
-//                }
+                case "ALL" -> {
+                    documentLabel = CommonUtilities.createWindow("Cloud to Mongo");
+                    ReadFromMQTTWriteToMongo.injectDocumentLabel(documentLabel);
+
+                    new ReadFromMQTTWriteToMongo().connectMongo();
+                    new ReadFromMQTTWriteToMongo().connectCloud();
+
+                    Thread.sleep(2000);
+
+                    JTextArea documentLabelExtra1 = CommonUtilities.createWindow("Send to MQTT");
+                    SendToMQTT.injectDocumentLabel(documentLabelExtra1);
+                    SendToMQTT.initFile();
+                    SendToMQTT.hasStoredId();
+
+                    new SendToMQTT().connectMazeSettings();
+                    new SendToMQTT().connectMongo();
+                    new SendToMQTT().connectCloud();
+
+                    Thread.sleep(5000);
+
+                    JTextArea documentLabelExtra2 = CommonUtilities.createWindow("Data Bridge");
+                    WriteToSQL.injectDocumentLabel(documentLabelExtra2);
+
+                    new WriteToSQL().connectDatabase();
+                    new WriteToSQL().connectCloud();
+                }
             }
         }
     }

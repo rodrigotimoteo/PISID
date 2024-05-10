@@ -25,8 +25,8 @@ class _MyHomePageState extends State<ReadingRoomsScreen> {
     timer = Timer.periodic(interval, (Timer t) => getReadings());
     super.initState();
   }
-  var readingsValues = <double>[];
-  var readingsTimes = <double>[];
+  var readingsValues = <int>[];
+  var readingsTimes = <int>[];
   var minY = 0.0;
   var maxY = 100.0;
 
@@ -46,8 +46,8 @@ class _MyHomePageState extends State<ReadingRoomsScreen> {
     getReadings();
     int sizelist = readingsTimes.length;
     for( int i = sizelist ; i < 9; i++ ) {
-      readingsTimes.add(i+2 +.0);
-      readingsValues.add(0.0);
+      readingsTimes.add(i + 2);
+      readingsValues.add(0);
     }
     //sleep(Duration(seconds:2));
     return Scaffold(
@@ -111,19 +111,20 @@ class _MyHomePageState extends State<ReadingRoomsScreen> {
         ));
 
   }
+
   getReadings() async {
     final prefs = await SharedPreferences.getInstance();
     String? username = prefs.getString('username');
     String? password = prefs.getString('password');
     String? ip = prefs.getString('ip');
     String? port = prefs.getString('port');
-    String readingsURL = "http://" + ip! + ":" + port! + "/scripts/getMouseRoom.php";
+    String readingsURL = "http://" + ip! + ":" + port! + "/php/actions/getMousesRoom.php";
     var response = await http
         .post(Uri.parse(readingsURL), body: {'username': username, 'password': password});
 
     if (response.statusCode == 200) {
       var jsonData = json.decode(response.body);
-      var data = jsonData["readings"];
+      var data = jsonData["data"];
       setState(() {
         readingsValues.clear();
         readingsTimes.clear();
@@ -131,15 +132,16 @@ class _MyHomePageState extends State<ReadingRoomsScreen> {
         maxY = 100;
 
         if (data != null && data.length > 0) {
+          int i = 0;
           for (var reading in data) {
-            double readingTime = double.parse(reading["Room"].toString());
-            var value = double.parse(reading["TotalMouse"].toString());
-            readingsTimes.add(readingTime);
-            readingsValues.add(value);
+            while(i < reading.length) {
+              readingsValues.add(reading["sala_" + i.toString()]);
+              readingsTimes.add(i++);
+            }
           }
           if (readingsValues.isNotEmpty) {
-            minY = readingsValues.reduce(min)-1;
-            maxY = readingsValues.reduce(max)+1;
+            minY = readingsValues.reduce(min) - 1;
+            maxY = readingsValues.reduce(max) + 1;
           }
         }
       });

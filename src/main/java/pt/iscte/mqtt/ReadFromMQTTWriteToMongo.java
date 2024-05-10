@@ -16,8 +16,6 @@ import javax.swing.*;
  */
 public class ReadFromMQTTWriteToMongo implements MqttCallback {
 
-    //TODO MANEIRA BOA DE LIMITAR O SENDS TO MQTT E MANUALMENTE CRIAR O ID DO MONGO DB PARA UM NUMERO SEQUENCIAL!
-
     /**
      * Static instances of MQTT clients for temperature and maze sensors.
      */
@@ -70,7 +68,7 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
      * @throws RuntimeException if an error occurs during connection to the MQTT broker
      */
     public void connectCloud() {
-        MqttClient[] mqttClients = CommonUtilities.connectCloud(this, "MQTTCloud");
+        MqttClient[] mqttClients = CommonUtilities.connectCloud(this, "MQTTCloud", false, "");
 
         mqttClientTemp = mqttClients[0];
         mqttClientMaze = mqttClients[1];

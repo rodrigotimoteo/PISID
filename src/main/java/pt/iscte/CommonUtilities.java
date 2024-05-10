@@ -13,10 +13,8 @@ import org.ini4j.Wini;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.text.ParseException;
@@ -64,10 +62,11 @@ public class CommonUtilities {
      * @throws RuntimeException if an error occurs while connecting to the MQTT broker or reading the INI file
      */
 
-    public static MqttClient[] connectCloud(MqttCallback client, String section) {
+    public static MqttClient[] connectCloud(MqttCallback client, String section, boolean connectSolutions, String sectionSolution) {
         try {
             MqttClient mqttClientTemp;
             MqttClient mqttClientMaze;
+            MqttClient mqttSolutions;
 
             Wini ini = new Wini(getStream());
 
@@ -83,6 +82,16 @@ public class CommonUtilities {
             mqttClientMaze.connect();
             mqttClientMaze.setCallback(client);
             mqttClientMaze.subscribe(ini.get(section, "MQTTTopicMaze"));
+
+            if(connectSolutions) {
+                mqttSolutions = new MqttClient(ini.get(sectionSolution, "MQTTServer"), "CloudToMongo " + i + "_"
+                        + ini.get(sectionSolution, "MQTTTopicSolutions"));
+                mqttSolutions.connect();
+                mqttSolutions.setCallback(client);
+                mqttSolutions.subscribe(ini.get(sectionSolution, "MQTTTopicSolutions"));
+
+                return new MqttClient[]{mqttClientTemp, mqttClientMaze, mqttSolutions};
+            }
 
             return new MqttClient[]{mqttClientTemp, mqttClientMaze};
 

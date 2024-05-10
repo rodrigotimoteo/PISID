@@ -31,7 +31,7 @@ if (isset($_POST['login'])) {
         $row = $result->fetch_assoc();
 
         if(isset($row['password'])) {
-            if(!password_verify($password, $row['password'])) { // Success with password
+            if(!password_verify($password, $row['password'])) {
                 echo "Wrong Credentials";
 
                 $stmt->close();
@@ -39,7 +39,7 @@ if (isset($_POST['login'])) {
                 exit();
             }
         }
-        // Success no password
+
 
         $conn = new mysqli(DB_SERVER, $username, $password, DB_DATABASE);
 
@@ -60,7 +60,7 @@ if (isset($_POST['login'])) {
             $_SESSION['loggedin'] = true;
             $_SESSION['email'] = $email;
             $_SESSION['name'] = $name;
-
+            $_SESSION['password'] = $password;
             header("Location: ../testList.php");
             exit;
         }
@@ -68,4 +68,5 @@ if (isset($_POST['login'])) {
 
     $stmt->close();
     $conn->close();
+
 }

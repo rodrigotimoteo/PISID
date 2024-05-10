@@ -1,19 +1,22 @@
 <?php
-/*
 session_start();
 
-if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
-    echo "User already logged in, redirecting to test list";
-    header("Location: testList.php");
+/*
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
+    echo "User isn't logged in, redirecting to landing page";
+    header("Location: landingPage.php");
+} else {
+    echo "Welcome " . $_SESSION['name'];
 }
 */
+
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>LoginPagePISID</title>
+    <title>UserPagePISID</title>
     <style>
         @import url(https://fonts.googleapis.com/css?family=Rokkitt);
         @import url(https://fonts.googleapis.com/css?family=Open+Sans:400italic,400,700);
@@ -23,7 +26,6 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
         * {
             margin: 0;
             padding: 0;
-            -moz-box-sizing: border-box;
             box-sizing: border-box;
         }
 
@@ -35,14 +37,14 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
             margin: 0;
             padding: 0;
             font-family: 'Open Sans', sans-serif;
-            background: rgb(58,255,246);
             background: linear-gradient(90deg, rgba(58,255,246,1) 5%, rgba(240,16,220,1) 100%, rgba(38,98,247,1) 100%);
         }
 
         .container {
-            width: 30%;
-            max-width: 400px;
+            max-width: 800px;
             margin: 0 auto;
+            width: 100%;
+            height: 700px;
             padding: 20px;
             box-sizing: border-box;
         }
@@ -50,13 +52,15 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
         .menu {
             text-align: center;
             padding: 20px 0;
+            display: flex;
+            justify-content: space-around;
         }
 
         .menu a {
             text-decoration: none;
             color: #fff;
             margin: 0 10px;
-            font-size: 25px;
+            font-size: 18px;
         }
 
         .menu a:hover {
@@ -88,7 +92,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
         }
 
         input {
-            margin-bottom: 15px;
+            margin-bottom: 0px;
             padding: 10px 5px;
             width: 100%;
             background-color: #f4f4f4;
@@ -117,18 +121,18 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
             width: 60%;
             transition: all .5s ease;
             cursor: pointer;
-            display: block;
+            display: block; 
             margin: 0 auto; 
             border-radius: 5px;
         }
 
         input[type=submit]:hover {
-            background-color: #0056b3;
+            background-color: #A64141;
             color: #f4f4f4;
         }
         .message {
             position: absolute;
-            top: 50px;
+            top: 500px;
             left: 460px;
             transform: rotate(-25deg);
             text-align: right;
@@ -140,50 +144,50 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
             display: block;
             color: #cccc;
             position: relative;
+            z-index: -1;
             bottom: 80px;
             text-align: center;
         }
 
-        .first, .second {
-            font-size: 10em;
-            letter-spacing: -4px;
-            display: inline-block;
-            font-family: 'Lobster', cursive;
-            text-shadow: 3px 3px 0 #999;
-        }
 
-        .second {
-            font-size: 8em;
-            line-height: 150px;
-        }
-        a[href="#"] {
+        a{
         text-decoration: none;
         color: lightgray;
     }
-</style>
+    </style>
 </head>
 <body>
-
 <section class="container">
     <div class="menu">
-        <a href="../landingPage.php">Home</a>
+        <a href="landingPage.php">Home</a>
+        <a href="testList.php">Test List</a>
+        <a href="createTest.php">Create Test</a>
+        <a href="profileChange.php">Profile</a>
+        <a href="actions/logout.php">Logout</a>
     </div>
-    <div class="login">
-        <h1>Login</h1>
-        <form action="actions/login.php" method="post">
-            <label id="emailLabel" for="email">Email:</label>
-            <input type="text" required="" id="email" name="email" placeholder="Write your email">
-            <label id="passwordLabel" for="password">Password:</label>
-            <input type="password" required="" id="password" name="password" placeholder="Write your password">
-            <div style="text-align:center;">
-                <input type="submit" value="login" name="login">
+
+    <div class="container">
+        <div id="editUser" class="login">
+            <h1>Edit User</h1>
+            <form action="actions/editUserInformation.php" method="post">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required placeholder="Write your name">
+
+                <label for="phone">Phone Number:</label>
+                <input type="tel" id="phone" name="phone" required placeholder="Write your phone number">
+                <style>
+                    input[type="text"], input[type="password"], input[type="tel"] {
+                        border-radius: 5px;
+                    }
+                </style>
                 <br>
                 <br>
+                <input type="submit" value="Update">
                 <br>
                 <br>
-                <a href="#"> Forgot Password</a>
-            </div>
-        </form>
+                <a href="landingPage.php"> Go Back</a>
+            </form>
+        </div>
     </div>
 </section>
 </body>

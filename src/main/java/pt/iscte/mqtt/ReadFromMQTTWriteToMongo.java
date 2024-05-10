@@ -334,6 +334,6 @@ public class ReadFromMQTTWriteToMongo implements MqttCallback {
      */
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-
+        
     }
 }

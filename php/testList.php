@@ -17,6 +17,13 @@ $stmt->bind_param("s", $_SESSION['email']);
 $stmt->execute();
 $result = $stmt->get_result();
 
+$query2 = "SELECT estado_experiencia  FROM experiencia WHERE investigador = ?";
+$stmt2 = $sqli->prepare($query2);
+$stmt2->bind_param("s", $_SESSION['email']);
+$stmt2->execute();
+$result2 = $stmt2->get_result();
+
+
 ?>
 
 <!DOCTYPE html>
@@ -163,6 +170,17 @@ $result = $stmt->get_result();
                     <th>Action 3</th>
                     <th>Action 4</th>
                 </tr>
+                <?php
+
+                $count =0;
+
+                while ($row = $result2->fetch_assoc()) {
+                    if($row['estado_experiencia'] == 'A decorrer'){
+                        $count = 1;
+                    }
+                }
+
+                ?>
 
                  <?php while ($row = $result->fetch_assoc()) { ?>
                     <tr>
@@ -202,15 +220,18 @@ $result = $stmt->get_result();
                                 </form>
                             <?php } elseif ($row['estado_experiencia'] == 'Terminada') { ?>
                                 <button class="start-finish" disabled>Test Finished</button>
-                            <?php } else { ?>
+                            <?php } elseif ($count==0) { ?>
                                 <form action="actions/startTest.php" method="GET">
                                     <input type="hidden" name="start_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
                                     <button type="submit" class="start-finish" name="start">Start Test</button>
                                 </form>
+                            <?php }else {?>
+                                <button class="start-finish" disabled>Start Test</button>
                             <?php } ?>
                         </td>
 
                     </tr>
+
                  <?php } ?>
 
             </table>
@@ -222,5 +243,6 @@ $result = $stmt->get_result();
 
 <?php
 $stmt->close();
+$stmt2->close();
 $sqli->close();
 ?>

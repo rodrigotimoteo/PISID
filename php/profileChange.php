@@ -107,7 +107,6 @@ $sqli->close();
             transition: all .3s ease-in-out;
         }
 
-
         .button-container {
             margin-top: 20px;
             display: flex;
@@ -168,12 +167,10 @@ $sqli->close();
                     <p>Tipo: <?php echo htmlspecialchars($tipo); ?></p>
                 </div>
                 <br>
-            <br>
             <div class="button-container">
                 <a href="editUserPage.php" class="button">Edit User Details</a>
                 <a href="changePassword.php" class="button">Change Password</a>
             </div>
-
         </div>
     </div>
 </section>

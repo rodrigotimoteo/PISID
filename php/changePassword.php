@@ -36,7 +36,6 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
             max-width: 800px;
             margin: 0 auto;
             width: 100%;
-            height: 700px;
             padding: 20px;
             box-sizing: border-box;
         }
@@ -66,7 +65,6 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
             margin-top: 50px;
             padding: 30px;
             border-radius: 15px;
-            height: 450px;
         }
 
         .login h1 {
@@ -158,9 +156,9 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
 
                 <label for="new_password">New Password:</label>
                 <input type="password" id="new_password" name="new_password" required placeholder="Enter your new password">
-                <br><br>
+                <br><br><br>
                 <input type="submit" value="Update">
-                <br><br><br><br><br>
+                <br>
                 <a href="profileChange.php"> Go Back</a>
             </form>
         </div>

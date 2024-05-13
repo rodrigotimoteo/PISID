@@ -4,19 +4,21 @@ include("../config.php");
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    $sqli = new mysqli(DB_SERVER, $_SESSION['email'], $_SESSION['password'], DB_DATABASE);
-
-    if ($sqli->connect_error) {
-        die("Connection failed: " . $sqli->connect_error);
-    }
-
     if(isset($_SESSION['email'])) {
+
+        $email = $_SESSION['email'];
+
+        $sqli = new mysqli(DB_SERVER, $email, $_SESSION['password'], DB_DATABASE);
+
+        if ($sqli->connect_error) {
+            header("Location: ../landingPage.php");
+            die("Connection failed: " . $sqli->connect_error);
+        }
 
         if(isset($_POST['new_password']) && isset($_POST['current_password'])) {
 
             $current_password = $_POST['current_password'];
             $new_password = $_POST['new_password'];
-            $email = $_SESSION['email'];
 
             $stmt_check_password = $sqli->prepare("SELECT password FROM utilizador WHERE email = ?");
             $stmt_check_password->bind_param("s", $email);
@@ -45,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
                     if ($stmt->execute()) {
-                        
+
                         header("Location: ../profileChange.php");
 
                     } else {
@@ -69,9 +71,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             echo "Please provide both current and new passwords.";
         }
 
+        $sqli->close();
     }
-
-    $sqli->close();
-
 }
-?>

@@ -17,7 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $phone = $_POST['phone'];
 
     if($stmt->execute()) {
-        echo "New user created successfully";
+        header("Location: ../landingPage.php");
     } else {
         echo "Error: " . $procedure . "<br>" . $sqli->error;
     }
@@ -25,4 +25,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt->close();
     $sqli->close();
 }
-?>

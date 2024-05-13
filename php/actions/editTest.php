@@ -28,7 +28,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 $procedure = "CALL EditTest(?,?,?,?,?,?,?)";
                 $stmt = $sqli->prepare($procedure);
-                $stmt->bind_param("siiiiii", $test_description, $test_number_of_rats, $test_limit_per_room, $test_id, $test_seconds_without_movement, $test_ideal_temperature, $test_max_temp_deviation);
+                $stmt->bind_param("siiiiii", $test_description, $test_number_of_rats, $test_limit_per_room,
+                    $test_id, $test_seconds_without_movement, $test_ideal_temperature, $test_max_temp_deviation);
 
                 if ($stmt->execute()) {
                     header("Location: ../testList.php");

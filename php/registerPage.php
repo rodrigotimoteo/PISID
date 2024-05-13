@@ -3,12 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>RegisterPagePISID</title>
+    <link rel="stylesheet" href="style.css" media="screen">
     <style>
-        @import url(https://fonts.googleapis.com/css?family=Rokkitt);
-        @import url(https://fonts.googleapis.com/css?family=Open+Sans:400italic,400,700);
-        @import url(https://fonts.googleapis.com/css?family=Roboto+Slab:700,400);
-        @import url(https://fonts.googleapis.com/css?family=Lobster);
-
         * {
             margin: 0;
             padding: 0;
@@ -116,15 +112,6 @@
             background-color: #0056b3;
             color: #f4f4f4;
         }
-        .message {
-            position: absolute;
-            top: 50px;
-            left: 460px;
-            transform: rotate(-25deg);
-            text-align: right;
-            margin-left: 20px;
-            margin-top: 20px;
-        }
 
         .message span {
             display: block;
@@ -134,28 +121,16 @@
             text-align: center;
         }
 
-        .first, .second {
-            font-size: 10em;
-            letter-spacing: -4px;
-            display: inline-block;
-            font-family: 'Lobster', cursive;
-            text-shadow: 3px 3px 0 #999;
-        }
-
-        .second {
-            font-size: 8em;
-            line-height: 150px;
-        }
         a[href="#"] {
-        text-decoration: none;
-        color: lightgray;
-    }
-</style>
+            text-decoration: none;
+            color: lightgray;
+        }
+    </style>
 </head>
 <body>
 <section class="container">
     <div class="menu">
-        <a href="../landingPage.php">Home</a>
+        <a href="landingPage.php">Home</a>
     </div>
     <div class="register">
         <h1>Register</h1>

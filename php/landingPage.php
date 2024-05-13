@@ -1,13 +1,9 @@
 <?php
 session_start();
-/*
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
-    echo "User isn't logged in, redirecting to landing page";
-    header("Location: landingPage.php");
-} else {
-    echo "Welcome " . $_SESSION['name'];
+
+if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
+    header("Location: testList.php");
 }
-*/
 ?>
 
 <!DOCTYPE html>
@@ -16,6 +12,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
 <head>
     <meta charset="UTF-8">
     <title>Lab Rats - Landing Page</title>
+    <link rel="stylesheet" href="style.css" media="screen">
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -101,13 +98,6 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
     <a href="loginPage.php" class="button">Login</a>
     </div>
     <br>
-    <div>
-        <?php
-        if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] == false) {
-            echo '<a href="loginPage.php" class="button">Login</a>';
-        }
-        ?>
-    </div>
 </div>
 
 </html>

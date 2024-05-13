@@ -8,4 +8,3 @@ session_destroy();
 
 header("Location: ../landingPage.php");
 exit;
-?>

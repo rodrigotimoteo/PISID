@@ -3,6 +3,11 @@
 
 include("config.php");
 
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
+    echo "User isn't logged in, redirecting to landing page";
+    header("Location: landingPage.php");
+}
+
 $email = $_SESSION['email'];
 $password = $_SESSION['password'];
 
@@ -31,12 +36,8 @@ $result2 = $stmt2->get_result();
 <head>
     <meta charset="UTF-8">
     <title>TestListPagePISID</title>
+    <link rel="stylesheet" href="style.css" media="screen">
     <style>
-        @import url(https://fonts.googleapis.com/css?family=Rokkitt);
-        @import url(https://fonts.googleapis.com/css?family=Open+Sans:400italic,400,700);
-        @import url(https://fonts.googleapis.com/css?family=Roboto+Slab:700,400);
-        @import url(https://fonts.googleapis.com/css?family=Lobster);
-
         * {
             margin: 0;
             padding: 0;
@@ -165,10 +166,9 @@ $result2 = $stmt2->get_result();
                     <th>State</th>
                     <th>Number Of Rats</th>
                     <th>Description</th>
-                    <th>Action 1</th>
-                    <th>Action 2</th>
-                    <th>Action 3</th>
-                    <th>Action 4</th>
+                    <th>Delete</th>
+                    <th>Edit</th>
+                    <th>Interact</th>
                 </tr>
                 <?php
 
@@ -194,13 +194,6 @@ $result2 = $stmt2->get_result();
                                 <button type="submit" class="start-finish" name="delete">Delete Test</button>
                             </form>
                         </td>
-                        <td>
-
-                            <form action="actions/assignInvestigator.php" method="GET">
-                                <input type="hidden" name="assign_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
-                                <button type="submit" class="start-finish" name="assign">Assign investigator</button>
-                            </form>
-
                         <td>
                             <?php if ($row['estado_experiencia'] == 'Por Iniciar') { ?>
                                 <form action="editTestPage.php" method="GET">

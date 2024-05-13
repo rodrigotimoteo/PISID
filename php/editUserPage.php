@@ -1,14 +1,10 @@
 <?php
 session_start();
 
-/*
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
     echo "User isn't logged in, redirecting to landing page";
     header("Location: landingPage.php");
-} else {
-    echo "Welcome " . $_SESSION['name'];
 }
-*/
 
 ?>
 
@@ -17,12 +13,8 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
 <head>
     <meta charset="UTF-8">
     <title>UserPagePISID</title>
+    <link rel="stylesheet" href="style.css" media="screen">
     <style>
-        @import url(https://fonts.googleapis.com/css?family=Rokkitt);
-        @import url(https://fonts.googleapis.com/css?family=Open+Sans:400italic,400,700);
-        @import url(https://fonts.googleapis.com/css?family=Roboto+Slab:700,400);
-        @import url(https://fonts.googleapis.com/css?family=Lobster);
-
         * {
             margin: 0;
             padding: 0;
@@ -74,7 +66,6 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
             margin-top: 50px;
             padding: 30px;
             border-radius: 15px;
-            height: 450px;
         }
 
         .login h1 {
@@ -130,15 +121,6 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
             background-color: #A64141;
             color: #f4f4f4;
         }
-        .message {
-            position: absolute;
-            top: 500px;
-            left: 460px;
-            transform: rotate(-25deg);
-            text-align: right;
-            margin-left: 20px;
-            margin-top: 20px;
-        }
 
         .message span {
             display: block;
@@ -179,13 +161,9 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
                     input[type="text"], input[type="password"], input[type="tel"] {
                         border-radius: 5px;
                     }
-                </style>
-                <br>
-                <br>
-                <input type="submit" value="Update">
-                <br>
-                <br>
-                <a href="landingPage.php"> Go Back</a>
+                </style><br><br>
+                <input type="submit" value="Update"><br>
+                <a href="profileChange.php"> Go Back</a>
             </form>
         </div>
     </div>

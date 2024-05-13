@@ -1,14 +1,11 @@
 <?php
-#session_start();
-/*
+session_start();
 
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
     echo "User isn't logged in, redirecting to landing page";
     header("Location: landingPage.php");
-} else {
-    echo "Welcome " . $_SESSION['name'];
 }
-*/
+
 ?>
 
 
@@ -50,12 +47,8 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 <head>
     <meta charset="UTF-8">
     <title>Edit Test</title>
+    <link rel="stylesheet" href="style.css" media="screen">
     <style>
-        @import url(https://fonts.googleapis.com/css?family=Rokkitt);
-        @import url(https://fonts.googleapis.com/css?family=Open+Sans:400italic,400,700);
-        @import url(https://fonts.googleapis.com/css?family=Roboto+Slab:700,400);
-        @import url(https://fonts.googleapis.com/css?family=Lobster);
-
         * {
             margin: 0;
             padding: 0;
@@ -151,22 +144,16 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
 <form action="actions/editTest.php" method="post">
     <input type="hidden" name="test_id" value="<?php echo $edit_id_exp; ?>">
-
     <label for="test_description">Test Description:</label>
     <input type="text" id="test_description" name="test_description" value="<?php echo $descricao; ?>" required>
-
     <label for="test_limit_per_room">Limit per Room:</label>
     <input type="number" id="test_limit_per_room" name="test_limit_per_room" value="<?php echo $limite_ratos_sala; ?>" required>
-
     <label for="test_number_of_rats">Number of Rats:</label>
     <input type="number" id="test_number_of_rats" name="test_number_of_rats" value="<?php echo $numero_ratos; ?>" required>
-
     <label for="test_seconds_without_movement">Seconds without Movement:</label>
     <input type="number" id="test_seconds_without_movement" name="test_seconds_without_movement" value="<?php echo $segundos_sem_movimento; ?>" required>
-
     <label for="test_ideal_temperature">Ideal Temperature:</label>
     <input type="number" id="test_ideal_temperature" name="test_ideal_temperature" value="<?php echo $temperatura_ideal; ?>" required>
-
     <label for="test_max_temp_deviation">Max Temperature Deviation:</label>
     <input type="number" id="test_max_temp_deviation" name="test_max_temp_deviation" value="<?php echo $variacao_temperatura; ?>" required>
 

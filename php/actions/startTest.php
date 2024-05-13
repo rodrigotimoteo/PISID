@@ -3,13 +3,13 @@ include("../config.php");
 
 if ($_SERVER["REQUEST_METHOD"] == "GET") {
 
-    $sqli = new mysqli(DB_SERVER, $_SESSION['email'], $_SESSION['password'], DB_DATABASE);
-
-    if ($sqli->connect_error) {
-        die("Connection failed: " . $sqli->connect_error);
-    }
-
     if(isset($_SESSION['email'])) {
+
+        $sqli = new mysqli(DB_SERVER, $_SESSION['email'], $_SESSION['password'], DB_DATABASE);
+
+        if ($sqli->connect_error) {
+            die("Connection failed: " . $sqli->connect_error);
+        }
 
         if(isset($_GET['start_id_exp'])) {
 
@@ -31,9 +31,6 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
             echo "Test ID is not set.";
         }
 
+        $sqli->close();
     }
-
-    $sqli->close();
-
 }
-?>

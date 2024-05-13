@@ -1,28 +1,21 @@
 <?php
 session_start();
-/*
+
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
     echo "User isn't logged in, redirecting to landing page";
     header("Location: landingPage.php");
-} else {
-    echo "Welcome " . $_SESSION['name'];
 }
-*/
+
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <!-- <link rel="stylesheet" type="text/css" href="style.css"> -->
     <meta charset="UTF-8">
     <title>LoginPagePISID</title>
+    <link rel="stylesheet" href="style.css" media="screen">
 </head>
 <style>
-        @import url(https://fonts.googleapis.com/css?family=Rokkitt);
-        @import url(https://fonts.googleapis.com/css?family=Open+Sans:400italic,400,700);
-        @import url(https://fonts.googleapis.com/css?family=Roboto+Slab:700,400);
-        @import url(https://fonts.googleapis.com/css?family=Lobster);
-
         * {
             margin: 0;
             padding: 0;
@@ -74,7 +67,6 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
             margin-top: 50px;
             padding: 30px;
             border-radius: 15px;
-            height: 570px;
         }
 
         .login h1 {
@@ -130,15 +122,6 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
             background-color: #A64141;
             color: #f4f4f4;
         }
-        .message {
-            position: absolute;
-            top: 500px;
-            left: 460px;
-            transform: rotate(-25deg);
-            text-align: right;
-            margin-left: 20px;
-            margin-top: 20px;
-        }
 
         .message span {
             display: block;
@@ -149,19 +132,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
             text-align: center;
         }
 
-        .first, .second {
-            font-size: 10em;
-            letter-spacing: -4px;
-            display: inline-block;
-            font-family: 'Lobster', cursive;
-            text-shadow: 3px 3px 0 #999;
-        }
-
-        .second {
-            font-size: 8em;
-            line-height: 150px;
-        }
-        a{
+        a {
         text-decoration: none;
         color: lightgray;
         margin-top: 10px;
@@ -181,35 +152,30 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
         <div id="createTest" class="login">
             <h1>Create Test</h1>
             <form action="actions/createNewTest.php" method="post">
-                    <input class="input" type="text" id="description" name="description" placeholder="Description">
-                    <br>
-                    <br>
-                    <input class="input" type="number" required id="numberOfRats" name="numberOfRats" placeholder="Number of Rats">
-                    <br>
-                    <br>
-                    <input class="input" type="number" required id="ratLimit" name="ratLimit" placeholder="Rat Limit per Room">
-                    <br>
-                    <br>
-                    <input class="input" type="number" required id="timeWithoutMovement" name="timeWithoutMovement" placeholder="Time limit without Rat Movement">
-                    <br>
-                    <br>
-                    <input class="input" type="number" required id="idealTemperature" name="idealTemperature" placeholder="Ideal Temperature">
-                    <br>
-                    <br>
-                    <input class="input" type="number" required id="maxTempVariation" name="maxTempVariation" placeholder="Maximum temperature deviation">
-                    <br>
-                    <br>
-                    <style>
-                        input[type="text"], input[type="password"], input[type="tel"], input[type="number"], input[type="submit"] {
-                            border-radius: 5px;
-                        }
-                    </style>
-                    <input class="input" type="submit" value="Submit" name="Submit">
-                    
-                <a href="landingPage.php">Go Back</a>
+                <label for="description">Description</label>
+                <input class="input" type="text" id="description" name="description" placeholder="Description"><br>
+                <label for="numberOfRats">Number of Rats</label>
+                <input class="input" type="number" required id="numberOfRats" name="numberOfRats" placeholder="Number of Rats"><br>
+                <label for="ratLimit">Rat Limit</label>
+                <input class="input" type="number" required id="ratLimit" name="ratLimit" placeholder="Rat Limit per Room"><br>
+                <label for="timeWithoutMovement">Time Without Movement</label>
+                <input class="input" type="number" required id="timeWithoutMovement" name="timeWithoutMovement" placeholder="Time limit without Rat Movement"><br>
+                <label for="idealTemperature">Ideal Temperature</label>
+                <input class="input" type="number" required id="idealTemperature" name="idealTemperature" placeholder="Ideal Temperature"><br>
+                <label for="maxTempVariation">Maximum Temperature Deviation</label>
+                <input class="input" type="number" required id="maxTempVariation" name="maxTempVariation" placeholder="Maximum temperature deviation"><br><br>
+
+
+                <input class="input" type="submit" value="Submit" name="Submit">
+                <style>
+                    input[type="text"], input[type="password"], input[type="tel"], input[type="number"], input[type="submit"] {
+                        border-radius: 5px;
+                    }
+                </style>
             </form>
+            <br>
+            <a href="landingPage.php">Go Back</a>
         </div>
     </section>
 </body>
 </html>
-<html>

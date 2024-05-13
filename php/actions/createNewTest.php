@@ -21,7 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $investigator = $_SESSION['email'];
 
     if($stmt->execute()) {
-        echo "New test created successfully";
+        header("Location: ../testList.php");
     } else {
         echo "Error: " . $procedure . "<br>" . $sqli->error;
     }

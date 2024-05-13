@@ -1,25 +1,10 @@
-<?php
-/*
-session_start();
-
-if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
-    echo "User already logged in, redirecting to test list";
-    header("Location: testList.php");
-}
-*/
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>LoginPagePISID</title>
+    <link rel="stylesheet" href="style.css" media="screen">
     <style>
-        @import url(https://fonts.googleapis.com/css?family=Rokkitt);
-        @import url(https://fonts.googleapis.com/css?family=Open+Sans:400italic,400,700);
-        @import url(https://fonts.googleapis.com/css?family=Roboto+Slab:700,400);
-        @import url(https://fonts.googleapis.com/css?family=Lobster);
-
         * {
             margin: 0;
             padding: 0;
@@ -70,7 +55,6 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
             margin-top: 50px;
             padding: 30px;
             border-radius: 15px;
-            height: 450px;
         }
 
         .login h1 {
@@ -166,7 +150,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 
 <section class="container">
     <div class="menu">
-        <a href="../landingPage.php">Home</a>
+        <a href="landingPage.php">Home</a>
     </div>
     <div class="login">
         <h1>Login</h1>
@@ -176,11 +160,8 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
             <label id="passwordLabel" for="password">Password:</label>
             <input type="password" required="" id="password" name="password" placeholder="Write your password">
             <div style="text-align:center;">
-                <input type="submit" value="login" name="login">
                 <br>
-                <br>
-                <br>
-                <br>
+                <input type="submit" value="login" name="login"><br><br>
                 <a href="#"> Forgot Password</a>
             </div>
         </form>

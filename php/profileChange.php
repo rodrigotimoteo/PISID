@@ -1,25 +1,11 @@
 <?php
-/*
-session_start();
 
- Check if user is not logged in, then redirect to login page
-
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    echo "Please log in to view this page.";
-    header("Location: loginPage.php");
-    exit;
-}
-
-
-
-/ Check if user is not logged in, then redirect to login page
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    echo "Please log in to view this page.";
-    header("Location: loginPage.php");
-    exit;
-}
-*/
 include("config.php");
+
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
+    echo "User isn't logged in, redirecting to landing page";
+    header("Location: landingPage.php");
+}
 
 $sqli = new mysqli(DB_SERVER, $_SESSION['email'], $_SESSION['password'], DB_DATABASE);
 if($sqli->connect_error) {
@@ -51,12 +37,8 @@ $sqli->close();
 <head>
     <meta charset="UTF-8">
     <title>UserPagePISID</title>
+    <link rel="stylesheet" href="style.css" media="screen">
     <style>
-        @import url(https://fonts.googleapis.com/css?family=Rokkitt);
-        @import url(https://fonts.googleapis.com/css?family=Open+Sans:400italic,400,700);
-        @import url(https://fonts.googleapis.com/css?family=Roboto+Slab:700,400);
-        @import url(https://fonts.googleapis.com/css?family=Lobster);
-
         * {
             margin: 0;
             padding: 0;

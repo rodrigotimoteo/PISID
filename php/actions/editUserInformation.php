@@ -31,14 +31,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $procedure = "CALL EditUser(?,?,?,?)";
                 $stmt = $sqli->prepare($procedure);
 
-                if(!isset($_POST['name'])){
-                    $name = $_SESSION['name'];
-                }
-
-                if(!isset($_POST['phone'])){
-                    $name = $_SESSION['phone'];
-                }
-
                 $email_user = $_SESSION['email'];
                 $stmt2 = $sqli->prepare("SELECT password FROM utilizador WHERE email = ?");
                 $stmt2->bind_param("s", $email_user);
@@ -51,7 +43,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt->bind_param("ssss", $password_db, $name, $phone, $_SESSION['email']);
 
                 if ($stmt->execute()) {
-                    /*echo "User information changed successfully";*/
                     header("Location: ../profileChange.php");
                 } else {
                     echo "Error: " . $procedure . "<br>" . $sqli->error;

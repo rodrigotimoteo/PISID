@@ -163,12 +163,17 @@ $result2 = $stmt2->get_result();
             <table>
                 <tr>
                     <th>Experience Number</th>
+                    <th>Description</th>
                     <th>State</th>
                     <th>Number Of Rats</th>
-                    <th>Description</th>
+                    <th>Rats per Room</th>
+                    <th>Seconds w/ Movement</th>
+                    <th>Ideal temp</th>
+                    <th>Max temp deviation</th>
                     <th>Delete</th>
                     <th>Edit</th>
                     <th>Interact</th>
+                    <th>Substances</th>
                 </tr>
                 <?php
 
@@ -185,9 +190,13 @@ $result2 = $stmt2->get_result();
                  <?php while ($row = $result->fetch_assoc()) { ?>
                     <tr>
                         <td><?php echo htmlspecialchars($row['id_experiencia']); ?></td>
+                        <td><?php echo htmlspecialchars($row['descricao']); ?></td>
                         <td><?php echo htmlspecialchars($row['estado_experiencia']); ?></td>
                         <td><?php echo htmlspecialchars($row['numero_ratos']); ?></td>
-                        <td><?php echo htmlspecialchars($row['descricao']); ?></td>
+                        <td><?php echo htmlspecialchars($row['limite_ratos_sala']); ?></td>
+                        <td><?php echo htmlspecialchars($row['segundos_sem_movimento']); ?></td>
+                        <td><?php echo htmlspecialchars($row['temperatura_ideal']); ?></td>
+                        <td><?php echo htmlspecialchars($row['variacao_temperatura_maxima']); ?></td>
                         <td>
                             <form action="actions/deleteTest.php" method="GET">
                                 <input type="hidden" name="delete_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
@@ -221,6 +230,13 @@ $result2 = $stmt2->get_result();
                             <?php }else {?>
                                 <button class="start-finish" disabled>Start Test</button>
                             <?php } ?>
+                        </td>
+
+                        <td>
+                            <form action="subtanceList.php" method="POST">
+                                <input type="hidden" name="substance_list" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
+                                <button type="submit" class="start-finish">Substances List</button>
+                            </form>
                         </td>
 
                     </tr>

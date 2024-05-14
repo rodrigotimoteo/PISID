@@ -13,9 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($sqli->connect_error) {
         $response['message'] = "Connection failed: " . $sqli->connect_error;
     } else {
-
         if(isset($_SESSION['email'])) {
-
             if(isset($_POST['test_id'])) {
 
                 $test_id = $_POST['test_id'];

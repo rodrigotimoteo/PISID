@@ -169,7 +169,6 @@ $sqli->close();
                 <br>
             <div class="button-container">
                 <a href="editUserPage.php" class="button">Edit User Details</a>
-                <a href="changePassword.php" class="button">Change Password</a>
             </div>
         </div>
     </div>

@@ -16,12 +16,6 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
     <link rel="stylesheet" href="style.css" media="screen">
 </head>
 <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         h1 {
             font-family: 'Open Sans', sans-serif;
         }

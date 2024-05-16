@@ -5,13 +5,6 @@
     <title>RegisterPagePISID</title>
     <link rel="stylesheet" href="style.css" media="screen">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            -moz-box-sizing: border-box;
-            box-sizing: border-box;
-        }
-
         h1 {
             font-family: 'Open Sans', sans-serif;
         }
@@ -134,7 +127,7 @@
     </div>
     <div class="register">
         <h1>Register</h1>
-        <form action="actions/CreateNewUser.php" method="post">
+        <form action="actions/createNewUser.php" method="post">
             <label id="nameLabel" for="name">Name:</label>
             <input type="text" required="" id="name" name="name" placeholder="Write your name">
             <label id="phoneLabel" for="telefone">Phone Number:</label>

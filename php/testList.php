@@ -38,12 +38,6 @@ $result2 = $stmt2->get_result();
     <title>TestListPagePISID</title>
     <link rel="stylesheet" href="style.css" media="screen">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         h1 {
             font-family: 'Open Sans', sans-serif;
         }
@@ -233,7 +227,7 @@ $result2 = $stmt2->get_result();
                         </td>
 
                         <td>
-                            <form action="subtanceList.php" method="POST">
+                            <form action="substanceList.php" method="POST">
                                 <input type="hidden" name="substance_list" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
                                 <button type="submit" class="start-finish">Substances List</button>
                             </form>

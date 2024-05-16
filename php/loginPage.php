@@ -5,13 +5,6 @@
     <title>LoginPagePISID</title>
     <link rel="stylesheet" href="style.css" media="screen">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            -moz-box-sizing: border-box;
-            box-sizing: border-box;
-        }
-
         h1 {
             font-family: 'Open Sans', sans-serif;
         }

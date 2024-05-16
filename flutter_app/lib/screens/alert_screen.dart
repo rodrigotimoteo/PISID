@@ -22,7 +22,7 @@ class AlertsScreenState extends State<AlertsScreen> {
   DateTime selectedDate = DateTime.now();
   var mostRecentAlert = 0;
 
-  var tableFields = ['Mensagem', 'Leitura', 'Sala', 'Sensor', 'TipoAlerta', 'Hora', 'HoraEscrita'];
+  var tableFields = ['Hora', 'Experiencia', 'Valor', 'Mensagem', 'Sala', 'Sensor', 'Tipo Alerta'];
   var tableAlerts = <int, List<String>>{};
 
   int _selectedIndex = 0;

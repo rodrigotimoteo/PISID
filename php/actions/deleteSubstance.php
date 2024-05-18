@@ -10,16 +10,20 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
             die("Connection failed: " . $sqli->connect_error);
         }
 
-        if(isset($_GET['delete_id_exp'])) {
+        if(isset($_GET['delete_subs_id'])) {
 
-            $delete_id_exp = $_GET['delete_id_exp'];
+            $delete_id_subs = $_GET['delete_subs_id'];
 
-            $procedure = "CALL DeleteTest(?)";
+            $procedure = "CALL DeleteExpSubstance(?)";
             $stmt = $sqli->prepare($procedure);
-            $stmt->bind_param("i", $delete_id_exp);
+            $stmt->bind_param("i", $delete_id_subs);
 
             if ($stmt->execute()) {
-                header("Location: ../testList.php");
+                echo "<form id='redirectForm' action='../substanceList.php' method='post'>";
+                echo "<input type='hidden' name='substance_list' value='" . htmlspecialchars($testId) . "'>";
+                echo "</form>";
+                echo "<script type='text/javascript'>document.getElementById('redirectForm').submit();</script>";
+                exit();
             } else {
                 echo "Error: " . $procedure . "<br>" . $sqli->error;
             }

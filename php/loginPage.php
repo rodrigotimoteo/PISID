@@ -5,33 +5,6 @@
     <title>LoginPagePISID</title>
     <link rel="stylesheet" href="style.css" media="screen">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            -moz-box-sizing: border-box;
-            box-sizing: border-box;
-        }
-
-        h1 {
-            font-family: 'Open Sans', sans-serif;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Open Sans', sans-serif;
-            background: rgb(58,255,246);
-            background: linear-gradient(90deg, rgba(58,255,246,1) 5%, rgba(240,16,220,1) 100%, rgba(38,98,247,1) 100%);
-        }
-
-        .container {
-            width: 30%;
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
         .menu {
             text-align: center;
             padding: 20px 0;

@@ -1,5 +1,4 @@
 <?php
-#session_start();
 
 include("config.php");
 
@@ -33,35 +32,9 @@ if(isset($_POST['substance_list'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TestListPagePISID</title>
+    <title>SubstanceListPagePISID</title>
     <link rel="stylesheet" href="style.css" media="screen">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        h1 {
-            font-family: 'Open Sans', sans-serif;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Open Sans', sans-serif;
-            background: linear-gradient(90deg, rgba(58,255,246,1) 5%, rgba(240,16,220,1) 100%, rgba(38,98,247,1) 100%);
-        }
-
-        .container {
-            max-width: 1800px;
-            margin: 0 auto;
-            width: 100%;
-            height: 700px;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
         .menu {
             text-align: center;
             padding: 20px 0;
@@ -127,6 +100,7 @@ if(isset($_POST['substance_list'])) {
         .edit:hover, .delete:hover {
             background-color: #A64141;
         }
+        
         .start-finish {
             background-color: #c32ce1;
             color: #fff;
@@ -157,7 +131,7 @@ if(isset($_POST['substance_list'])) {
     </div>
     <div class="container">
         <div class="test-list">
-            <h1>Tests</h1>
+            <h1>Substances</h1>
             <table>
                 <tr>
                     <th>Substance</th>
@@ -172,22 +146,22 @@ if(isset($_POST['substance_list'])) {
                         <td><?php echo htmlspecialchars($row['num_ratos_administrada']); ?></td>
                         <td>
                             <form action="editSubstance.php" method="GET">
-                                <input type="hidden" name="edit_id_exp" value="<?php echo htmlspecialchars($row['id_substancia_exp']); ?>">
-                                <button type="submit" class="start-finish" name="edit">Edit Substance</button>
+                                <input type="hidden" name="edit_subs_id" value="<?php echo htmlspecialchars($row['id_substancia_exp']); ?>">
+                                <button type="submit" class="start-finish" name="edit_subs_id">Edit Substance</button>
                             </form>
                         </td>
                         <td>
                             <form action="actions/deleteSubstance.php" method="GET">
-                                <input type="hidden" name="delete_id_exp" value="<?php echo htmlspecialchars($row['id_substancia_exp']); ?>">
-                                <button type="submit" class="start-finish" name="delete">Delete Substance</button>
+                                <input type="hidden" name="delete_subs_id" value="<?php echo htmlspecialchars($row['id_substancia_exp']); ?>">
+                                <button type="submit" class="start-finish" name="delete_subs_id">Delete Substance</button>
                             </form>
                         </td>
                     </tr>
                 <?php } ?>
             </table>
             <br><br>
-            <form action="addSubstance.php" method="POST">
-                <input type="hidden" name="substance_list" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
+            <form action="createSubstance.php" method="POST">
+                <input type="hidden" name="id_exp" value="<?php echo htmlspecialchars($id_exp); ?>">
                 <button type="submit" class="start-finish">Add New Substance</button>
             </form>
         </div>

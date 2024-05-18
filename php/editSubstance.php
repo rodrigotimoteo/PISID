@@ -15,21 +15,20 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
         die("Connection failed: " . $sqli->connect_error);
     }
 
-    $edit_id_exp = $_GET['edit_id_exp'];
+    $id_substancia_exp = $_GET['edit_subs_id'];
 
     if(isset($_SESSION['email'])) {
 
         if(isset($_GET['edit_id_exp'])) {
 
-            $stmt = $sqli->prepare("SELECT descricao, limite_ratos_sala, numero_ratos, segundos_sem_movimento, temperatura_ideal, variacao_temperatura_maxima FROM Experiencia WHERE id_experiencia = ?");
-            $stmt->bind_param("i", $edit_id_exp);
+            $stmt = $sqli->prepare("SELECT substancia, num_ratos_administrada FROM ExperienciaSubstancia WHERE id_substancia_exp = ?");
+            $stmt->bind_param("i", $id_substancia_exp);
             $stmt->execute();
 
-            $stmt->bind_result($descricao, $limite_ratos_sala, $numero_ratos, $segundos_sem_movimento, $temperatura_ideal, $variacao_temperatura);
+            $stmt->bind_result($substancia, $num_ratos_administrada);
 
             $stmt->fetch();
             $stmt->close();
-
         }
     }
     $sqli->close();
@@ -148,27 +147,22 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
         <a class="menu-item" href="actions/logout.php">Logout</a>
     </div>
 
-    <h2>Edit Test</h2>
+    <h2>Edit Substance</h2>
     <div class="login">
         <form action="actions/editTest.php" method="post">
-            <input type="hidden" name="test_id" value="<?php echo $edit_id_exp; ?>">
-            <label for="test_description">Test Description:</label>
-            <input type="text" id="test_description" name="test_description" value="<?php echo $descricao; ?>" required>
-            <label for="test_limit_per_room">Limit per Room:</label>
-            <input type="number" id="test_limit_per_room" name="test_limit_per_room" value="<?php echo $limite_ratos_sala; ?>" required>
-            <label for="test_number_of_rats">Number of Rats:</label>
-            <input type="number" id="test_number_of_rats" name="test_number_of_rats" value="<?php echo $numero_ratos; ?>" required>
-            <label for="test_seconds_without_movement">Seconds without Movement:</label>
-            <input type="number" id="test_seconds_without_movement" name="test_seconds_without_movement" value="<?php echo $segundos_sem_movimento; ?>" required>
-            <label for="test_ideal_temperature">Ideal Temperature:</label>
-            <input type="number" id="test_ideal_temperature" name="test_ideal_temperature" value="<?php echo $temperatura_ideal; ?>" required>
-            <label for="test_max_temp_deviation">Max Temperature Deviation:</label>
-            <input type="number" id="test_max_temp_deviation" name="test_max_temp_deviation" value="<?php echo $variacao_temperatura; ?>" required>
+            <input type="hidden" name="test_id" value="<?php echo $id_substancia_exp; ?>">
+            <label for="substance">Substance:</label>
+            <input type="text" id="substance" name="substance" value="<?php echo $substancia; ?>" required>
+            <label for="$num_ratos_administrada">Number of Rats:</label>
+            <input type="number" id="$num_ratos_administrada" name="$num_ratos_administrada" value="<?php echo $num_ratos_administrada; ?>" required>
 
             <br>
             <input type="submit" value="Update Test">
+        </form>
 
-            <a href="landingPage.php">Go Back</a>
+        <form action="substanceList.php" method="POST">
+            <input type="hidden" name="substance_list" value="<?php echo htmlspecialchars($_POST['id_exp']); ?>">
+            <button type="submit">Go back</button>
         </form>
     </div>
 </section>

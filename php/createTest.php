@@ -16,122 +16,102 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
     <link rel="stylesheet" href="style.css" media="screen">
 </head>
 <style>
-        h1 {
-            font-family: 'Open Sans', sans-serif;
-        }
+    .menu {
+        text-align: center;
+        padding: 20px 0;
+        display: flex;
+        justify-content: space-around;
+    }
 
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Open Sans', sans-serif;
-            background: linear-gradient(90deg, rgba(58,255,246,1) 5%, rgba(240,16,220,1) 100%, rgba(38,98,247,1) 100%);
-        }
+    .menu a {
+        text-decoration: none;
+        color: #fff;
+        margin: 0 10px;
+        font-size: 18px;
+    }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            width: 100%;
-            height: 600px;
-            padding: 20px;
-            box-sizing: border-box;
-        }
+    .menu a:hover {
+        text-decoration: underline;
+    }
 
-        .menu {
-            text-align: center;
-            padding: 20px 0;
-            display: flex;
-            justify-content: space-around;
-        }
+    .login {
+        background-color: #ffff;
+        text-align: center;
+        box-shadow: 0 0 20px #000;
+        margin-top: 50px;
+        padding: 30px;
+        border-radius: 15px;
+    }
 
-        .menu a {
-            text-decoration: none;
-            color: #fff;
-            margin: 0 10px;
-            font-size: 18px;
-        }
+    .login h1 {
+        font-size: 36px;
+        padding: 10px 0;
+        color: #000;
+    }
 
-        .menu a:hover {
-            text-decoration: underline;
-        }
+    label {
+        display: block;
+        color: #ffff;
+        font-size: 18px;
+        opacity: 1;
+        transition: all .3s ease-in-out;
+    }
 
-        .login {
-            background-color: #ffff;
-            text-align: center;
-            box-shadow: 0 0 20px #000;
-            margin-top: 50px;
-            padding: 30px;
-            border-radius: 15px;
-        }
+    input {
+        margin-bottom: 0px;
+        padding: 10px 5px;
+        width: 100%;
+        background-color: #f4f4f4;
+        border: none;
+        text-align: center;
+        font-size: 16px;
+        font-family: 'Open Sans', sans-serif;
+        font-weight: bold;
+        color: #333;
+        border-radius 3px;
+    }
 
-        .login h1 {
-            font-size: 36px;
-            padding: 10px 0;
-            color: #000;
-        }
+    input:focus {
+        background-color: #ccc;
+        border: none;
+        outline: none;
+    }
 
-        label {
-            display: block;
-            color: #ffff;
-            font-size: 18px;
-            opacity: 1;
-            transition: all .3s ease-in-out;
-        }
+    input[type=submit] {
+        color: #fff;
+        background: #c32ce1;
+        border: none;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 24px;
+        margin-top: 25px;
+        width: 60%;
+        transition: all .5s ease;
+        cursor: pointer;
+        display: block;
+        margin: 0 auto;
+        border-radius: 5px;
+    }
 
-        input {
-            margin-bottom: 0px;
-            padding: 10px 5px;
-            width: 100%;
-            background-color: #f4f4f4;
-            border: none;
-            text-align: center;
-            font-size: 16px;
-            font-family: 'Open Sans', sans-serif;
-            font-weight: bold;
-            color: #333;
-            border-radius 3px;
-        }
+    input[type=submit]:hover {
+        background-color: #A64141;
+        color: #f4f4f4;
+    }
 
-        input:focus {
-            background-color: #ccc;
-            border: none;
-            outline: none;
-        }
+    .message span {
+        display: block;
+        color: #cccc;
+        position: relative;
+        z-index: -1;
+        bottom: 80px;
+        text-align: center;
+    }
 
-        input[type=submit] {
-            color: #fff;
-            background: #c32ce1;
-            border: none;
-            font-family: 'Open Sans', sans-serif;
-            font-size: 24px;
-            margin-top: 25px;
-            width: 60%;
-            transition: all .5s ease;
-            cursor: pointer;
-            display: block;
-            margin: 0 auto;
-            border-radius: 5px;
-        }
-
-        input[type=submit]:hover {
-            background-color: #A64141;
-            color: #f4f4f4;
-        }
-
-        .message span {
-            display: block;
-            color: #cccc;
-            position: relative;
-            z-index: -1;
-            bottom: 80px;
-            text-align: center;
-        }
-
-        a {
+    a {
         text-decoration: none;
         color: lightgray;
         margin-top: 10px;
     }
-    </style>
+</style>
 
 <body>
     <section class="container">

@@ -38,33 +38,6 @@ $result2 = $stmt2->get_result();
     <title>TestListPagePISID</title>
     <link rel="stylesheet" href="style.css" media="screen">
     <style>
-        h1 {
-            font-family: 'Open Sans', sans-serif;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Open Sans', sans-serif;
-            background: linear-gradient(90deg, rgba(58,255,246,1) 5%, rgba(240,16,220,1) 100%, rgba(38,98,247,1) 100%);
-        }
-
-        .container {
-            max-width: 1800px;
-            margin: 0 auto;
-            width: 100%;
-            height: 700px;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-
-        .menu {
-            text-align: center;
-            padding: 20px 0;
-            display: flex;
-            justify-content: space-around;
-        }
-
         .menu a {
             text-decoration: none;
             color: #fff;

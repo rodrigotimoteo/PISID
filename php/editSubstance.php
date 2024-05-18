@@ -50,13 +50,6 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
             color: #ffffff;
         }
 
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Open Sans', sans-serif;
-            background: linear-gradient(90deg, rgba(58,255,246,1) 5%, rgba(240,16,220,1) 100%, rgba(38,98,247,1) 100%);
-        }
-
         form {
             max-width: 900px;
             margin: 0 auto;
@@ -87,15 +80,6 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
             font-weight: bold;
             color: #333;
             border-radius: 3px;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            width: 100%;
-            height: 700px;
-            padding: 20px;
-            box-sizing: border-box;
         }
 
         .menu {

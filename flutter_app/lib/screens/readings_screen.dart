@@ -42,7 +42,7 @@ class ReadingsScreenState extends State<ReadingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: Container(
-          margin: const EdgeInsets.all(10),
+          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 60),
           child: LineChart(
             LineChartData(
               minX: 0,
@@ -52,7 +52,7 @@ class ReadingsScreenState extends State<ReadingsScreen> {
               titlesData: FlTitlesData(
                 show: true,
                 bottomTitles: SideTitles(
-                  showTitles: true,
+                  showTitles: false,
                   margin: 5,
                 ),
                 leftTitles: SideTitles(
@@ -79,7 +79,7 @@ class ReadingsScreenState extends State<ReadingsScreen> {
                   colors: gradientColors,
                   barWidth: 2,
                   belowBarData: BarAreaData(
-                    show: true,
+                    show: false,
                     colors: gradientColors
                         .map((color) => color.withOpacity(0.2))
                         .toList(),
@@ -151,6 +151,8 @@ class ReadingsScreenState extends State<ReadingsScreen> {
         }
       });
     }
+
+    readingsTimes = readingsTimes.reversed.toList();
   }
 
   listReadings() {

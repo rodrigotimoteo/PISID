@@ -38,32 +38,6 @@ $result2 = $stmt2->get_result();
     <title>TestListPagePISID</title>
     <link rel="stylesheet" href="style.css" media="screen">
     <style>
-        .menu a {
-            text-decoration: none;
-            color: #fff;
-            margin: 0 10px;
-            font-size: 18px;
-        }
-
-        .menu a:hover {
-            text-decoration: underline;
-        }
-
-        .test-list {
-            background-color: #ffff;
-            text-align: center;
-            box-shadow: 0 0 20px #000;
-            margin-top: 50px;
-            padding: 30px;
-            border-radius: 15px;
-        }
-
-        .test-list h1 {
-            font-size: 36px;
-            padding: 10px 0; 
-            color: #000;
-        }
-
         table {
             width: 100%;
             border-collapse: collapse;
@@ -79,23 +53,6 @@ $result2 = $stmt2->get_result();
             background-color: #f2f2f2;
         }
 
-        .edit, .delete {
-            background-color: #c32ce1;
-            color: #fff;
-            border: none;
-            padding: 8px 16px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-
-        .edit:hover, .delete:hover {
-            background-color: #A64141;
-        }
         .start-finish {
             background-color: #c32ce1;
             color: #fff;
@@ -125,7 +82,7 @@ $result2 = $stmt2->get_result();
         <a href="actions/logout.php">Logout</a>
     </div>
     <div class="container">
-        <div class="test-list">
+        <div class="list">
             <h1>Tests</h1>
             <table>
                 <tr>

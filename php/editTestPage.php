@@ -83,24 +83,6 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
             border-radius: 3px;
         }
 
-        .menu {
-            text-align: center;
-            padding: 20px 0;
-            display: flex;
-            justify-content: space-around;
-        }
-
-        .menu a {
-            text-decoration: none;
-            color: #fff;
-            margin: 0 10px;
-            font-size: 18px;
-        }
-
-        .menu a:hover {
-            text-decoration: underline;
-        }
-
         input:focus {
             background-color: #ccc;
             border: none;

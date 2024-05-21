@@ -28,3 +28,50 @@ body {
     box-sizing: border-box;
 }
 
+.menu {
+    text-align: center;
+    padding: 20px 0;
+    display: flex;
+    justify-content: space-around;
+}
+
+.menu a {
+    text-decoration: none;
+    color: #fff;
+    margin: 0 10px;
+    font-size: 18px;
+}
+
+.menu a:hover {
+    text-decoration: underline;
+}
+
+.list {
+    background-color: #ffff;
+    text-align: center;
+    box-shadow: 0 0 20px #000;
+    margin-top: 50px;
+    padding: 30px;
+    border-radius: 15px;
+}
+
+.list h1 {
+    font-size: 36px;
+    padding: 10px 0;
+    color: #000;
+}
+
+.form {
+    background-color: #ffff;
+    text-align: center;
+    box-shadow: 0 0 20px #000;
+    margin-top: 50px;
+    padding: 30px;
+    border-radius: 15px;
+}
+
+.form h1 {
+    font-size: 36px;
+    padding: 10px 0;
+    color: #000;
+}

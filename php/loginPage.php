@@ -5,35 +5,8 @@
     <title>LoginPagePISID</title>
     <link rel="stylesheet" href="style.css" media="screen">
     <style>
-        .menu {
-            text-align: center;
-            padding: 20px 0;
-        }
-
         .menu a {
-            text-decoration: none;
-            color: #fff;
-            margin: 0 10px;
             font-size: 25px;
-        }
-
-        .menu a:hover {
-            text-decoration: underline;
-        }
-
-        .login {
-            background-color: #ffff;
-            text-align: center;
-            box-shadow: 0 0 20px #000;
-            margin-top: 50px;
-            padding: 30px;
-            border-radius: 15px;
-        }
-
-        .login h1 {
-            font-size: 36px;
-            padding: 10px 0;
-            color: #000;
         }
 
         label {
@@ -83,15 +56,6 @@
             background-color: #0056b3;
             color: #f4f4f4;
         }
-        .message {
-            position: absolute;
-            top: 50px;
-            left: 460px;
-            transform: rotate(-25deg);
-            text-align: right;
-            margin-left: 20px;
-            margin-top: 20px;
-        }
 
         .message span {
             display: block;
@@ -101,18 +65,6 @@
             text-align: center;
         }
 
-        .first, .second {
-            font-size: 10em;
-            letter-spacing: -4px;
-            display: inline-block;
-            font-family: 'Lobster', cursive;
-            text-shadow: 3px 3px 0 #999;
-        }
-
-        .second {
-            font-size: 8em;
-            line-height: 150px;
-        }
         a[href="#"] {
         text-decoration: none;
         color: lightgray;
@@ -125,7 +77,7 @@
     <div class="menu">
         <a href="landingPage.php">Home</a>
     </div>
-    <div class="login">
+    <div class="form">
         <h1>Login</h1>
         <form action="actions/login.php" method="post">
             <label id="emailLabel" for="email">Email:</label>

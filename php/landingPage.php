@@ -65,23 +65,6 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
             flex-direction: column;
             align-items: center;
         }
-        .menu {
-            text-align: center;
-            padding: 20px 0;
-            display: flex;
-            justify-content: space-around;
-        }
-
-        .menu a {
-            text-decoration: none;
-            color: #030101;
-            margin: 0 10px;
-            font-size: 18px;
-        }
-
-        .menu a:hover {
-            text-decoration: underline;
-        }
     </style>
 </head>
 

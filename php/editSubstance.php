@@ -39,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Edit Test</title>
+    <title>Edit Substance</title>
     <link rel="stylesheet" href="style.css" media="screen">
     <style>
         h2 {
@@ -80,24 +80,6 @@ if ($_SERVER["REQUEST_METHOD"] == "GET") {
             font-weight: bold;
             color: #333;
             border-radius: 3px;
-        }
-
-        .menu {
-            text-align: center;
-            padding: 20px 0;
-            display: flex;
-            justify-content: space-around;
-        }
-
-        .menu a {
-            text-decoration: none;
-            color: #fff;
-            margin: 0 10px;
-            font-size: 18px;
-        }
-
-        .menu a:hover {
-            text-decoration: underline;
         }
 
         input:focus {

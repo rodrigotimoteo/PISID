@@ -5,37 +5,8 @@
     <title>RegisterPagePISID</title>
     <link rel="stylesheet" href="style.css" media="screen">
     <style>
-        .menu {
-            text-align: center;
-            padding: 20px 0;
-        }
-
         .menu a {
-            text-decoration: none;
-            color: #fff;
-            margin: 0 10px;
             font-size: 25px;
-        }
-
-        .menu a:hover {
-            text-decoration: underline;
-        }
-
-        .register {
-            background-color: #ffff;
-            text-align: center;
-            box-shadow: 0 0 20px #000;
-            margin-top: 50px;
-            width: 100%;
-            padding: 40px;
-            border-radius: 15px;
-            height: 525px;
-        }
-
-        .register h1 {
-            font-size: 36px;
-            padding: 10px 0;
-            color: #000;
         }
 
         label {
@@ -105,23 +76,20 @@
     <div class="menu">
         <a href="landingPage.php">Home</a>
     </div>
-    <div class="register">
+    <div class="form">
         <h1>Register</h1>
         <form action="actions/createNewUser.php" method="post">
             <label id="nameLabel" for="name">Name:</label>
             <input type="text" required="" id="name" name="name" placeholder="Write your name">
-            <label id="phoneLabel" for="telefone">Phone Number:</label>
-            <input type="text" required="" id="phone" name="phone" placeholder="Write your phone number">
+            <label id="phoneLabel" for="phone">Phone Number:</label>
+            <input type="tel" required="" id="phone" name="phone" placeholder="Write your phone number">
             <label id="emailLabel" for="email">Email:</label>
             <input type="text" required="" id="email" name="email" placeholder="Write your email">
             <label id="passwordLabel" for="password">Password:</label>
             <input type="password" required="" id="password" name="password" placeholder="Write your password">
+            <br><br>
             <div style="text-align:center;">
-                <input type="submit" value="register" name="register">
-                <br>
-                <br>
-                <br>
-                <br>
+                <input type="submit" value="Register" name="register">
             </div>
         </form>
     </div>

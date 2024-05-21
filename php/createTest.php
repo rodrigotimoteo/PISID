@@ -12,43 +12,10 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>LoginPagePISID</title>
+    <title>Create Test</title>
     <link rel="stylesheet" href="style.css" media="screen">
 </head>
 <style>
-    .menu {
-        text-align: center;
-        padding: 20px 0;
-        display: flex;
-        justify-content: space-around;
-    }
-
-    .menu a {
-        text-decoration: none;
-        color: #fff;
-        margin: 0 10px;
-        font-size: 18px;
-    }
-
-    .menu a:hover {
-        text-decoration: underline;
-    }
-
-    .login {
-        background-color: #ffff;
-        text-align: center;
-        box-shadow: 0 0 20px #000;
-        margin-top: 50px;
-        padding: 30px;
-        border-radius: 15px;
-    }
-
-    .login h1 {
-        font-size: 36px;
-        padding: 10px 0;
-        color: #000;
-    }
-
     label {
         display: block;
         color: #ffff;
@@ -123,7 +90,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
             <a class="menu-item" href="actions/logout.php">Logout</a>
         </div>
 
-        <div id="createTest" class="login">
+        <div id="createTest" class="form">
             <h1>Create Test</h1>
             <form action="actions/createNewTest.php" method="post">
                 <label for="description">Description</label>
@@ -141,11 +108,6 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
 
 
                 <input class="input" type="submit" value="Submit" name="Submit">
-                <style>
-                    input[type="text"], input[type="password"], input[type="tel"], input[type="number"], input[type="submit"] {
-                        border-radius: 5px;
-                    }
-                </style>
             </form>
             <br>
             <a href="landingPage.php">Go Back</a>

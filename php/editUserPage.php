@@ -15,39 +15,6 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
     <title>UserPagePISID</title>
     <link rel="stylesheet" href="style.css" media="screen">
     <style>
-        menu {
-            text-align: center;
-            padding: 20px 0;
-            display: flex;
-            justify-content: space-around;
-        }
-
-        .menu a {
-            text-decoration: none;
-            color: #fff;
-            margin: 0 10px;
-            font-size: 18px;
-        }
-
-        .menu a:hover {
-            text-decoration: underline;
-        }
-
-        .login {
-            background-color: #ffff;
-            text-align: center;
-            box-shadow: 0 0 20px #000;
-            margin-top: 50px;
-            padding: 30px;
-            border-radius: 15px;
-        }
-
-        .login h1 {
-            font-size: 36px;
-            padding: 10px 0;
-            color: #000;
-        }
-
         label {
             display: block;
             color: #ffff;
@@ -105,8 +72,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
             text-align: center;
         }
 
-
-        a{
+        a {
         text-decoration: none;
         color: lightgray;
     }
@@ -123,7 +89,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] === false) {
     </div>
 
     <div class="container">
-        <div id="editUser" class="login">
+        <div id="editUser" class="form">
             <h1>Edit User</h1>
             <form action="actions/editUserInformation.php" method="post">
                 <label for="name">Name:</label>

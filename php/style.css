@@ -13,11 +13,84 @@ h1 {
     font-family: 'Open Sans', sans-serif;
 }
 
+h2 {
+    font-family: 'Open Sans', sans-serif;
+    text-align: center;
+    font-size: 36px;
+}
+
 body {
     margin: 0;
     padding: 0;
     font-family: 'Open Sans', sans-serif;
     background: linear-gradient(90deg, rgba(58,255,246,1) 5%, rgba(240,16,220,1) 100%, rgba(38,98,247,1) 100%);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+label {
+    display: block;
+    color: #ffff;
+    font-size: 18px;
+    opacity: 1;
+    transition: all .3s ease-in-out;
+}
+
+input {
+    margin-bottom: 20px;
+    padding: 10px 5px;
+    width: 100%;
+    background-color: #f4f4f4;
+    border: none;
+    text-align: center;
+    font-size: 16px;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: bold;
+    color: #333;
+    border-radius: 3px;
+}
+
+input:focus {
+    background-color: #ccc;
+    border: none;
+    outline: none;
+}
+
+input[type=submit] {
+    color: #fff;
+    background: #c32ce1;
+    border: none;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 24px;
+    width: 60%;
+    transition: all .5s ease;
+    cursor: pointer;
+    display: block;
+    margin: 0 auto;
+    border-radius: 5px;
+}
+
+input[type=submit]:hover {
+    background-color: #A64141;
+    color: #f4f4f4;
+}
+
+a {
+    text-decoration: none;
+    color: lightgray;
 }
 
 .container {
@@ -74,4 +147,40 @@ body {
     font-size: 36px;
     padding: 10px 0;
     color: #000;
+}
+
+.button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #c32ce1;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 1em;
+    margin-right: 10px;
+    transition: background-color 0.3s ease;
+    font-family: 'Open Sans', sans-serif;
+    cursor: pointer;
+}
+
+.button:hover {
+    background-color: #0056b3;
+}
+
+.start-finish {
+    background-color: #c32ce1;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.start-finish:hover {
+    background-color: #A64141;
 }

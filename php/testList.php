@@ -12,7 +12,7 @@ $email = $_SESSION['email'];
 $password = $_SESSION['password'];
 
 $sqli = new mysqli(DB_SERVER, $_SESSION['email'], $_SESSION['password'], DB_DATABASE);
-if($sqli->connect_error) {
+if ($sqli->connect_error) {
     die("Connection failed: " . $sqli->connect_error);
 }
 
@@ -33,145 +33,114 @@ $result2 = $stmt2->get_result();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>TestListPagePISID</title>
     <link rel="stylesheet" href="style.css" media="screen">
-    <style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-
-        .start-finish {
-            background-color: #c32ce1;
-            color: #fff;
-            border: none;
-            padding: 8px 16px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-
-        .start-finish:hover {
-            background-color: #A64141;
-        }
-    </style>
 </head>
+
 <body>
-<section class="container">
-    <div class="menu">
-        <a href="landingPage.php">Home</a>
-        <a href="testList.php">Test List</a>
-        <a href="createTest.php">Create Test</a>
-        <a href="profileChange.php">Profile</a>
-        <a href="actions/logout.php">Logout</a>
-    </div>
-    <div class="container">
-        <div class="list">
-            <h1>Tests</h1>
-            <table>
-                <tr>
-                    <th>Experience Number</th>
-                    <th>Description</th>
-                    <th>State</th>
-                    <th>Number Of Rats</th>
-                    <th>Rats per Room</th>
-                    <th>Seconds w/ Movement</th>
-                    <th>Ideal temp</th>
-                    <th>Max temp deviation</th>
-                    <th>Delete</th>
-                    <th>Edit</th>
-                    <th>Interact</th>
-                    <th>Substances</th>
-                </tr>
-                <?php
-
-                $count =0;
-
-                while ($row = $result2->fetch_assoc()) {
-                    if($row['estado_experiencia'] == 'A decorrer'){
-                        $count = 1;
-                    }
-                }
-
-                ?>
-
-                 <?php while ($row = $result->fetch_assoc()) { ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($row['id_experiencia']); ?></td>
-                        <td><?php echo htmlspecialchars($row['descricao']); ?></td>
-                        <td><?php echo htmlspecialchars($row['estado_experiencia']); ?></td>
-                        <td><?php echo htmlspecialchars($row['numero_ratos']); ?></td>
-                        <td><?php echo htmlspecialchars($row['limite_ratos_sala']); ?></td>
-                        <td><?php echo htmlspecialchars($row['segundos_sem_movimento']); ?></td>
-                        <td><?php echo htmlspecialchars($row['temperatura_ideal']); ?></td>
-                        <td><?php echo htmlspecialchars($row['variacao_temperatura_maxima']); ?></td>
-                        <td>
-                            <form action="actions/deleteTest.php" method="GET">
-                                <input type="hidden" name="delete_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
-                                <button type="submit" class="start-finish" name="delete">Delete Test</button>
-                            </form>
-                        </td>
-                        <td>
-                            <?php if ($row['estado_experiencia'] == 'Por Iniciar') { ?>
-                                <form action="editTestPage.php" method="GET">
-                                    <input type="hidden" name="edit_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
-                                    <button type="submit" class="start-finish" name="edit">Edit Test</button>
-                                </form>
-                            <?php } else { ?>
-                                <button class="start-finish" disabled>Edit Test</button>
-                            <?php } ?>
-                        </td>
-
-                        <td>
-                            <?php if ($row['estado_experiencia'] == 'A decorrer') { ?>
-                                <form action="actions/finishTest.php" method="GET">
-                                    <input type="hidden" name="stop_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
-                                    <button type="submit" class="start-finish" name="stop">Stop Test</button>
-                                </form>
-                            <?php } elseif ($row['estado_experiencia'] == 'Terminada') { ?>
-                                <button class="start-finish" disabled>Test Finished</button>
-                            <?php } elseif ($count==0) { ?>
-                                <form action="actions/startTest.php" method="GET">
-                                    <input type="hidden" name="start_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
-                                    <button type="submit" class="start-finish" name="start">Start Test</button>
-                                </form>
-                            <?php }else {?>
-                                <button class="start-finish" disabled>Start Test</button>
-                            <?php } ?>
-                        </td>
-
-                        <td>
-                            <form action="substanceList.php" method="POST">
-                                <input type="hidden" name="substance_list" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
-                                <button type="submit" class="start-finish">Substances List</button>
-                            </form>
-                        </td>
-
-                    </tr>
-
-                 <?php } ?>
-
-            </table>
+    <section class="container">
+        <div class="menu">
+            <a href="landingPage.php">Home</a>
+            <a href="testList.php">Test List</a>
+            <a href="createTest.php">Create Test</a>
+            <a href="profileChange.php">Profile</a>
+            <a href="actions/logout.php">Logout</a>
         </div>
-    </div>
-</section>
+        <div class="container">
+            <div class="list">
+                <h1>Tests</h1>
+                <table>
+                    <tr>
+                        <th>Experience Number</th>
+                        <th>Description</th>
+                        <th>State</th>
+                        <th>Number Of Rats</th>
+                        <th>Rats per Room</th>
+                        <th>Seconds w/ Movement</th>
+                        <th>Ideal temp</th>
+                        <th>Max temp deviation</th>
+                        <th>Delete</th>
+                        <th>Edit</th>
+                        <th>Interact</th>
+                        <th>Substances</th>
+                    </tr>
+                    <?php
+
+                    $count = 0;
+
+                    while ($row = $result2->fetch_assoc()) {
+                        if ($row['estado_experiencia'] == 'A decorrer') {
+                            $count = 1;
+                        }
+                    }
+
+                    ?>
+
+                    <?php while ($row = $result->fetch_assoc()) { ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($row['id_experiencia']); ?></td>
+                            <td><?php echo htmlspecialchars($row['descricao']); ?></td>
+                            <td><?php echo htmlspecialchars($row['estado_experiencia']); ?></td>
+                            <td><?php echo htmlspecialchars($row['numero_ratos']); ?></td>
+                            <td><?php echo htmlspecialchars($row['limite_ratos_sala']); ?></td>
+                            <td><?php echo htmlspecialchars($row['segundos_sem_movimento']); ?></td>
+                            <td><?php echo htmlspecialchars($row['temperatura_ideal']); ?></td>
+                            <td><?php echo htmlspecialchars($row['variacao_temperatura_maxima']); ?></td>
+                            <td>
+                                <form action="actions/deleteTest.php" method="GET">
+                                    <input type="hidden" name="delete_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
+                                    <button type="submit" class="start-finish" name="delete">Delete Test</button>
+                                </form>
+                            </td>
+                            <td>
+                                <?php if ($row['estado_experiencia'] == 'Por Iniciar') { ?>
+                                    <form action="editTestPage.php" method="GET">
+                                        <input type="hidden" name="edit_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
+                                        <button type="submit" class="start-finish" name="edit">Edit Test</button>
+                                    </form>
+                                <?php } else { ?>
+                                    <button class="start-finish" disabled>Edit Test</button>
+                                <?php } ?>
+                            </td>
+
+                            <td>
+                                <?php if ($row['estado_experiencia'] == 'A decorrer') { ?>
+                                    <form action="actions/finishTest.php" method="GET">
+                                        <input type="hidden" name="stop_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
+                                        <button type="submit" class="start-finish" name="stop">Stop Test</button>
+                                    </form>
+                                <?php } elseif ($row['estado_experiencia'] == 'Terminada') { ?>
+                                    <button class="start-finish" disabled>Test Finished</button>
+                                <?php } elseif ($count == 0) { ?>
+                                    <form action="actions/startTest.php" method="GET">
+                                        <input type="hidden" name="start_id_exp" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
+                                        <button type="submit" class="start-finish" name="start">Start Test</button>
+                                    </form>
+                                <?php } else { ?>
+                                    <button class="start-finish" disabled>Start Test</button>
+                                <?php } ?>
+                            </td>
+
+                            <td>
+                                <form action="substanceList.php" method="POST">
+                                    <input type="hidden" name="substance_list" value="<?php echo htmlspecialchars($row['id_experiencia']); ?>">
+                                    <button type="submit" class="start-finish">Substances List</button>
+                                </form>
+                            </td>
+
+                        </tr>
+
+                    <?php } ?>
+
+                </table>
+            </div>
+        </div>
+    </section>
 </body>
+
 </html>
 
 <?php

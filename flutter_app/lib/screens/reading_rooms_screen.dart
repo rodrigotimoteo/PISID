@@ -66,6 +66,7 @@ class _MyHomePageState extends State<ReadingRoomsScreen> {
                   generateGroupData(readingsTimes[6].toInt(),readingsValues[6].toInt()),
                   generateGroupData(readingsTimes[7].toInt(),readingsValues[7].toInt()),
                   generateGroupData(readingsTimes[8].toInt(),readingsValues[8].toInt()),
+                  generateGroupData(readingsTimes[9].toInt(),readingsValues[9].toInt()),
                 ],
                 barTouchData: BarTouchData(
                     enabled: true,
@@ -143,5 +144,11 @@ class _MyHomePageState extends State<ReadingRoomsScreen> {
         }
       });
     }
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
   }
 }

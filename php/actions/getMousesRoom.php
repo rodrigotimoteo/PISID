@@ -27,7 +27,9 @@ if($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sql_command = "SELECT MedicoesSalas.sala_0, MedicoesSalas.sala_1, MedicoesSalas.sala_2, MedicoesSalas.sala_3, MedicoesSalas.sala_4, 
        MedicoesSalas.sala_5, MedicoesSalas.sala_6, MedicoesSalas.sala_7, MedicoesSalas.sala_8, MedicoesSalas.sala_9 FROM MedicoesSalas 
            INNER JOIN Experiencia ON MedicoesSalas.id_experiencia = Experiencia.id_experiencia INNER 
-           JOIN Utilizador ON Experiencia.investigador = Utilizador.email WHERE Utilizador.email = ?";
+           JOIN Utilizador ON Experiencia.investigador = Utilizador.email WHERE Utilizador.email = ?
+           ORDER BY MedicoesSalas.id_experiencia DESC 
+           LIMIT 1";
     $stmt = $conn->prepare($sql_command);
     $stmt->bind_param("s", $username);
 

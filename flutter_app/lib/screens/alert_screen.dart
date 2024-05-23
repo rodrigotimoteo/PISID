@@ -48,7 +48,6 @@ class AlertsScreenState extends State<AlertsScreen> {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const ReadingRooms()),
-
       );}
   }
 

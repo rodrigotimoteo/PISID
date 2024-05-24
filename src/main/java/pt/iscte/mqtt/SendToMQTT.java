@@ -231,7 +231,7 @@ public class SendToMQTT implements MqttCallback {
                 System.err.println("There was an error while fetching information from mongoDB database " + e);
                 e.printStackTrace();
             }
-        }, 5000, 500, TimeUnit.MILLISECONDS);
+        }, 5000, 1000, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -440,9 +440,9 @@ public class SendToMQTT implements MqttCallback {
      */
     @Override
     public void deliveryComplete(IMqttDeliveryToken token) {
-        if(token.isComplete()) {
-            System.out.println(token.getMessageId() + "\n" + token.getResponse());
-        }
+//        if(token.isComplete()) {
+//            System.out.println(token.getMessageId() + "\n" + token.getResponse());
+//        }
     }
 
     /**

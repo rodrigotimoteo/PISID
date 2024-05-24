@@ -6,7 +6,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     if($sqli->connect_error) { die("Connection failed: " . $sqli->connect_error); }
 
-    $procedure = "CALL CreateNewUSer(?, ?, ?, ?)";
+    $procedure = "CALL CreateNewUser(?, ?, ?, ?)";
 
     $stmt = $sqli->prepare($procedure);
     $stmt->bind_param("ssss",$email, $password, $name, $phone);
